@@ -1,0 +1,32 @@
+{
+  "name": "Novita SDK Python",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+          },
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "ruff.lint.enable": true,
+        "ruff.format.enable": true
+      }
+    }
+  },
+  "postCreateCommand": "pip install -e '.[dev]'",
+  "remoteUser": "vscode"
+}
