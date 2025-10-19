@@ -1,7 +1,8 @@
 {
   "name": "Novita SDK Python",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "context": ".."
   },
   "customizations": {
     "vscode": {
@@ -12,7 +13,9 @@
         "ms-python.mypy-type-checker"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "python.pythonPath": ".venv/bin/python",
+        "python.defaultInterpreterPath": ".venv/bin/python",      
         "python.linting.enabled": true,
         "python.formatting.provider": "none",
         "[python]": {
@@ -27,6 +30,10 @@
       }
     }
   },
-  "postCreateCommand": "pip install -e '.[dev]'",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  // "postCreateCommand": "pip install -e '.[dev]'",
+  "postStartCommand": "uv sync --all-extras",
   "remoteUser": "vscode"
 }
