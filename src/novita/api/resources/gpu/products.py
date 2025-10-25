@@ -7,7 +7,7 @@ from novita.models import ListGPUProductsResponse
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
-    import httpx
+    pass
 
 
 class Products(BaseResource):

@@ -9,7 +9,7 @@ This example demonstrates:
 
 import asyncio
 
-from novita import AsyncNovitaClient, CreateInstanceRequest, InstanceType
+from novita import AsyncNovitaClient
 
 
 async def main() -> None:
@@ -26,7 +26,7 @@ async def main() -> None:
         print(f"✓ Total instances: {instances.total}")
         print(f"✓ Available GPU types: {len(products.data)}")
         for product in products.data[:3]:  # Show first 3
-            print(f"  - {product.name}: ${product.price/100000}/hour")
+            print(f"  - {product.name}: ${product.price / 100000}/hour")
 
 
 if __name__ == "__main__":

@@ -1,17 +1,17 @@
 """GPU API resources."""
 
-from .base import BaseResource, AsyncBaseResource
-from .clusters import Clusters, AsyncClusters
-from .endpoints import Endpoints, AsyncEndpoints
-from .images import Images, AsyncImages
-from .instances import Instances, AsyncInstances
-from .jobs import Jobs, AsyncJobs
-from .metrics import Metrics, AsyncMetrics
-from .networks import Networks, AsyncNetworks
-from .products import Products, AsyncProducts
-from .registries import Registries, AsyncRegistries
-from .storages import Storages, AsyncStorages
-from .templates import Templates, AsyncTemplates
+from .base import AsyncBaseResource, BaseResource
+from .clusters import AsyncClusters, Clusters
+from .endpoints import AsyncEndpoints, Endpoints
+from .images import AsyncImages, Images
+from .instances import AsyncInstances, Instances
+from .jobs import AsyncJobs, Jobs
+from .metrics import AsyncMetrics, Metrics
+from .networks import AsyncNetworks, Networks
+from .products import AsyncProducts, Products
+from .registries import AsyncRegistries, Registries
+from .storages import AsyncStorages, Storages
+from .templates import AsyncTemplates, Templates
 
 __all__ = [
     "BaseResource",
@@ -19,7 +19,7 @@ __all__ = [
     "Clusters",
     "AsyncClusters",
     "Endpoints",
-    "AsyncEndpoints", 
+    "AsyncEndpoints",
     "Images",
     "AsyncImages",
     "Instances",

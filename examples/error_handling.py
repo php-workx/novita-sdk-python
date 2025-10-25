@@ -15,7 +15,6 @@ from novita import (
     InstanceType,
     NotFoundError,
     NovitaClient,
-    RateLimitError,
 )
 
 
@@ -59,9 +58,7 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
         return None
 
 
-def get_instance_with_retry(
-    client: NovitaClient, instance_id: str, max_retries: int = 3
-) -> None:
+def get_instance_with_retry(client: NovitaClient, instance_id: str, max_retries: int = 3) -> None:
     """Get instance with retry logic for 404 errors.
 
     Args:
@@ -80,7 +77,7 @@ def get_instance_with_retry(
         except NotFoundError:
             if attempt < max_retries - 1:
                 print(f"⚠ Instance not found (attempt {attempt + 1}/{max_retries})")
-                print(f"  Retrying in 2 seconds...")
+                print("  Retrying in 2 seconds...")
                 time.sleep(2)
             else:
                 print(f"✗ Instance {instance_id} not found after {max_retries} attempts")

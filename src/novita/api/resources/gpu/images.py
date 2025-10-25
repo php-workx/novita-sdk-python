@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
-    import httpx
+    pass
 
 
 class Images(BaseResource):

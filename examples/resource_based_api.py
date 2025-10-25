@@ -4,7 +4,7 @@ This example shows how to use API with resource-based organization.
 All GPU functionality is organized into logical resource groups.
 """
 
-from novita import CreateInstanceRequest, InstanceType, NovitaClient
+from novita import NovitaClient
 
 
 def main() -> None:
@@ -15,21 +15,21 @@ def main() -> None:
     try:
         # === Instance Management ===
         print("\n=== GPU Instances ===")
-        
+
         # List all instances
         print("Listing all instances...")
         instances = client.gpu.instances.list()
         print(f"✓ Total instances: {instances.total}")
         for instance in instances.instances[:3]:  # Show first 3
             print(f"  - {instance.name} ({instance.status})")
-        
-        # Get pricing information  
+
+        # Get pricing information
         print("\n=== GPU Products/Pricing ===")
         products = client.gpu.products.list()
         print(f"✓ Total GPU products: {len(products.pricing)}")
         for product in products.pricing[:3]:  # Show first 3
             print(f"  - {product.instance_type}: ${product.price_per_hour}/hour")
-        
+
         # Demonstrate clusters
         print("\n=== Available Clusters ===")
         try:

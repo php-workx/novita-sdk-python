@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import httpx
 
-# Base path for all GPU instance API endpoints  
+# Base path for all GPU instance API endpoints
 BASE_PATH = "/gpu-instance/openapi/v1"
 
 

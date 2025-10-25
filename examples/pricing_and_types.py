@@ -88,7 +88,7 @@ def find_best_value(client: NovitaClient) -> None:
     print(f"   ${premium.price:.2f}/hour\n")
 
 
-def estimate_costs(hours: float, instance_type: str, price_per_hour: float) -> None:
+def estimate_costs(instance_type: str, price_per_hour: float) -> None:
     """Estimate costs for different time periods.
 
     Args:

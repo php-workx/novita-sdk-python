@@ -14,12 +14,12 @@ from novita.models import (
     CreateInstanceRequest,
     CreateInstanceResponse,
     EndpointStatus,
+    GPUProduct,
     InstanceActionResponse,
     InstanceInfo,
-    GPUProduct,
     InstanceType,
-    ListInstancesResponse,
     ListGPUProductsResponse,
+    ListInstancesResponse,
     UpdateInstanceRequest,
 )
 

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from .base import AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
-    import httpx
+    pass
 
 
 class Registries(BaseResource):

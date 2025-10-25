@@ -4,11 +4,11 @@ from novita.models.common import EndpointStatus, InstanceType, ResponseFormat, S
 from novita.models.gpu import (
     CreateInstanceRequest,
     CreateInstanceResponse,
+    GPUProduct,
     InstanceActionResponse,
     InstanceInfo,
-    GPUProduct,
-    ListInstancesResponse,
     ListGPUProductsResponse,
+    ListInstancesResponse,
     UpdateInstanceRequest,
 )
 

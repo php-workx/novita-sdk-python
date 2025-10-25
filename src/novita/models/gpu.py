@@ -72,15 +72,40 @@ class GPUProduct(BaseModel):
     cpu_per_gpu: int = Field(..., alias="cpuPerGpu", description="Number of CPU cores per GPU")
     memory_per_gpu: int = Field(..., alias="memoryPerGpu", description="Memory size per GPU (GB)")
     disk_per_gpu: int = Field(..., alias="diskPerGpu", description="Disk size per GPU (GB)")
-    available_deploy: bool = Field(..., alias="availableDeploy", description="Whether this product can be used to create an instance")
-    min_root_fs: int = Field(..., alias="minRootFS", description="Minimum available root filesystem size (GB)")
-    max_root_fs: int = Field(..., alias="maxRootFS", description="Maximum available root filesystem size (GB)")
-    min_local_storage: int = Field(..., alias="minLocalStorage", description="Minimum available local storage size (GB)")
-    max_local_storage: int = Field(..., alias="maxLocalStorage", description="Maximum available local storage size (GB)")
-    regions: list[str] = Field(..., description="Available clusters. Indicates that this product is only available in the specified clusters. If the list is empty, the product is available in all clusters.")
-    price: int = Field(..., description="Price for creating a pay-as-you-go instance with this product")
-    monthly_price: list[SubscriptionPrice] = Field(..., alias="monthlyPrice", description="Price for creating a subscription (monthly or yearly) instance with this product")
-    billing_methods: list[str] = Field(..., alias="billingMethods", description="The billing methods supported by this product. Valid values: onDemand, monthly, spot")
+    available_deploy: bool = Field(
+        ...,
+        alias="availableDeploy",
+        description="Whether this product can be used to create an instance",
+    )
+    min_root_fs: int = Field(
+        ..., alias="minRootFS", description="Minimum available root filesystem size (GB)"
+    )
+    max_root_fs: int = Field(
+        ..., alias="maxRootFS", description="Maximum available root filesystem size (GB)"
+    )
+    min_local_storage: int = Field(
+        ..., alias="minLocalStorage", description="Minimum available local storage size (GB)"
+    )
+    max_local_storage: int = Field(
+        ..., alias="maxLocalStorage", description="Maximum available local storage size (GB)"
+    )
+    regions: list[str] = Field(
+        ...,
+        description="Available clusters. Indicates that this product is only available in the specified clusters. If the list is empty, the product is available in all clusters.",
+    )
+    price: int = Field(
+        ..., description="Price for creating a pay-as-you-go instance with this product"
+    )
+    monthly_price: list[SubscriptionPrice] = Field(
+        ...,
+        alias="monthlyPrice",
+        description="Price for creating a subscription (monthly or yearly) instance with this product",
+    )
+    billing_methods: list[str] = Field(
+        ...,
+        alias="billingMethods",
+        description="The billing methods supported by this product. Valid values: onDemand, monthly, spot",
+    )
     spot_price: str = Field(..., alias="spotPrice", description="Spot billing instance price")
 
 

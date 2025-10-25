@@ -358,19 +358,17 @@ class InstanceInfo(BaseModel):
         str,
         Field(alias="clusterId", description="Cluster ID where instance is running"),
     ]
-    cluster_name: Annotated[
-        str | None, Field(alias="clusterName", description="Cluster name")
-    ] = None
+    cluster_name: Annotated[str | None, Field(alias="clusterName", description="Cluster name")] = (
+        None
+    )
     status: Status
-    image_url: Annotated[
-        str | None, Field(alias="imageUrl", description="Container image URL")
-    ] = None
+    image_url: Annotated[str | None, Field(alias="imageUrl", description="Container image URL")] = (
+        None
+    )
     image_auth_id: Annotated[
         str | None, Field(alias="imageAuthId", description="Image authentication ID")
     ] = None
-    cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = (
-        None
-    )
+    cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = None
     memory: Annotated[int | None, Field(description="Memory size in GB")] = None
     gpu_num: Annotated[int | None, Field(alias="gpuNum", description="Number of GPUs")] = None
     rootfs_size: Annotated[
@@ -406,9 +404,9 @@ class InstanceInfo(BaseModel):
         Field(alias="spotReclaimTime", description="Spot instance reclaim timestamp"),
     ] = None
     product_id: Annotated[str | None, Field(alias="productId", description="Product ID")] = None
-    product_name: Annotated[
-        str | None, Field(alias="productName", description="Product name")
-    ] = None
+    product_name: Annotated[str | None, Field(alias="productName", description="Product name")] = (
+        None
+    )
     status_error: Annotated[
         StatusError | None,
         Field(alias="statusError", description="Error information if instance failed"),
@@ -578,12 +576,10 @@ class EndpointDetail(BaseModel):
     id: Annotated[str, Field(description="Unique endpoint identifier")]
     name: Annotated[str, Field(description="Endpoint name")]
     status: Annotated[Status1, Field(description="Current endpoint status")]
-    image_url: Annotated[
-        str | None, Field(alias="imageUrl", description="Container image URL")
-    ] = None
-    product_id: Annotated[str | None, Field(alias="productId", description="GPU product ID")] = (
+    image_url: Annotated[str | None, Field(alias="imageUrl", description="Container image URL")] = (
         None
     )
+    product_id: Annotated[str | None, Field(alias="productId", description="GPU product ID")] = None
     gpu_num: Annotated[int | None, Field(alias="gpuNum", description="Number of GPUs")] = None
     created_at: Annotated[
         AwareDatetime | None,
@@ -669,9 +665,9 @@ class ImagePrewarmTask(BaseModel):
     id: Annotated[str, Field(description="Task identifier")]
     image_url: Annotated[str, Field(alias="imageUrl", description="Container image URL")]
     status: Annotated[str, Field(description="Task status")]
-    cluster_id: Annotated[
-        str | None, Field(alias="clusterId", description="Target cluster ID")
-    ] = None
+    cluster_id: Annotated[str | None, Field(alias="clusterId", description="Target cluster ID")] = (
+        None
+    )
     created_at: Annotated[
         AwareDatetime | None,
         Field(alias="createdAt", description="Task creation time"),
@@ -773,9 +769,9 @@ class DeleteNetworkStorageRequest(BaseModel):
 class Template(BaseModel):
     id: Annotated[str, Field(description="Template identifier")]
     name: Annotated[str, Field(description="Template name")]
-    image_url: Annotated[
-        str | None, Field(alias="imageUrl", description="Container image URL")
-    ] = None
+    image_url: Annotated[str | None, Field(alias="imageUrl", description="Container image URL")] = (
+        None
+    )
     description: Annotated[str | None, Field(description="Template description")] = None
     created_at: Annotated[
         AwareDatetime | None, Field(alias="createdAt", description="Creation time")

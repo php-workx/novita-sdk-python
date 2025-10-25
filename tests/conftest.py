@@ -13,11 +13,9 @@ from pytest_httpx import HTTPXMock
 @pytest.fixture(autouse=True)
 def _enforce_httpx_mock(httpx_mock: HTTPXMock) -> None:
     """Automatically enforce that all HTTP requests are mocked.
-    
     This fixture is automatically used for all tests (autouse=True).
     It ensures that pytest-httpx is active, which will raise an exception
     if any test tries to make a real HTTP request without a corresponding mock.
-    
     Args:
         httpx_mock: The httpx mock fixture from pytest-httpx
     """
@@ -30,7 +28,6 @@ def _enforce_httpx_mock(httpx_mock: HTTPXMock) -> None:
 @pytest.fixture
 def api_key() -> str:
     """Provide a test API key for test fixtures.
-    
     Returns:
         A fake API key to use in tests
     """

@@ -41,7 +41,8 @@ def _handle_error_response(response: httpx.Response) -> None:
         try:
             error_data = response.json()
             raise BadRequestError(
-                f"Bad request: {error_data.get('message', 'Invalid parameters')}", details=error_data
+                f"Bad request: {error_data.get('message', 'Invalid parameters')}",
+                details=error_data,
             )
         except ValueError:
             raise BadRequestError("Bad request. Check your request parameters.") from None
@@ -51,11 +52,15 @@ def _handle_error_response(response: httpx.Response) -> None:
         raise RateLimitError("Rate limit exceeded. Please retry later.")
     elif response.status_code >= 500:
         raise APIError(
-            f"Server error ({response.status_code})", status_code=response.status_code, response_body=response.text
+            f"Server error ({response.status_code})",
+            status_code=response.status_code,
+            response_body=response.text,
         )
     else:
         raise APIError(
-            f"API error ({response.status_code})", status_code=response.status_code, response_body=response.text
+            f"API error ({response.status_code})",
+            status_code=response.status_code,
+            response_body=response.text,
         )
 
 

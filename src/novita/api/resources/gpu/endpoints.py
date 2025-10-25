@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
-    import httpx
+    pass
 
 
 class Endpoints(BaseResource):
@@ -132,5 +132,7 @@ class AsyncEndpoints(AsyncBaseResource):
             NotFoundError: If endpoint doesn't exist
             APIError: If the API returns an error
         """
-        response = await self._client.get(f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id})
+        response = await self._client.get(
+            f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id}
+        )
         return response.json()

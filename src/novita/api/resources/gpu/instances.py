@@ -14,7 +14,7 @@ from novita.models import (
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
-    import httpx
+    pass
 
 
 class Instances(BaseResource):
@@ -66,7 +66,9 @@ class Instances(BaseResource):
             NotFoundError: If instance doesn't exist
             APIError: If the API returns an error
         """
-        response = self._client.get(f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id})
+        response = self._client.get(
+            f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id}
+        )
         return InstanceInfo.model_validate(response.json())
 
     def edit(self, instance_id: str, request: UpdateInstanceRequest) -> InstanceInfo:
@@ -182,8 +184,8 @@ class Instances(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/upgrade", 
-            json={"instance_id": instance_id, "instance_type": new_instance_type}
+            f"{BASE_PATH}/gpu/instance/upgrade",
+            json={"instance_id": instance_id, "instance_type": new_instance_type},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -204,8 +206,8 @@ class Instances(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/migrate", 
-            json={"instance_id": instance_id, "target_region": target_region}
+            f"{BASE_PATH}/gpu/instance/migrate",
+            json={"instance_id": instance_id, "target_region": target_region},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -226,8 +228,8 @@ class Instances(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/renewInstance", 
-            json={"instance_id": instance_id, "duration_hours": duration_hours}
+            f"{BASE_PATH}/gpu/instance/renewInstance",
+            json={"instance_id": instance_id, "duration_hours": duration_hours},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -247,8 +249,7 @@ class Instances(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", 
-            json={"instance_id": instance_id}
+            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", json={"instance_id": instance_id}
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -302,7 +303,9 @@ class AsyncInstances(AsyncBaseResource):
             NotFoundError: If instance doesn't exist
             APIError: If the API returns an error
         """
-        response = await self._client.get(f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id})
+        response = await self._client.get(
+            f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id}
+        )
         return InstanceInfo.model_validate(response.json())
 
     async def edit(self, instance_id: str, request: UpdateInstanceRequest) -> InstanceInfo:
@@ -418,8 +421,8 @@ class AsyncInstances(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/upgrade", 
-            json={"instance_id": instance_id, "instance_type": new_instance_type}
+            f"{BASE_PATH}/gpu/instance/upgrade",
+            json={"instance_id": instance_id, "instance_type": new_instance_type},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -440,8 +443,8 @@ class AsyncInstances(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/migrate", 
-            json={"instance_id": instance_id, "target_region": target_region}
+            f"{BASE_PATH}/gpu/instance/migrate",
+            json={"instance_id": instance_id, "target_region": target_region},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -462,8 +465,8 @@ class AsyncInstances(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/renewInstance", 
-            json={"instance_id": instance_id, "duration_hours": duration_hours}
+            f"{BASE_PATH}/gpu/instance/renewInstance",
+            json={"instance_id": instance_id, "duration_hours": duration_hours},
         )
         return InstanceActionResponse.model_validate(response.json())
 
@@ -483,7 +486,6 @@ class AsyncInstances(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", 
-            json={"instance_id": instance_id}
+            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", json={"instance_id": instance_id}
         )
         return InstanceActionResponse.model_validate(response.json())

@@ -105,11 +105,10 @@ def nested_context_managers() -> None:
 
     # You can create multiple clients if needed
     # (though usually one is sufficient)
-    with NovitaClient(api_key="key1") as client1:
-        with NovitaClient(api_key="key2") as client2:
-            print("✓ Both clients initialized")
-            # Use both clients...
-            print("✓ Both clients will be cleaned up in reverse order")
+    with NovitaClient(api_key="key1"), NovitaClient(api_key="key2"):
+        print("✓ Both clients initialized")
+        # Use both clients...
+        print("✓ Both clients will be cleaned up in reverse order")
 
 
 async def main_async() -> None:
