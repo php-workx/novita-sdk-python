@@ -19,10 +19,17 @@ def main() -> None:
     try:
         # List all instances
         print("\nListing all instances...")
-        instances = client.gpu.list_instances()
+        instances = client.gpu.instances.list()
         print(f"✓ Total instances: {instances.total}")
         for instance in instances.instances:
             print(f"  - {instance.name} ({instance.status})")
+
+        # Get GPU product pricing
+        print(f"\nGetting all GPU products...")
+        list = client.gpu.products.list()
+        print(f"✓ Total GPU products: {len(list.data)}")
+        for product in list.data:
+            print(f"  - {product.name} (${product.price/100000}/hour)")
 
     finally:
         # Always close the client

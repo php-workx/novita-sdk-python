@@ -16,20 +16,20 @@ def display_pricing(client: NovitaClient) -> None:
     print("GPU Instance Pricing")
     print("=" * 60)
 
-    pricing = client.gpu.get_pricing()
+    pricing = client.gpu.products.list()
 
-    print(f"\nTotal GPU types available: {len(pricing.pricing)}\n")
+    print(f"\nTotal GPU types available: {len(pricing.data)}\n")
 
     # Sort by price
-    sorted_pricing = sorted(pricing.pricing, key=lambda x: x.price_per_hour)
+    sorted_pricing = sorted(pricing.data, key=lambda x: x.price)
 
     print(f"{'Instance Type':<20} {'Price/Hour':<15} {'Available':<10}")
     print("-" * 60)
 
     for item in sorted_pricing:
-        price_str = f"${item.price_per_hour:.2f}"
-        available_str = "✓ Yes" if item.available else "✗ No"
-        print(f"{item.instance_type:<20} {price_str:<15} {available_str:<10}")
+        price_str = f"${item.price:.2f}"
+        available_str = "✓ Yes" if item.available_deploy else "✗ No"
+        print(f"{item.id:<20} {price_str:<15} {available_str:<10}")
 
 
 def display_instance_types() -> None:
@@ -58,11 +58,11 @@ def find_best_value(client: NovitaClient) -> None:
     print("Best Value Analysis")
     print("=" * 60 + "\n")
 
-    pricing = client.gpu.get_pricing()
+    pricing = client.gpu.products.list()
 
     # Filter available GPUs and sort by price
-    available = [p for p in pricing.pricing if p.available]
-    available.sort(key=lambda x: x.price_per_hour)
+    available = [p for p in pricing.data if p.available_deploy]
+    available.sort(key=lambda x: x.price)
 
     if not available:
         print("⚠ No GPU instances currently available")
@@ -72,20 +72,20 @@ def find_best_value(client: NovitaClient) -> None:
 
     # Cheapest option
     cheapest = available[0]
-    print(f"💰 Most Economical: {cheapest.instance_type}")
-    print(f"   ${cheapest.price_per_hour:.2f}/hour\n")
+    print(f"💰 Most Economical: {cheapest.id}")
+    print(f"   ${cheapest.price:.2f}/hour\n")
 
     # Mid-range option
     if len(available) > 2:
         mid_idx = len(available) // 2
         mid_range = available[mid_idx]
-        print(f"⚖️  Balanced Option: {mid_range.instance_type}")
-        print(f"   ${mid_range.price_per_hour:.2f}/hour\n")
+        print(f"⚖️  Balanced Option: {mid_range.id}")
+        print(f"   ${mid_range.price:.2f}/hour\n")
 
     # Premium option
     premium = available[-1]
-    print(f"🚀 Maximum Performance: {premium.instance_type}")
-    print(f"   ${premium.price_per_hour:.2f}/hour\n")
+    print(f"🚀 Maximum Performance: {premium.id}")
+    print(f"   ${premium.price:.2f}/hour\n")
 
 
 def estimate_costs(hours: float, instance_type: str, price_per_hour: float) -> None:

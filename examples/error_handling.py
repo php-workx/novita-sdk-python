@@ -35,7 +35,7 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
             instance_type=InstanceType.A100_80GB,
             disk_size=50,
         )
-        response = client.gpu.create_instance(request)
+        response = client.gpu.instances.create(request)
         print(f"✓ Successfully created instance: {response.instance_id}")
         return response.instance_id
 
@@ -49,11 +49,6 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
         if e.details:
             print(f"  Details: {e.details}")
         print("  → Verify your request parameters")
-        return None
-
-    except RateLimitError as e:
-        print(f"✗ Rate limit exceeded: {e.message}")
-        print("  → Wait before retrying or contact support to increase limits")
         return None
 
     except APIError as e:
@@ -78,7 +73,7 @@ def get_instance_with_retry(
 
     for attempt in range(max_retries):
         try:
-            instance = client.gpu.get_instance(instance_id)
+            instance = client.gpu.instances.get(instance_id)
             print(f"✓ Found instance: {instance.name} ({instance.status})")
             return
 
@@ -117,7 +112,7 @@ def main() -> None:
         # Example 3: Handle NotFoundError for non-existent instance
         print("\n3. Attempting to get non-existent instance:")
         try:
-            client.gpu.get_instance("nonexistent-id")
+            client.gpu.instances.get("nonexistent-id")
         except NotFoundError as e:
             print(f"✗ Expected error: {e.message}")
             print("  → This is expected behavior for invalid IDs")

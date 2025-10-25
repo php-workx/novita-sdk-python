@@ -20,7 +20,7 @@ def sync_context_manager_basic() -> None:
 
     # Client automatically closed when exiting the context
     with NovitaClient() as client:
-        instances = client.gpu.list_instances()
+        instances = client.gpu.instances.list()
         print(f"✓ Found {instances.total} instances")
         print("✓ Client will be automatically closed")
 
@@ -40,7 +40,7 @@ def sync_context_manager_with_error() -> None:
                 name="test-instance",
                 instance_type=InstanceType.A100_80GB,
             )
-            response = client.gpu.create_instance(request)
+            response = client.gpu.instances.create(request)
             print(f"✓ Created instance: {response.instance_id}")
 
     except Exception as e:
@@ -56,7 +56,7 @@ async def async_context_manager_basic() -> None:
 
     # Async client automatically closed when exiting
     async with AsyncNovitaClient() as client:
-        instances = await client.gpu.list_instances()
+        instances = await client.gpu.instances.list()
         print(f"✓ Found {instances.total} instances")
         print("✓ Async client will be automatically closed")
 
@@ -69,13 +69,13 @@ async def async_context_manager_concurrent() -> None:
 
     async with AsyncNovitaClient() as client:
         # Run multiple operations concurrently
-        instances_task = client.gpu.list_instances()
-        pricing_task = client.gpu.get_pricing()
+        instances_task = client.gpu.instances.list()
+        pricing_task = client.gpu.products.list()
 
-        instances, pricing = await asyncio.gather(instances_task, pricing_task)
+        instances, products = await asyncio.gather(instances_task, pricing_task)
 
-        print(f"✓ Instances: {instances.total}")
-        print(f"✓ GPU types: {len(pricing.pricing)}")
+        print(f"✓ Total instances: {instances.total}")
+        print(f"✓ Available GPU types: {len(products.data)}")
         print("✓ All operations completed, client auto-closed")
 
 
@@ -87,7 +87,7 @@ def manual_cleanup_pattern() -> None:
 
     client = NovitaClient()
     try:
-        instances = client.gpu.list_instances()
+        instances = client.gpu.instances.list()
         print(f"✓ Found {instances.total} instances")
     finally:
         # Must remember to close manually
