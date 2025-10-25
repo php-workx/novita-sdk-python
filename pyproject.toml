@@ -39,6 +39,7 @@ dev = [
     "pytest-cov>=4.1.0",
     # Code generation tools (not needed at runtime)
     "datamodel-code-generator>=0.25.0",
+    "openapi-spec-validator>=0.7.0",
 ]
 
 [project.urls]

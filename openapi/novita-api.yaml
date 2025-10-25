@@ -3,99 +3,98 @@ info:
   title: Novita GPU API
   version: 1.0.0
   description: Complete OpenAPI spec for Novita GPU Instance API
-
 servers:
-  - url: https://api.novita.ai/gpu-instance/openapi/v1
-    description: Production server
-
+- url: https://api.novita.ai/gpu-instance/openapi/v1
+  description: Production server
 security:
-  - BearerAuth: []
-
+- BearerAuth: []
 paths:
-  # Cluster
   /clusters:
     get:
       summary: List clusters/regions
       operationId: list_clusters
       tags:
-        - Cluster
+      - Cluster
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Cluster'
+                type: object
+                required:
+                - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Cluster'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
-  # Instance (Dedicated GPUs)
   /gpu/instances:
     get:
       summary: List all GPU instances
       operationId: list_instances
       tags:
-        - Instances
+      - Instances
       parameters:
-        - name: pageSize
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-          description: Items per page
-        - name: pageNum
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-          description: Page number
-        - name: name
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 255
-          description: Fuzzy search by instance name
-        - name: productName
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 255
-          description: Fuzzy search by product name
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 63
-            enum:
-              - toCreate
-              - creating
-              - pulling
-              - running
-              - toStart
-              - starting
-              - toStop
-              - stopping
-              - exited
-              - toRestart
-              - restarting
-              - toRemove
-              - removing
-              - removed
-              - toReset
-              - resetting
-              - migrating
-              - freezing
-          description: Filter by instance status
+      - name: pageSize
+        in: query
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+        description: Items per page
+      - name: pageNum
+        in: query
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+        description: Page number
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Fuzzy search by instance name
+      - name: productName
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Fuzzy search by product name
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 63
+          enum:
+          - toCreate
+          - creating
+          - pulling
+          - running
+          - toStart
+          - starting
+          - toStop
+          - stopping
+          - exited
+          - toRestart
+          - restarting
+          - toRemove
+          - removing
+          - removed
+          - toReset
+          - resetting
+          - migrating
+          - freezing
+        description: Filter by instance status
       responses:
         '200':
           description: Successful response
@@ -105,19 +104,18 @@ paths:
                 $ref: '#/components/schemas/ListInstancesResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /gpu/instance:
     get:
       summary: Get GPU instance details
       operationId: get_instance
       tags:
-        - Instances
+      - Instances
       parameters:
-        - name: instance_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: instance_id
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Successful response
@@ -129,13 +127,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/create:
     post:
       summary: Create a new GPU instance
       operationId: create_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -153,26 +150,25 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /gpu/instance/edit:
     post:
       summary: Edit GPU instance
       operationId: edit_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
           application/json:
             schema:
               allOf:
-                - type: object
-                  required:
-                    - instance_id
-                  properties:
-                    instance_id:
-                      type: string
-                - $ref: '#/components/schemas/UpdateInstanceRequest'
+              - type: object
+                required:
+                - instance_id
+                properties:
+                  instance_id:
+                    type: string
+              - $ref: '#/components/schemas/UpdateInstanceRequest'
       responses:
         '200':
           description: Instance updated successfully
@@ -186,13 +182,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/start:
     post:
       summary: Start GPU instance
       operationId: start_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -200,7 +195,7 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
+              - instance_id
               properties:
                 instance_id:
                   type: string
@@ -215,13 +210,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/stop:
     post:
       summary: Stop GPU instance
       operationId: stop_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -229,7 +223,7 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
+              - instance_id
               properties:
                 instance_id:
                   type: string
@@ -244,13 +238,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/delete:
     post:
       summary: Delete GPU instance
       operationId: delete_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -258,7 +251,7 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
+              - instance_id
               properties:
                 instance_id:
                   type: string
@@ -273,13 +266,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/restart:
     post:
       summary: Restart GPU instance
       operationId: restart_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -287,7 +279,7 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
+              - instance_id
               properties:
                 instance_id:
                   type: string
@@ -302,13 +294,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/upgrade:
     post:
       summary: Upgrade GPU instance
       operationId: upgrade_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -328,13 +319,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/migrate:
     post:
       summary: Migrate GPU instance
       operationId: migrate_instance
       tags:
-        - Instances
+      - Instances
       requestBody:
         required: true
         content:
@@ -342,8 +332,8 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
-                - target_region
+              - instance_id
+              - target_region
               properties:
                 instance_id:
                   type: string
@@ -362,7 +352,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/renewInstance:
     post:
       summary: Renew subscription instance
@@ -381,8 +370,10 @@ paths:
               properties:
                 instance_id:
                   type: string
+                  description: The ID of the subscription instance to be renewed
                 duration_hours:
                   type: integer
+                  description: Renewal duration in hours
       responses:
         '200':
           description: Instance renewal initiated
@@ -396,7 +387,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /gpu/instance/transToMonthlyInstance:
     post:
       summary: Convert pay-as-you-go instance to subscription
@@ -414,6 +404,7 @@ paths:
               properties:
                 instance_id:
                   type: string
+                  description: The pay-as-you-go instance identifier to convert to subscription format
       responses:
         '200':
           description: Instance conversion initiated
@@ -427,8 +418,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Jobs
   /jobs:
     get:
       summary: List jobs
@@ -441,16 +430,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListJobsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /job/break:
     post:
       summary: Break (cancel) job
       operationId: break_job
       tags:
-        - Jobs
+      - Jobs
       requestBody:
         required: true
         content:
@@ -458,7 +446,7 @@ paths:
             schema:
               type: object
               required:
-                - job_id
+              - job_id
               properties:
                 job_id:
                   type: string
@@ -473,7 +461,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /job/save/image:
     post:
       summary: Save instance image
@@ -485,26 +472,24 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/SaveImageRequest'
       responses:
         '200':
           description: Image save initiated
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/InstanceActionResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
-  # Serverless Endpoints
   /endpoint/limit:
     get:
       summary: Get endpoint parameter limit ranges
       operationId: get_endpoint_limits
       tags:
-        - Endpoints
+      - Endpoints
       responses:
         '200':
           description: Successful response
@@ -512,9 +497,88 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - minRootfsSize
+                - maxRootfsSize
+                - freeRootfsSize
+                - minLocalVolumeSize
+                - maxLocalVolumeSize
+                - freeLocalVolumeSize
+                - minWorkerNum
+                - maxWorkerNum
+                - minFreeTimeout
+                - maxFreeTimeout
+                - minConcurrencyNum
+                - maxConcurrencyNum
+                - minQueueWaitTime
+                - maxQueueWaitTime
+                - minRequestNum
+                - maxRequestNum
+                - minGPUNum
+                - maxGPUNum
+                - cudaVersionList
+                properties:
+                  minRootfsSize:
+                    type: integer
+                    description: Minimum root filesystem size in GB
+                  maxRootfsSize:
+                    type: integer
+                    description: Maximum root filesystem size in GB
+                  freeRootfsSize:
+                    type: integer
+                    description: Free root filesystem size in GB
+                  minLocalVolumeSize:
+                    type: integer
+                    description: Minimum local volume size in GB
+                  maxLocalVolumeSize:
+                    type: integer
+                    description: Maximum local volume size in GB
+                  freeLocalVolumeSize:
+                    type: integer
+                    description: Free local volume size in GB
+                  minWorkerNum:
+                    type: integer
+                    description: Minimum number of worker nodes
+                  maxWorkerNum:
+                    type: integer
+                    description: Maximum number of worker nodes
+                  minFreeTimeout:
+                    type: integer
+                    description: Minimum free timeout in seconds
+                  maxFreeTimeout:
+                    type: integer
+                    description: Maximum free timeout in seconds
+                  minConcurrencyNum:
+                    type: integer
+                    description: Minimum concurrency number
+                  maxConcurrencyNum:
+                    type: integer
+                    description: Maximum concurrency number
+                  minQueueWaitTime:
+                    type: integer
+                    description: Minimum queue wait time in seconds
+                  maxQueueWaitTime:
+                    type: integer
+                    description: Maximum queue wait time in seconds
+                  minRequestNum:
+                    type: integer
+                    description: Minimum request number
+                  maxRequestNum:
+                    type: integer
+                    description: Maximum request number
+                  minGPUNum:
+                    type: integer
+                    description: Minimum GPU number
+                  maxGPUNum:
+                    type: integer
+                    description: Maximum GPU number
+                  cudaVersionList:
+                    type: array
+                    items:
+                      type: string
+                    description: List of supported CUDA versions
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /endpoint/create:
     post:
       summary: Create serverless endpoint
@@ -526,59 +590,70 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateEndpointRequest'
       responses:
         '200':
           description: Endpoint created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/EndpointDetail'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /endpoints:
     get:
       summary: List serverless endpoints
       operationId: list_endpoints
       tags:
-        - Endpoints
+      - Endpoints
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListEndpointsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
+      parameters:
+      - name: pageSize
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Maximum number of items returned per page
+      - name: pageNum
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Current page number
   /endpoint:
     get:
       summary: Get single serverless endpoint
       operationId: get_endpoint
       tags:
-        - Endpoints
+      - Endpoints
       parameters:
-        - name: endpoint_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Identifier for the endpoint being retrieved
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/EndpointDetail'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /endpoint/update:
     post:
       summary: Update serverless endpoint
@@ -590,21 +665,28 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              allOf:
+                - type: object
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                      description: Endpoint ID to update
+                - $ref: '#/components/schemas/UpdateEndpointRequest'
       responses:
         '200':
           description: Endpoint updated successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/EndpointDetail'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /endpoint/delete:
     post:
       summary: Delete serverless endpoint
@@ -618,10 +700,11 @@ paths:
             schema:
               type: object
               required:
-                - endpoint_id
+                - id
               properties:
-                endpoint_id:
+                id:
                   type: string
+                  description: The ID of the endpoint to delete
       responses:
         '200':
           description: Endpoint deleted successfully
@@ -633,14 +716,12 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Image
   /image/prewarm/quota:
     get:
       summary: Get image prewarm quota
       operationId: get_image_prewarm_quota
       tags:
-        - Image
+      - Image
       responses:
         '200':
           description: Successful response
@@ -650,7 +731,6 @@ paths:
                 type: object
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /image/prewarm:
     post:
       summary: Create image prewarm task
@@ -662,14 +742,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateImagePrewarmRequest'
       responses:
         '200':
           description: Prewarm task created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ImagePrewarmTask'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -685,10 +765,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListImagePrewarmTasksResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /image/prewarm/edit:
     post:
       summary: Update image prewarm task
@@ -700,27 +779,26 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/UpdateImagePrewarmRequest'
       responses:
         '200':
           description: Prewarm task updated successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ImagePrewarmTask'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /image/prewarm/delete:
     post:
       summary: Delete image prewarm tasks
       operationId: delete_image_prewarm
       tags:
-        - Image
+      - Image
       requestBody:
         required: true
         content:
@@ -738,8 +816,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Image Registry
   /repository/auths:
     get:
       summary: List container registry auths
@@ -752,10 +828,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListRepositoryAuthsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /repository/auth/save:
     post:
       summary: Create container registry auth
@@ -767,19 +842,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateRepositoryAuthRequest'
       responses:
         '200':
           description: Registry auth created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/RepositoryAuth'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /repository/auth/delete:
     post:
       summary: Delete container registry auth
@@ -791,20 +865,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/DeleteRepositoryAuthRequest'
       responses:
         '200':
           description: Registry auth deleted successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/InstanceActionResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Network
   /networks:
     get:
       summary: List networks
@@ -817,22 +889,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListNetworksResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /network:
     get:
       summary: Get network details
       operationId: get_network
       tags:
-        - Network
+      - Network
       parameters:
-        - name: network_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: network_id
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Successful response
@@ -844,7 +915,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /network/create:
     post:
       summary: Create network storage
@@ -856,19 +926,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateNetworkRequest'
       responses:
         '200':
           description: Network created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/Network'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /network/update:
     post:
       summary: Update network storage
@@ -880,21 +949,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/UpdateNetworkRequest'
       responses:
         '200':
           description: Network updated successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/Network'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /network/delete:
     post:
       summary: Delete network storage
@@ -906,20 +974,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/DeleteNetworkRequest'
       responses:
         '200':
           description: Network deleted successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/InstanceActionResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Network Storage
   /networkstorages/list:
     get:
       summary: List network storage volumes
@@ -932,10 +998,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListNetworkStoragesResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /networkstorage/create:
     post:
       summary: Create network storage
@@ -947,19 +1012,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateNetworkStorageRequest'
       responses:
         '200':
           description: Network storage created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/NetworkStorage'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /networkstorage/update:
     post:
       summary: Update network storage
@@ -971,21 +1035,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/UpdateNetworkStorageRequest'
       responses:
         '200':
           description: Network storage updated successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/NetworkStorage'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /networkstorage/delete:
     post:
       summary: Delete network storage
@@ -997,20 +1060,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/DeleteNetworkStorageRequest'
       responses:
         '200':
           description: Network storage deleted successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/InstanceActionResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Template
   /templates:
     get:
       summary: List templates
@@ -1023,22 +1084,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/ListTemplatesResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /template:
     get:
       summary: Get template details
       operationId: get_template
       tags:
-        - Template
+      - Template
       parameters:
-        - name: template_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: template_id
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Successful response
@@ -1050,7 +1110,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
   /template/create:
     post:
       summary: Create template
@@ -1062,19 +1121,18 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateTemplateRequest'
       responses:
         '200':
           description: Template created successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/Template'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /template/delete:
     post:
       summary: Delete template
@@ -1086,32 +1144,30 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/DeleteTemplateRequest'
       responses:
         '200':
           description: Template deleted successfully
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/InstanceActionResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Metrics
   /metrics/gpu/instance:
     get:
       summary: Fetch instance monitor metrics
       operationId: get_instance_metrics
       tags:
-        - Metrics
+      - Metrics
       parameters:
-        - name: instance_id
-          in: query
-          required: true
-          schema:
-            type: string
+      - name: instance_id
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Successful response
@@ -1123,68 +1179,66 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
-
-  # Products
   /products:
     get:
       summary: List GPU instance products
       operationId: list_gpu_products
       tags:
-        - Products
+      - Products
       parameters:
-        - name: clusterId
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 255
-          description: Filter by cluster
-        - name: gpuNum
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 8
-          description: Filter by GPU count
-        - name: productName
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Fuzzy matching on product names
-        - name: minCpuPerGpu
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-          description: CPU core threshold
-        - name: minMemoryPerGpu
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-          description: Memory threshold in GB
-        - name: minRootFSSize
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-          description: Root filesystem threshold in GB
-        - name: billingMethod
-          in: query
-          required: false
-          schema:
-            type: string
-            enum:
-              - onDemand
-              - monthly
-              - spot
-          description: Filter by billing method
+      - name: clusterId
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Filter by cluster
+      - name: gpuNum
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 8
+        description: Filter by GPU count
+      - name: productName
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Fuzzy matching on product names
+      - name: minCpuPerGpu
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: CPU core threshold
+      - name: minMemoryPerGpu
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Memory threshold in GB
+      - name: minRootFSSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Root filesystem threshold in GB
+      - name: billingMethod
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - onDemand
+          - monthly
+          - spot
+        description: Filter by billing method
       responses:
         '200':
           description: Successful response
@@ -1194,30 +1248,29 @@ paths:
                 $ref: '#/components/schemas/ListGPUProductsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /cpu/products:
     get:
       summary: List CPU instance products
       operationId: list_cpu_products
       tags:
-        - Products
+      - Products
       parameters:
-        - name: clusterId
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 255
-          description: Filter by cluster identifier
-        - name: productName
-          in: query
-          required: false
-          schema:
-            type: string
-            minLength: 0
-            maxLength: 255
-          description: Fuzzy match filtering by product name
+      - name: clusterId
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Filter by cluster identifier
+      - name: productName
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Fuzzy match filtering by product name
       responses:
         '200':
           description: Successful response
@@ -1227,23 +1280,21 @@ paths:
                 $ref: '#/components/schemas/ListCPUProductsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
 components:
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
     Cluster:
       type: object
       required:
-        - id
-        - name
-        - availableGpuType
-        - supportNetworkStorage
-        - supportInstanceNetwork
+      - id
+      - name
+      - availableGpuType
+      - supportNetworkStorage
+      - supportInstanceNetwork
       properties:
         id:
           type: string
@@ -1262,15 +1313,14 @@ components:
         supportInstanceNetwork:
           type: boolean
           description: Whether VPC network creation is supported
-
     CreateInstanceRequest:
       type: object
       required:
-        - productId
-        - gpuNum
-        - rootfsSize
-        - imageUrl
-        - kind
+      - productId
+      - gpuNum
+      - rootfsSize
+      - imageUrl
+      - kind
       properties:
         name:
           type: string
@@ -1301,8 +1351,8 @@ components:
           type: string
           description: Instance type
           enum:
-            - gpu
-            - cpu
+          - gpu
+          - cpu
         imageAuth:
           type: string
           description: Registry credentials
@@ -1322,8 +1372,8 @@ components:
           items:
             type: object
             required:
-              - key
-              - value
+            - key
+            - value
             properties:
               key:
                 type: string
@@ -1362,11 +1412,10 @@ components:
           type: string
           description: Billing mode
           enum:
-            - onDemand
-            - monthly
-            - spot
+          - onDemand
+          - monthly
+          - spot
           nullable: true
-
     UpdateInstanceRequest:
       type: object
       properties:
@@ -1391,23 +1440,22 @@ components:
                 type: string
                 description: Protocol type
                 enum:
-                  - tcp
-                  - http
+                - tcp
+                - http
         expandRootDisk:
           type: integer
           description: Disk expansion in GB (0 means no expansion)
           nullable: true
           minimum: 0
-
     UpgradeInstanceRequest:
       type: object
       required:
-        - instanceId
-        - imageUrl
-        - envs
-        - command
-        - save
-        - networkVolume
+      - instanceId
+      - imageUrl
+      - envs
+      - command
+      - save
+      - networkVolume
       properties:
         instanceId:
           type: string
@@ -1428,8 +1476,8 @@ components:
           items:
             type: object
             required:
-              - key
-              - value
+            - key
+            - value
             properties:
               key:
                 type: string
@@ -1447,24 +1495,25 @@ components:
           type: object
           description: Cloud storage configuration
           required:
-            - volumeMounts
+          - volumeMounts
           properties:
             volumeMounts:
               type: array
-              description: Cloud storage mounts (max 30, use empty array to remove all)
+              description: Cloud storage mounts (max 30, use empty array to remove
+                all)
               maxItems: 30
               items:
                 type: object
                 required:
-                  - type
-                  - id
-                  - mountPath
+                - type
+                - id
+                - mountPath
                 properties:
                   type:
                     type: string
                     description: Must be "network"
                     enum:
-                      - network
+                    - network
                   id:
                     type: string
                     description: Storage identifier
@@ -1474,12 +1523,11 @@ components:
                     minLength: 1
                     maxLength: 4095
                     default: /network
-
     CreateInstanceResponse:
       type: object
       required:
-        - instance_id
-        - status
+      - instance_id
+      - status
       properties:
         instance_id:
           type: string
@@ -1489,14 +1537,13 @@ components:
           type: string
           description: Initial status of the instance
           example: PENDING
-
     InstanceInfo:
       type: object
       required:
-        - id
-        - name
-        - status
-        - clusterId
+      - id
+      - name
+      - status
+      - clusterId
       properties:
         id:
           type: string
@@ -1514,24 +1561,24 @@ components:
         status:
           type: string
           enum:
-            - toCreate
-            - creating
-            - pulling
-            - running
-            - toStart
-            - starting
-            - toStop
-            - stopping
-            - exited
-            - toRestart
-            - restarting
-            - toRemove
-            - removing
-            - removed
-            - toReset
-            - resetting
-            - migrating
-            - freezing
+          - toCreate
+          - creating
+          - pulling
+          - running
+          - toStart
+          - starting
+          - toStop
+          - stopping
+          - exited
+          - toRestart
+          - restarting
+          - toRemove
+          - removing
+          - removed
+          - toReset
+          - resetting
+          - migrating
+          - freezing
         imageUrl:
           type: string
           description: Container image URL
@@ -1581,8 +1628,8 @@ components:
               type:
                 type: string
                 enum:
-                  - network
-                  - local
+                - network
+                - local
               id:
                 type: string
               size:
@@ -1603,9 +1650,9 @@ components:
           type: string
           description: Billing mode
           enum:
-            - onDemand
-            - monthly
-            - spot
+          - onDemand
+          - monthly
+          - spot
           nullable: true
         endTime:
           type: integer
@@ -1615,10 +1662,10 @@ components:
           type: string
           description: Spot instance status
           enum:
-            - running
-            - notified
-            - reclaiming
-            - terminated
+          - running
+          - notified
+          - reclaiming
+          - terminated
           nullable: true
         spotReclaimTime:
           type: integer
@@ -1714,12 +1761,11 @@ components:
           properties:
             maxRootfsSize:
               type: integer
-
     InstanceActionResponse:
       type: object
       required:
-        - instance_id
-        - success
+      - instance_id
+      - success
       properties:
         instance_id:
           type: string
@@ -1731,12 +1777,11 @@ components:
           type: string
           description: Optional message
           nullable: true
-
     ListInstancesResponse:
       type: object
       required:
-        - instances
-        - total
+      - instances
+      - total
       properties:
         instances:
           type: array
@@ -1745,12 +1790,11 @@ components:
         total:
           type: integer
           description: Total number of instances
-
     SubscriptionPrice:
       type: object
       required:
-        - price
-        - month
+      - price
+      - month
       properties:
         price:
           type: integer
@@ -1758,25 +1802,24 @@ components:
         month:
           type: integer
           description: Subscription duration, in months
-
     GPUProduct:
       type: object
       required:
-        - id
-        - name
-        - cpuPerGpu
-        - memoryPerGpu
-        - diskPerGpu
-        - availableDeploy
-        - minRootFS
-        - maxRootFS
-        - minLocalStorage
-        - maxLocalStorage
-        - regions
-        - price
-        - monthlyPrice
-        - billingMethods
-        - spotPrice
+      - id
+      - name
+      - cpuPerGpu
+      - memoryPerGpu
+      - diskPerGpu
+      - availableDeploy
+      - minRootFS
+      - maxRootFS
+      - minLocalStorage
+      - maxLocalStorage
+      - regions
+      - price
+      - monthlyPrice
+      - billingMethods
+      - spotPrice
       properties:
         id:
           type: string
@@ -1833,34 +1876,32 @@ components:
           type: string
           description: Stock status
           enum:
-            - none
-            - low
-            - normal
-            - high
+          - none
+          - low
+          - normal
+          - high
           nullable: true
-
     ListGPUProductsResponse:
       type: object
       required:
-        - data
+      - data
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/GPUProduct'
           description: List of GPU product information
-
     CPUProduct:
       type: object
       required:
-        - id
-        - name
-        - cpuNum
-        - memorySize
-        - rootfsSize
-        - localVolumeSize
-        - availableDeploy
-        - price
+      - id
+      - name
+      - cpuNum
+      - memorySize
+      - rootfsSize
+      - localVolumeSize
+      - availableDeploy
+      - price
       properties:
         id:
           type: string
@@ -1886,29 +1927,580 @@ components:
         price:
           type: integer
           description: Product unit cost
-
     ListCPUProductsResponse:
       type: object
       required:
-        - data
+      - data
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/CPUProduct'
           description: List of CPU product information
-
     ErrorResponse:
       type: object
       required:
-        - message
+      - message
       properties:
         message:
           type: string
         details:
           type: object
           additionalProperties: true
-
+    
+    # Serverless Endpoint Schemas
+    ListEndpointsResponse:
+      type: object
+      required:
+      - data
+      - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EndpointDetail'
+          description: List of serverless endpoints
+        total:
+          type: integer
+          description: Total number of endpoints
+    
+    EndpointDetail:
+      type: object
+      required:
+      - id
+      - name
+      - status
+      properties:
+        id:
+          type: string
+          description: Unique endpoint identifier
+        name:
+          type: string
+          description: Endpoint name
+        status:
+          type: string
+          description: Current endpoint status
+          enum:
+          - pending
+          - running
+          - stopped
+          - error
+        imageUrl:
+          type: string
+          description: Container image URL
+          nullable: true
+        productId:
+          type: string
+          description: GPU product ID
+          nullable: true
+        gpuNum:
+          type: integer
+          description: Number of GPUs
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          nullable: true
+    
+    CreateEndpointRequest:
+      type: object
+      required:
+      - name
+      - imageUrl
+      - productId
+      - gpuNum
+      properties:
+        name:
+          type: string
+          description: Endpoint name
+          minLength: 1
+          maxLength: 255
+        imageUrl:
+          type: string
+          description: Container image URL
+          minLength: 1
+          maxLength: 500
+        productId:
+          type: string
+          description: GPU product identifier
+        gpuNum:
+          type: integer
+          description: Number of GPUs
+          minimum: 1
+          maximum: 8
+        imageAuthId:
+          type: string
+          description: Image registry authentication ID
+          nullable: true
+        envs:
+          type: array
+          description: Environment variables
+          maxItems: 100
+          items:
+            type: object
+            required:
+            - key
+            - value
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+        command:
+          type: string
+          description: Startup command
+          nullable: true
+    
+    UpdateEndpointRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New endpoint name
+          nullable: true
+        imageUrl:
+          type: string
+          description: New container image URL
+          nullable: true
+        envs:
+          type: array
+          description: Environment variables
+          nullable: true
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+    
+    # Job Schemas
+    ListJobsResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+          description: List of jobs
+    
+    Job:
+      type: object
+      required:
+      - id
+      - type
+      - status
+      properties:
+        id:
+          type: string
+          description: Job identifier
+        type:
+          type: string
+          description: Job type
+        status:
+          type: string
+          description: Job status
+        instanceId:
+          type: string
+          description: Associated instance ID
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Job creation time
+          nullable: true
+    
+    SaveImageRequest:
+      type: object
+      required:
+      - instanceId
+      - imageName
+      properties:
+        instanceId:
+          type: string
+          description: Instance ID to save image from
+        imageName:
+          type: string
+          description: Name for the saved image
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          description: Image description
+          nullable: true
+    
+    # Image Prewarm Schemas
+    ListImagePrewarmTasksResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImagePrewarmTask'
+          description: List of image prewarm tasks
+    
+    ImagePrewarmTask:
+      type: object
+      required:
+      - id
+      - imageUrl
+      - status
+      properties:
+        id:
+          type: string
+          description: Task identifier
+        imageUrl:
+          type: string
+          description: Container image URL
+        status:
+          type: string
+          description: Task status
+        clusterId:
+          type: string
+          description: Target cluster ID
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Task creation time
+          nullable: true
+    
+    CreateImagePrewarmRequest:
+      type: object
+      required:
+      - imageUrl
+      - clusterId
+      properties:
+        imageUrl:
+          type: string
+          description: Container image URL to prewarm
+          minLength: 1
+          maxLength: 500
+        clusterId:
+          type: string
+          description: Target cluster ID
+        imageAuthId:
+          type: string
+          description: Image registry authentication ID
+          nullable: true
+    
+    UpdateImagePrewarmRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Prewarm task ID to update
+        imageUrl:
+          type: string
+          description: New image URL
+          nullable: true
+    
+    # Registry Auth Schemas
+    ListRepositoryAuthsResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RepositoryAuth'
+          description: List of container registry authentications
+    
+    RepositoryAuth:
+      type: object
+      required:
+      - id
+      - registry
+      properties:
+        id:
+          type: string
+          description: Authentication identifier
+        registry:
+          type: string
+          description: Registry URL
+        username:
+          type: string
+          description: Registry username
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time
+          nullable: true
+    
+    CreateRepositoryAuthRequest:
+      type: object
+      required:
+      - registry
+      - username
+      - password
+      properties:
+        registry:
+          type: string
+          description: Registry URL
+          minLength: 1
+          maxLength: 500
+        username:
+          type: string
+          description: Registry username
+          minLength: 1
+        password:
+          type: string
+          description: Registry password
+          minLength: 1
+    
+    DeleteRepositoryAuthRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Authentication ID to delete
+    
+    # Network Schemas
+    ListNetworksResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Network'
+          description: List of VPC networks
+    
+    Network:
+      type: object
+      required:
+      - id
+      - name
+      - clusterId
+      properties:
+        id:
+          type: string
+          description: Network identifier
+        name:
+          type: string
+          description: Network name
+        clusterId:
+          type: string
+          description: Cluster ID
+        cidr:
+          type: string
+          description: Network CIDR block
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time
+          nullable: true
+    
+    CreateNetworkRequest:
+      type: object
+      required:
+      - name
+      - clusterId
+      properties:
+        name:
+          type: string
+          description: Network name
+          minLength: 1
+          maxLength: 255
+        clusterId:
+          type: string
+          description: Target cluster ID
+    
+    UpdateNetworkRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Network ID to update
+        name:
+          type: string
+          description: New network name
+          nullable: true
+    
+    DeleteNetworkRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Network ID to delete
+    
+    # Network Storage Schemas
+    ListNetworkStoragesResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkStorage'
+          description: List of network storage volumes
+    
+    NetworkStorage:
+      type: object
+      required:
+      - id
+      - name
+      - size
+      - clusterId
+      properties:
+        id:
+          type: string
+          description: Storage identifier
+        name:
+          type: string
+          description: Storage volume name
+        size:
+          type: integer
+          description: Storage size in GB
+        clusterId:
+          type: string
+          description: Cluster ID
+        status:
+          type: string
+          description: Storage status
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time
+          nullable: true
+    
+    CreateNetworkStorageRequest:
+      type: object
+      required:
+      - name
+      - size
+      - clusterId
+      properties:
+        name:
+          type: string
+          description: Storage volume name
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          description: Storage size in GB
+          minimum: 10
+          maximum: 10240
+        clusterId:
+          type: string
+          description: Target cluster ID
+    
+    UpdateNetworkStorageRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Storage ID to update
+        name:
+          type: string
+          description: New storage name
+          nullable: true
+        size:
+          type: integer
+          description: New storage size in GB
+          nullable: true
+    
+    DeleteNetworkStorageRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Storage ID to delete
+    
+    # Template Schemas
+    ListTemplatesResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+          description: List of templates
+    
+    Template:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: string
+          description: Template identifier
+        name:
+          type: string
+          description: Template name
+        imageUrl:
+          type: string
+          description: Container image URL
+          nullable: true
+        description:
+          type: string
+          description: Template description
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time
+          nullable: true
+    
+    CreateTemplateRequest:
+      type: object
+      required:
+      - name
+      - instanceId
+      properties:
+        name:
+          type: string
+          description: Template name
+          minLength: 1
+          maxLength: 255
+        instanceId:
+          type: string
+          description: Source instance ID
+        description:
+          type: string
+          description: Template description
+          nullable: true
+    
+    DeleteTemplateRequest:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Template ID to delete
+  
   responses:
     UnauthorizedError:
       description: Authentication failed
@@ -1916,14 +2508,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    
     BadRequestError:
       description: Invalid request parameters
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    
     NotFoundError:
       description: Resource not found
       content:
