@@ -1,0 +1,98 @@
+The following is a comprehensive list of all API resource groups and their actions under the Novita AI GPU section, using the base path: **https://api.novita.ai/gpu-instance/openapi/v1/**.
+
+
+
+| Resource Group | HTTP Method | API Path Segment | Action | Documentation Link |
+|----------------|-------------|------------------|--------|--------------------|
+
+| **Cluster** | `GET` | `/clusters` | List Clusters/Regions | https://novita.ai/docs/api-reference/gpu-instance-list-clusters |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/create` | Create GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-create-instance |
+
+| **Instance (Dedicated GPUs)** | `GET` | `/gpu/instances` | List GPU Instances | https://novita.ai/docs/api-reference/gpu-instance-list-instances |
+
+| **Instance (Dedicated GPUs)** | `GET` | `/gpu/instance` | Get GPU Instance Details | https://novita.ai/docs/api-reference/gpu-instance-get-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/edit` | Edit GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-edit-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/start` | Start GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-start-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/stop` | Stop GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-stop-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/delete` | Delete GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-delete-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/restart` | Restart GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-restart-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/upgrade` | Upgrade GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-upgrade-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/migrate` | Migrate GPU Instance | https://novita.ai/docs/api-reference/gpu-instance-migrate-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/renewInstance` | Renew Subscription Instance | https://novita.ai/docs/api-reference/gpu-instance-renewal-instance |
+
+| **Instance (Dedicated GPUs)** | `POST` | `/gpu/instance/transToMonthlyInstance` | Convert Pay-As-You-Go Instance to Subscription | https://novita.ai/docs/api-reference/gpu-instance-change-billing-instance |
+
+| **Serverless Endpoints** | `GET` | `/endpoint/limit` | Get Endpoint Parameter Limit Ranges | https://novita.ai/docs/api-reference/serverless-query-endpoint-limit |
+
+| **Serverless Endpoints** | `POST` | `/endpoint/create` | Create Serverless Endpoint | https://novita.ai/docs/api-reference/serverless-create-endpoint |
+
+| **Serverless Endpoints** | `GET` | `/endpoints` | List Serverless Endpoints | https://novita.ai/docs/api-reference/serverless-list-endpoint |
+
+| **Serverless Endpoints** | `GET` | `/endpoint` | Get Single Serverless Endpoint | https://novita.ai/docs/api-reference/serverless-get-endpoint |
+
+| **Serverless Endpoints** | `POST` | `/endpoint/update` | Update Serverless Endpoint | https://novita.ai/docs/api-reference/serverless-update-endpoint |
+
+| **Serverless Endpoints** | `POST` | `/endpoint/delete` | Delete Serverless Endpoint | https://novita.ai/docs/api-reference/serverless-delete-endpoint |
+
+| **Jobs** | `GET` | `/jobs` | List Jobs | https://novita.ai/docs/api-reference/gpu-instance-list-jobs |
+
+| **Jobs** | `POST` | `/job/break` | Break (Cancel) Job | https://novita.ai/docs/api-reference/gpu-instance-break-job |
+
+| **Jobs** | `POST` | `job/save/image` | Save Instance Image | https://novita.ai/docs/api-reference/gpu-instance-save-image |
+
+| **Image** | `GET` | `/image/prewarm/quota` | Get Image Prewarm Quota | https://novita.ai/docs/api-reference/gpu-instance-get-image-quota |
+
+| **Image** | `POST` | `/image/prewarm` | Create Image Prewarm Task | https://novita.ai/docs/api-reference/gpu-instance-create-image-prewarm |
+
+| **Image** | `GET` | `/image/prewarm` | List Image Prewarm Tasks | https://novita.ai/docs/api-reference/gpu-instance-list-image-prewarm |
+
+| **Image** | `POST` | `/image/prewarm/edit` | Update Image Prewarm Task | https://novita.ai/docs/api-reference/gpu-instance-update-image-prewarm |
+
+| **Image** | `POST` | `/image/prewarm/delete` | Delete Image Prewarm Tasks | https://novita.ai/docs/api-reference/gpu-instance-delete-image-prewarm |
+
+| **Image Registry** | `GET` | `/repository/auths` | List Container Registry Auths | https://novita.ai/docs/api-reference/gpu-instance-list-container-registry-auth |
+
+| **Image Registry** | `POST` | `/repository/auth/save` | Create Container Registry Auth | https://novita.ai/docs/api-reference/gpu-instance-create-container-registry-auth |
+
+| **Image Registry** | `POST` | `/repository/auth/delete` | Delete Container Registry Auth | https://novita.ai/docs/api-reference/gpu-instance-delete-container-registry-auth |
+
+| **Network** | `GET` | `/networks` | List VPC Networks | https://novita.ai/docs/api-reference/gpu-instance-list-vpc |
+
+| **Network** | `GET` | `/network` | Get VPC Network Details | https://novita.ai/docs/api-reference/gpu-instance-get-vpc |
+
+| **Network** | `POST` | `/network/create` | Create VPC Network | https://novita.ai/docs/api-reference/gpu-instance-create-vpc |
+
+| **Network** | `POST` | `/network/update` | Update VPC Network | https://novita.ai/docs/api-reference/gpu-instance-update-vpc |
+
+| **Network** | `POST` | `/network/delete` | Delete VPC Network | https://novita.ai/docs/api-reference/gpu-instance-delete-vpc |
+
+| **Network Storage** | `GET` | `/networkstorages/list` | List Network Storage | https://novita.ai/docs/api-reference/gpu-instance-list-network-storage |
+
+| **Network Storage** | `POST` | `/networkstorage/create` | Create Network Storage | https://novita.ai/docs/api-reference/gpu-instance-create-network-storage |
+
+| **Network Storage** | `POST` | `/networkstorage/update` | Update Network Storage | https://novita.ai/docs/api-reference/gpu-instance-edit-network-storage |
+
+| **Network Storage** | `POST` | `/networkstorage/delete` | Delete Network Storage | https://novita.ai/docs/api-reference/gpu-instance-delete-network-storage |
+
+| **Template** | `GET` | `/templates` | List Templates | https://novita.ai/docs/api-reference/gpu-instance-list-templates |
+
+| **Template** | `GET` | `/template` | Get Template Details | https://novita.ai/docs/api-reference/gpu-instance-get-template |
+
+| **Template** | `POST` | `/template/create` | Create Template | https://novita.ai/docs/api-reference/gpu-instance-create-template |
+
+| **Template** | `POST` | `/template/delete` | Delete Template | https://novita.ai/docs/api-reference/gpu-instance-delete-template |
+
+| **Product** | `GET` | `/products` | List GPU Instance Products | https://novita.ai/docs/api-reference/gpu-instance-list-products |
+
+| **Product** | `GET` | `/cpu/products` | List CPU Instance Products | https://novita.ai/docs/api-reference/gpu-instance-list-cpu-products |
+
+| **Metrics** | `GET` | `/metrics/gpu/instance` | Fetch Instance Monitor Metrics | https://novita.ai/docs/api-reference/gpu-instance-get-metrics |
