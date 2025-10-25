@@ -57,7 +57,7 @@ class AsyncProducts(AsyncBaseResource):
         return ListGPUProductsResponse.model_validate(response.json())
 
     async def list_cpu(self) -> ListGPUProductsResponse:
-        """Get pricing information for GPU instance types.
+        """Get pricing information for CPU instance types.
 
         Returns:
             Response containing pricing for each instance type

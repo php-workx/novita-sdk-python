@@ -173,11 +173,43 @@ def test_get_pricing(httpx_mock: HTTPXMock) -> None:
     """Test getting pricing information."""
     httpx_mock.add_response(
         method="GET",
-        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/pricing",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/products",
         json={
-            "pricing": [
-                {"instance_type": "A100_80GB", "price_per_hour": 3.5, "available": True},
-                {"instance_type": "A10", "price_per_hour": 1.2, "available": True},
+            "data": [
+                {
+                    "id": "gpu-a100-80gb",
+                    "name": "A100 80GB",
+                    "cpuPerGpu": 8,
+                    "memoryPerGpu": 120,
+                    "diskPerGpu": 100,
+                    "availableDeploy": True,
+                    "minRootFS": 20,
+                    "maxRootFS": 1000,
+                    "minLocalStorage": 0,
+                    "maxLocalStorage": 500,
+                    "regions": [],
+                    "price": 350,
+                    "monthlyPrice": [],
+                    "billingMethods": ["onDemand"],
+                    "spotPrice": "200",
+                },
+                {
+                    "id": "gpu-a10",
+                    "name": "A10",
+                    "cpuPerGpu": 4,
+                    "memoryPerGpu": 60,
+                    "diskPerGpu": 50,
+                    "availableDeploy": True,
+                    "minRootFS": 20,
+                    "maxRootFS": 500,
+                    "minLocalStorage": 0,
+                    "maxLocalStorage": 200,
+                    "regions": [],
+                    "price": 120,
+                    "monthlyPrice": [],
+                    "billingMethods": ["onDemand", "spot"],
+                    "spotPrice": "80",
+                },
             ]
         },
     )
@@ -185,9 +217,11 @@ def test_get_pricing(httpx_mock: HTTPXMock) -> None:
     client = NovitaClient(api_key="test-key")
     response = client.gpu.products.list()
 
-    assert len(response.pricing) == 2
-    assert response.pricing[0].instance_type == "A100_80GB"
-    assert response.pricing[0].price_per_hour == 3.5
+    assert len(response.data) == 2
+    assert response.data[0].id == "gpu-a100-80gb"
+    assert response.data[0].name == "A100 80GB"
+    assert response.data[0].price == 350
+    assert response.data[1].id == "gpu-a10"
     client.close()
 
 
@@ -258,3 +292,194 @@ def test_rate_limit_error(httpx_mock: HTTPXMock) -> None:
         client.gpu.instances.list()
 
     client.close()
+
+
+def test_restart_instance(httpx_mock: HTTPXMock) -> None:
+    """Test restarting an instance."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/restart",
+        json={"instance_id": "inst-123", "success": True},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.restart("inst-123")
+
+    assert response.instance_id == "inst-123"
+    assert response.success is True
+    client.close()
+
+
+def test_upgrade_instance(httpx_mock: HTTPXMock) -> None:
+    """Test upgrading an instance to a different type."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/upgrade",
+        json={"instance_id": "inst-123", "success": True},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.upgrade("inst-123", "A100_80GB_PCIE")
+
+    assert response.instance_id == "inst-123"
+    assert response.success is True
+    client.close()
+
+
+def test_migrate_instance(httpx_mock: HTTPXMock) -> None:
+    """Test migrating an instance to a different region."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/migrate",
+        json={"instance_id": "inst-123", "success": True},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.migrate("inst-123", "us-west-2")
+
+    assert response.instance_id == "inst-123"
+    assert response.success is True
+    client.close()
+
+
+def test_renew_instance(httpx_mock: HTTPXMock) -> None:
+    """Test renewing an instance for additional hours."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/renewInstance",
+        json={"instance_id": "inst-123", "success": True},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.renew("inst-123", 24)
+
+    assert response.instance_id == "inst-123"
+    assert response.success is True
+    client.close()
+
+
+def test_convert_to_monthly_instance(httpx_mock: HTTPXMock) -> None:
+    """Test converting an instance to monthly billing."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/transToMonthlyInstance",
+        json={"instance_id": "inst-123", "success": True},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.convert_to_monthly("inst-123")
+
+    assert response.instance_id == "inst-123"
+    assert response.success is True
+    client.close()
+
+
+def test_list_endpoints(httpx_mock: HTTPXMock) -> None:
+    """Test listing all endpoints."""
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/endpoints",
+        json={"endpoints": []},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.endpoints.list()
+
+    assert "endpoints" in response
+    assert isinstance(response["endpoints"], list)
+    client.close()
+
+
+def test_get_endpoint(httpx_mock: HTTPXMock) -> None:
+    """Test getting a specific endpoint."""
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/endpoint?endpoint_id=ep-123",
+        json={"endpoint_id": "ep-123", "status": "active"},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.endpoints.get("ep-123")
+
+    assert response["endpoint_id"] == "ep-123"
+    client.close()
+
+
+def test_create_endpoint(httpx_mock: HTTPXMock) -> None:
+    """Test creating a new endpoint."""
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/endpoint/create",
+        json={"endpoint_id": "ep-new", "status": "creating"},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.endpoints.create(name="test-endpoint", instance_id="inst-123")
+
+    assert response["endpoint_id"] == "ep-new"
+    client.close()
+
+
+def test_get_endpoint_limit_ranges(httpx_mock: HTTPXMock) -> None:
+    """Test getting endpoint limit ranges."""
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/endpoint/limit",
+        json={"max_endpoints": 10},
+    )
+
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.endpoints.get_limit_ranges()
+
+    assert response["max_endpoints"] == 10
+    client.close()
+
+
+@pytest.mark.asyncio
+async def test_async_create_instance(httpx_mock: HTTPXMock) -> None:
+    """Test creating a GPU instance using async client."""
+    from novita import AsyncNovitaClient
+
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
+        json={"instance_id": "inst-async-123", "status": "PENDING"},
+    )
+
+    async with AsyncNovitaClient(api_key="test-key") as client:
+        request = CreateInstanceRequest(name="async-test", instance_type=InstanceType.A100_80GB)
+        response = await client.gpu.instances.create(request)
+
+        assert response.instance_id == "inst-async-123"
+        assert response.status == "PENDING"
+
+
+@pytest.mark.asyncio
+async def test_async_list_instances(httpx_mock: HTTPXMock) -> None:
+    """Test listing GPU instances using async client."""
+    from novita import AsyncNovitaClient
+
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instances",
+        json={
+            "instances": [
+                {
+                    "instance_id": "inst-async-1",
+                    "name": "async-test-1",
+                    "instance_type": "A100_80GB",
+                    "status": "RUNNING",
+                    "disk_size": 50,
+                    "created_at": 1234567890,
+                }
+            ],
+            "total": 1,
+        },
+    )
+
+    async with AsyncNovitaClient(api_key="test-key") as client:
+        response = await client.gpu.instances.list()
+
+        assert response.total == 1
+        assert len(response.instances) == 1
+        assert response.instances[0].instance_id == "inst-async-1"
