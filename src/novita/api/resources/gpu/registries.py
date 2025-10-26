@@ -1,45 +1,68 @@
 """GPU registries management resource."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
 
-from .base import BASE_PATH, AsyncBaseResource, BaseResource
+from pydantic import SecretStr
 
-if TYPE_CHECKING:
-    pass
+from novita.generated.models import (
+    CreateRepositoryAuthRequest,
+    DeleteRepositoryAuthRequest,
+    ListRepositoryAuthsResponse,
+    RepositoryAuth,
+)
+
+from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 
 class Registries(BaseResource):
     """Synchronous GPU registries management resource."""
 
-    def list(self) -> dict[str, Any]:
+    def list(self) -> list[RepositoryAuth]:
         """List all repository authentications.
 
         Returns:
-            List of repository authentications
+            List of repository authentication objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/repository/auths")
-        return response.json()
+        parsed = ListRepositoryAuthsResponse.model_validate(response.json())
+        return parsed.data
 
-    def create(self, **kwargs: Any) -> dict[str, Any]:
+    def create(
+        self,
+        name: str,
+        username: str,
+        password: str | SecretStr,
+    ) -> None:
         """Create a new repository authentication.
 
         Args:
-            **kwargs: Repository auth parameters (e.g., registry, username, password)
-
-        Returns:
-            Created repository authentication information
+            name: Registry name/URL (e.g., 'docker.io', 'ghcr.io')
+            username: Registry username
+            password: Registry password (will be handled securely and not logged)
 
         Raises:
             AuthenticationError: If API key is invalid
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/repository/auth/save", json=kwargs)
-        return response.json()
+        # Convert plain string to SecretStr if needed
+        secret_password = password if isinstance(password, SecretStr) else SecretStr(password)
+        
+        request = CreateRepositoryAuthRequest(
+            name=name,
+            username=username,
+            password=secret_password,
+        )
+        self._client.post(
+            f"{BASE_PATH}/repository/auth/save",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
 
     def delete(self, auth_id: str) -> None:
         """Delete a repository authentication.
@@ -52,41 +75,60 @@ class Registries(BaseResource):
             NotFoundError: If auth doesn't exist
             APIError: If the API returns an error
         """
-        self._client.post(f"{BASE_PATH}/repository/auth/delete", json={"auth_id": auth_id})
+        request = DeleteRepositoryAuthRequest(id=auth_id)
+        self._client.post(
+            f"{BASE_PATH}/repository/auth/delete",
+            json=request.model_dump(by_alias=True, exclude_none=True),
+        )
 
 
 class AsyncRegistries(AsyncBaseResource):
     """Asynchronous GPU registries management resource."""
 
-    async def list(self) -> dict[str, Any]:
+    async def list(self) -> list[RepositoryAuth]:
         """List all repository authentications.
 
         Returns:
-            List of repository authentications
+            List of repository authentication objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/repository/auths")
-        return response.json()
+        parsed = ListRepositoryAuthsResponse.model_validate(response.json())
+        return parsed.data
 
-    async def create(self, **kwargs: Any) -> dict[str, Any]:
+    async def create(
+        self,
+        name: str,
+        username: str,
+        password: str | SecretStr,
+    ) -> None:
         """Create a new repository authentication.
 
         Args:
-            **kwargs: Repository auth parameters (e.g., registry, username, password)
-
-        Returns:
-            Created repository authentication information
+            name: Registry name/URL (e.g., 'docker.io', 'ghcr.io')
+            username: Registry username
+            password: Registry password (will be handled securely and not logged)
 
         Raises:
             AuthenticationError: If API key is invalid
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/repository/auth/save", json=kwargs)
-        return response.json()
+        # Convert plain string to SecretStr if needed
+        secret_password = password if isinstance(password, SecretStr) else SecretStr(password)
+        
+        request = CreateRepositoryAuthRequest(
+            name=name,
+            username=username,
+            password=secret_password,
+        )
+        await self._client.post(
+            f"{BASE_PATH}/repository/auth/save",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
 
     async def delete(self, auth_id: str) -> None:
         """Delete a repository authentication.
@@ -99,4 +141,8 @@ class AsyncRegistries(AsyncBaseResource):
             NotFoundError: If auth doesn't exist
             APIError: If the API returns an error
         """
-        await self._client.post(f"{BASE_PATH}/repository/auth/delete", json={"auth_id": auth_id})
+        request = DeleteRepositoryAuthRequest(id=auth_id)
+        await self._client.post(
+            f"{BASE_PATH}/repository/auth/delete",
+            json=request.model_dump(by_alias=True, exclude_none=True),
+        )

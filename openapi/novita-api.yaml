@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Novita GPU API
+  title: Novita Public API
   version: 1.0.0
-  description: Complete OpenAPI spec for Novita GPU Instance API
+  description: OpenAPI spec for Novita Public API
 servers:
 - url: https://api.novita.ai/gpu-instance/openapi/v1
   description: Production server
@@ -844,12 +844,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateRepositoryAuthRequest'
       responses:
-        '200':
+        '204':
           description: Registry auth created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RepositoryAuth'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -2223,44 +2219,47 @@ components:
       type: object
       required:
       - id
-      - registry
+      - name
+      - username
+      - password
       properties:
         id:
           type: string
           description: Authentication identifier
-        registry:
+        name:
           type: string
-          description: Registry URL
+          description: Registry name/URL
         username:
           type: string
           description: Registry username
-          nullable: true
-        createdAt:
+        password:
           type: string
-          format: date-time
-          description: Creation time
-          nullable: true
+          description: Registry password (returned as masked)
+          format: password
     
     CreateRepositoryAuthRequest:
       type: object
       required:
-      - registry
+      - name
       - username
       - password
       properties:
-        registry:
+        name:
           type: string
-          description: Registry URL
+          description: Registry name/URL
           minLength: 1
           maxLength: 500
         username:
           type: string
           description: Registry username
           minLength: 1
+          maxLength: 500
         password:
           type: string
-          description: Registry password
+          description: Registry password (stored securely, not logged)
+          format: password
           minLength: 1
+          maxLength: 500
     
     DeleteRepositoryAuthRequest:
       type: object
