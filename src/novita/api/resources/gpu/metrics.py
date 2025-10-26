@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any
 
-from .base import AsyncBaseResource, BaseResource
+from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
     pass
@@ -11,30 +11,44 @@ if TYPE_CHECKING:
 class Metrics(BaseResource):
     """Synchronous GPU metrics management resource."""
 
-    def list(self) -> dict[str, Any]:
-        """List metrics data.
+    def get(self, instance_id: str) -> dict[str, Any]:
+        """Get metrics for a specific instance.
+
+        Args:
+            instance_id: The ID of the instance
 
         Returns:
-            Metrics data
+            Instance metrics data
 
         Raises:
             AuthenticationError: If API key is invalid
+            NotFoundError: If instance doesn't exist
             APIError: If the API returns an error
         """
-        raise NotImplementedError("Metrics API endpoints not yet specified")
+        response = self._client.get(
+            f"{BASE_PATH}/instance/metrics", params={"instance_id": instance_id}
+        )
+        return response.json()
 
 
 class AsyncMetrics(AsyncBaseResource):
     """Asynchronous GPU metrics management resource."""
 
-    async def list(self) -> dict[str, Any]:
-        """List metrics data.
+    async def get(self, instance_id: str) -> dict[str, Any]:
+        """Get metrics for a specific instance.
+
+        Args:
+            instance_id: The ID of the instance
 
         Returns:
-            Metrics data
+            Instance metrics data
 
         Raises:
             AuthenticationError: If API key is invalid
+            NotFoundError: If instance doesn't exist
             APIError: If the API returns an error
         """
-        raise NotImplementedError("Metrics API endpoints not yet specified")
+        response = await self._client.get(
+            f"{BASE_PATH}/instance/metrics", params={"instance_id": instance_id}
+        )
+        return response.json()

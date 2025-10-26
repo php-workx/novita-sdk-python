@@ -9,7 +9,13 @@ install:  ## Install dependencies
 generate:  ## Generate Pydantic models from OpenAPI spec
 	@./scripts/generate_models.sh
 
-test:  ## Run tests
+test:  ## Run unit tests only
+	pytest tests/unit/ -v
+
+test-integration:  ## Run integration tests only
+	pytest tests/integration/ -v
+
+test-all:  ## Run all tests (unit + integration)
 	pytest tests/ -v
 
 test-cov:  ## Run tests with coverage
@@ -31,7 +37,7 @@ ci:  ## Run all CI checks (lint, format check, typecheck, test)
 	ruff check src/ tests/ examples/
 	ruff format --check src/ tests/ examples/
 	mypy src/
-	pytest tests/ -v
+	pytest tests/unit/ -v
 
 clean:  ## Clean generated files and caches
 	rm -rf .pytest_cache

@@ -253,6 +253,28 @@ class Instances(BaseResource):
         )
         return InstanceActionResponse.model_validate(response.json())
 
+    def save_image(self, instance_id: str, image_name: str) -> InstanceActionResponse:
+        """Save a GPU instance as a custom image.
+
+        Args:
+            instance_id: The ID of the instance
+            image_name: Name for the saved image
+
+        Returns:
+            Response indicating success or failure
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If instance doesn't exist
+            BadRequestError: If the save operation is not valid
+            APIError: If the API returns an error
+        """
+        response = self._client.post(
+            f"{BASE_PATH}/gpu/instance/save",
+            json={"instance_id": instance_id, "image_name": image_name},
+        )
+        return InstanceActionResponse.model_validate(response.json())
+
 
 class AsyncInstances(AsyncBaseResource):
     """Asynchronous GPU instances management resource."""
@@ -487,5 +509,27 @@ class AsyncInstances(AsyncBaseResource):
         """
         response = await self._client.post(
             f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", json={"instance_id": instance_id}
+        )
+        return InstanceActionResponse.model_validate(response.json())
+
+    async def save_image(self, instance_id: str, image_name: str) -> InstanceActionResponse:
+        """Save a GPU instance as a custom image.
+
+        Args:
+            instance_id: The ID of the instance
+            image_name: Name for the saved image
+
+        Returns:
+            Response indicating success or failure
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If instance doesn't exist
+            BadRequestError: If the save operation is not valid
+            APIError: If the API returns an error
+        """
+        response = await self._client.post(
+            f"{BASE_PATH}/gpu/instance/save",
+            json={"instance_id": instance_id, "image_name": image_name},
         )
         return InstanceActionResponse.model_validate(response.json())

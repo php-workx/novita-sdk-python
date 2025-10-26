@@ -71,6 +71,39 @@ class Endpoints(BaseResource):
         response = self._client.get(f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id})
         return response.json()
 
+    def update(self, endpoint_id: str, **kwargs: Any) -> dict[str, Any]:
+        """Update an endpoint.
+
+        Args:
+            endpoint_id: The ID of the endpoint
+            **kwargs: Fields to update
+
+        Returns:
+            Updated endpoint information
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If endpoint doesn't exist
+            BadRequestError: If request parameters are invalid
+            APIError: If the API returns an error
+        """
+        data = {"endpoint_id": endpoint_id, **kwargs}
+        response = self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
+        return response.json()
+
+    def delete(self, endpoint_id: str) -> None:
+        """Delete an endpoint.
+
+        Args:
+            endpoint_id: The ID of the endpoint
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If endpoint doesn't exist
+            APIError: If the API returns an error
+        """
+        self._client.post(f"{BASE_PATH}/endpoint/delete", json={"endpoint_id": endpoint_id})
+
 
 class AsyncEndpoints(AsyncBaseResource):
     """Asynchronous GPU endpoints management resource."""
@@ -136,3 +169,36 @@ class AsyncEndpoints(AsyncBaseResource):
             f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id}
         )
         return response.json()
+
+    async def update(self, endpoint_id: str, **kwargs: Any) -> dict[str, Any]:
+        """Update an endpoint.
+
+        Args:
+            endpoint_id: The ID of the endpoint
+            **kwargs: Fields to update
+
+        Returns:
+            Updated endpoint information
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If endpoint doesn't exist
+            BadRequestError: If request parameters are invalid
+            APIError: If the API returns an error
+        """
+        data = {"endpoint_id": endpoint_id, **kwargs}
+        response = await self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
+        return response.json()
+
+    async def delete(self, endpoint_id: str) -> None:
+        """Delete an endpoint.
+
+        Args:
+            endpoint_id: The ID of the endpoint
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If endpoint doesn't exist
+            APIError: If the API returns an error
+        """
+        await self._client.post(f"{BASE_PATH}/endpoint/delete", json={"endpoint_id": endpoint_id})

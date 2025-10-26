@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any
 
-from .base import AsyncBaseResource, BaseResource
+from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 if TYPE_CHECKING:
     pass
@@ -21,8 +21,21 @@ class Jobs(BaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        # Placeholder implementation - endpoint not specified in requirements
-        raise NotImplementedError("Jobs API endpoints not yet specified")
+        response = self._client.get(f"{BASE_PATH}/jobs")
+        return response.json()
+
+    def break_job(self, job_id: str) -> None:
+        """Break/cancel a job.
+
+        Args:
+            job_id: The ID of the job to break
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If job doesn't exist
+            APIError: If the API returns an error
+        """
+        self._client.post(f"{BASE_PATH}/job/break", json={"job_id": job_id})
 
 
 class AsyncJobs(AsyncBaseResource):
@@ -38,5 +51,18 @@ class AsyncJobs(AsyncBaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        # Placeholder implementation - endpoint not specified in requirements
-        raise NotImplementedError("Jobs API endpoints not yet specified")
+        response = await self._client.get(f"{BASE_PATH}/jobs")
+        return response.json()
+
+    async def break_job(self, job_id: str) -> None:
+        """Break/cancel a job.
+
+        Args:
+            job_id: The ID of the job to break
+
+        Raises:
+            AuthenticationError: If API key is invalid
+            NotFoundError: If job doesn't exist
+            APIError: If the API returns an error
+        """
+        await self._client.post(f"{BASE_PATH}/job/break", json={"job_id": job_id})
