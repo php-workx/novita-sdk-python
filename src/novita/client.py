@@ -20,7 +20,7 @@ DEFAULT_TIMEOUT = 60.0
 
 
 def _handle_error_response(response: httpx.Response) -> None:
-    """Handle error responses from the API.
+    """Handle error responses from the API (synchronous version).
 
     Args:
         response: The HTTP response
@@ -34,6 +34,51 @@ def _handle_error_response(response: httpx.Response) -> None:
     """
     # Read the response to avoid streaming issues
     response.read()
+
+    if response.status_code == 401:
+        raise AuthenticationError("Authentication failed. Check your API key.")
+    elif response.status_code == 400:
+        try:
+            error_data = response.json()
+            raise BadRequestError(
+                f"Bad request: {error_data.get('message', 'Invalid parameters')}",
+                details=error_data,
+            )
+        except ValueError:
+            raise BadRequestError("Bad request. Check your request parameters.") from None
+    elif response.status_code == 404:
+        raise NotFoundError(f"Resource not found: {response.url}")
+    elif response.status_code == 429:
+        raise RateLimitError("Rate limit exceeded. Please retry later.")
+    elif response.status_code >= 500:
+        raise APIError(
+            f"Server error ({response.status_code})",
+            status_code=response.status_code,
+            response_body=response.text,
+        )
+    else:
+        raise APIError(
+            f"API error ({response.status_code})",
+            status_code=response.status_code,
+            response_body=response.text,
+        )
+
+
+async def _handle_error_response_async(response: httpx.Response) -> None:
+    """Handle error responses from the API (asynchronous version).
+
+    Args:
+        response: The HTTP response
+
+    Raises:
+        AuthenticationError: For 401 status codes
+        BadRequestError: For 400 status codes
+        NotFoundError: For 404 status codes
+        RateLimitError: For 429 status codes
+        APIError: For other error status codes
+    """
+    # Read the response to avoid streaming issues (async version)
+    await response.aread()
 
     if response.status_code == 401:
         raise AuthenticationError("Authentication failed. Check your API key.")
@@ -181,7 +226,7 @@ class AsyncNovitaClient:
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError:
-            _handle_error_response(response)
+            await _handle_error_response_async(response)
         except httpx.TimeoutException as e:
             raise TimeoutError(f"Request timed out after {self._timeout}s") from e
 

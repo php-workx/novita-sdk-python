@@ -53,3 +53,4 @@ dmypy.json
 .env.local
 
 docs_fetched
+.claude/settings.local.json

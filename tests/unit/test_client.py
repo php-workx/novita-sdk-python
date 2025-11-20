@@ -1,10 +1,20 @@
 """Tests for the Novita client."""
 
 import os
+from unittest.mock import AsyncMock, Mock
 
+import httpx
 import pytest
 
-from novita import AsyncNovitaClient, AuthenticationError, NovitaClient
+from novita import (
+    APIError,
+    AsyncNovitaClient,
+    AuthenticationError,
+    BadRequestError,
+    NotFoundError,
+    NovitaClient,
+    RateLimitError,
+)
 
 
 def test_client_requires_api_key() -> None:
@@ -81,3 +91,198 @@ async def test_async_client_context_manager() -> None:
     async with AsyncNovitaClient(api_key="test-key") as client:
         assert client._api_key == "test-key"
     # Client should be closed after exiting context
+
+
+def test_sync_error_handling_401() -> None:
+    """Test that sync client properly handles 401 errors."""
+    client = NovitaClient(api_key="test-key")
+
+    # Create a mock response with 401 status
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 401
+    mock_response.read = Mock()  # Synchronous read
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("401", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(AuthenticationError, match="Authentication failed"):
+        client._handle_response(mock_response)
+
+    # Verify read() was called (sync version)
+    mock_response.read.assert_called_once()
+    client.close()
+
+
+def test_sync_error_handling_400() -> None:
+    """Test that sync client properly handles 400 errors."""
+    client = NovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 400
+    mock_response.read = Mock()
+    mock_response.json = Mock(return_value={"message": "Invalid input"})
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("400", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(BadRequestError, match="Invalid input"):
+        client._handle_response(mock_response)
+
+    mock_response.read.assert_called_once()
+    client.close()
+
+
+def test_sync_error_handling_404() -> None:
+    """Test that sync client properly handles 404 errors."""
+    client = NovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 404
+    mock_response.read = Mock()
+    mock_response.url = "https://api.novita.ai/test"
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(NotFoundError, match="Resource not found"):
+        client._handle_response(mock_response)
+
+    mock_response.read.assert_called_once()
+    client.close()
+
+
+def test_sync_error_handling_429() -> None:
+    """Test that sync client properly handles 429 errors."""
+    client = NovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 429
+    mock_response.read = Mock()
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("429", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(RateLimitError, match="Rate limit exceeded"):
+        client._handle_response(mock_response)
+
+    mock_response.read.assert_called_once()
+    client.close()
+
+
+def test_sync_error_handling_500() -> None:
+    """Test that sync client properly handles 500 errors."""
+    client = NovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 500
+    mock_response.read = Mock()
+    mock_response.text = "Internal server error"
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("500", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(APIError, match="Server error"):
+        client._handle_response(mock_response)
+
+    mock_response.read.assert_called_once()
+    client.close()
+
+
+@pytest.mark.asyncio
+async def test_async_error_handling_401() -> None:
+    """Test that async client properly handles 401 errors with async read."""
+    client = AsyncNovitaClient(api_key="test-key")
+
+    # Create a mock response with 401 status
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 401
+    mock_response.aread = AsyncMock()  # Async read
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("401", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(AuthenticationError, match="Authentication failed"):
+        await client._handle_response(mock_response)
+
+    # Verify aread() was called (async version)
+    mock_response.aread.assert_awaited_once()
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_async_error_handling_400() -> None:
+    """Test that async client properly handles 400 errors with async read."""
+    client = AsyncNovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 400
+    mock_response.aread = AsyncMock()
+    mock_response.json = Mock(return_value={"message": "Invalid parameters"})
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("400", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(BadRequestError, match="Invalid parameters"):
+        await client._handle_response(mock_response)
+
+    mock_response.aread.assert_awaited_once()
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_async_error_handling_404() -> None:
+    """Test that async client properly handles 404 errors with async read."""
+    client = AsyncNovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 404
+    mock_response.aread = AsyncMock()
+    mock_response.url = "https://api.novita.ai/test"
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("404", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(NotFoundError, match="Resource not found"):
+        await client._handle_response(mock_response)
+
+    mock_response.aread.assert_awaited_once()
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_async_error_handling_429() -> None:
+    """Test that async client properly handles 429 errors with async read."""
+    client = AsyncNovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 429
+    mock_response.aread = AsyncMock()
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("429", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(RateLimitError, match="Rate limit exceeded"):
+        await client._handle_response(mock_response)
+
+    mock_response.aread.assert_awaited_once()
+    await client.aclose()
+
+
+@pytest.mark.asyncio
+async def test_async_error_handling_500() -> None:
+    """Test that async client properly handles 500 errors with async read."""
+    client = AsyncNovitaClient(api_key="test-key")
+
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 500
+    mock_response.aread = AsyncMock()
+    mock_response.text = "Internal server error"
+    mock_response.raise_for_status = Mock(
+        side_effect=httpx.HTTPStatusError("500", request=Mock(), response=mock_response)
+    )
+
+    with pytest.raises(APIError, match="Server error"):
+        await client._handle_response(mock_response)
+
+    mock_response.aread.assert_awaited_once()
+    await client.aclose()

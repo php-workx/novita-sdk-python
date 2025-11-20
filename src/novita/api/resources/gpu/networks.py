@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Iterable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 from novita.generated.models import ListNetworksResponse, Network, NetworkModel
 
@@ -15,10 +16,7 @@ if TYPE_CHECKING:
 def _parse_network_details(payload: Any) -> list[Network]:
     """Normalize network detail payloads into model instances."""
     items: Iterable[Any]
-    if isinstance(payload, dict):
-        raw = payload.get("network", payload)
-    else:
-        raw = payload
+    raw = payload.get("network", payload) if isinstance(payload, dict) else payload
 
     if isinstance(raw, list):
         items = raw
