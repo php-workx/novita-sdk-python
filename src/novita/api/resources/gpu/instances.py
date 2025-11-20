@@ -1,535 +1,258 @@
 """GPU instances management resource."""
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-from novita.models import (
+from typing import Any
+
+from novita.generated.models import (
     CreateInstanceRequest,
     CreateInstanceResponse,
-    InstanceActionResponse,
+    EditInstanceRequest,
     InstanceInfo,
     ListInstancesResponse,
-    UpdateInstanceRequest,
+    SaveImageRequest,
+    UpgradeInstanceRequest,
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
-if TYPE_CHECKING:
-    pass
+
+def _build_list_filters(
+    page_size: int | None,
+    page_num: int | None,
+    name: str | None,
+    product_name: str | None,
+    status: str | None,
+) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+    if page_size is not None:
+        params["pageSize"] = page_size
+    if page_num is not None:
+        params["pageNum"] = page_num
+    if name is not None:
+        params["name"] = name
+    if product_name is not None:
+        params["productName"] = product_name
+    if status is not None:
+        params["status"] = status
+    return params
 
 
 class Instances(BaseResource):
     """Synchronous GPU instances management resource."""
 
     def create(self, request: CreateInstanceRequest) -> CreateInstanceResponse:
-        """Create a new GPU instance.
+        """Create a new GPU instance."""
 
-        Args:
-            request: Instance creation parameters
-
-        Returns:
-            Response containing the created instance ID and status
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            BadRequestError: If request parameters are invalid
-            APIError: If the API returns an error
-        """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/create", json=request.model_dump(exclude_none=True)
+            f"{BASE_PATH}/gpu/instance/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
         return CreateInstanceResponse.model_validate(response.json())
 
-    def list(self) -> ListInstancesResponse:
-        """List all GPU instances.
+    def list(
+        self,
+        *,
+        page_size: int | None = None,
+        page_num: int | None = None,
+        name: str | None = None,
+        product_name: str | None = None,
+        status: str | None = None,
+    ) -> list[InstanceInfo]:
+        """List GPU instances with optional filters."""
 
-        Returns:
-            Response containing list of instances
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            APIError: If the API returns an error
-        """
-        response = self._client.get(f"{BASE_PATH}/gpu/instances")
-        return ListInstancesResponse.model_validate(response.json())
+        params = _build_list_filters(page_size, page_num, name, product_name, status)
+        response = self._client.get(
+            f"{BASE_PATH}/gpu/instances",
+            params=params or None,
+        )
+        parsed = ListInstancesResponse.model_validate(response.json())
+        return parsed.instances
 
     def get(self, instance_id: str) -> InstanceInfo:
-        """Get details of a specific GPU instance.
+        """Fetch details for a specific instance."""
 
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Detailed information about the instance
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
         response = self._client.get(
-            f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id}
+            f"{BASE_PATH}/gpu/instance",
+            params={"instanceId": instance_id},
         )
         return InstanceInfo.model_validate(response.json())
 
-    def edit(self, instance_id: str, request: UpdateInstanceRequest) -> InstanceInfo:
-        """Update a GPU instance.
+    def edit(self, request: EditInstanceRequest) -> None:
+        """Edit instance ports or root disk."""
 
-        Args:
-            instance_id: The ID of the instance
-            request: Update parameters
-
-        Returns:
-            Updated instance information
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If request parameters are invalid
-            APIError: If the API returns an error
-        """
-        data = {"instance_id": instance_id, **request.model_dump(exclude_none=True)}
-        response = self._client.post(f"{BASE_PATH}/gpu/instance/edit", json=data)
-        return InstanceInfo.model_validate(response.json())
-
-    def start(self, instance_id: str) -> InstanceActionResponse:
-        """Start a stopped GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/start", json={"instance_id": instance_id}
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/edit",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def stop(self, instance_id: str) -> InstanceActionResponse:
-        """Stop a running GPU instance.
+    def start(self, instance_id: str) -> None:
+        """Start an instance."""
 
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/stop", json={"instance_id": instance_id}
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/start",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def delete(self, instance_id: str) -> InstanceActionResponse:
-        """Delete a GPU instance.
+    def stop(self, instance_id: str) -> None:
+        """Stop an instance."""
 
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/delete", json={"instance_id": instance_id}
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/stop",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def restart(self, instance_id: str) -> InstanceActionResponse:
-        """Restart a GPU instance.
+    def delete(self, instance_id: str) -> None:
+        """Delete an instance."""
 
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/restart", json={"instance_id": instance_id}
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/delete",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def upgrade(self, instance_id: str, new_instance_type: str) -> InstanceActionResponse:
-        """Upgrade a GPU instance to a different instance type.
+    def restart(self, instance_id: str) -> None:
+        """Restart an instance."""
 
-        Args:
-            instance_id: The ID of the instance
-            new_instance_type: The new instance type to upgrade to
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/restart",
+            json={"instanceId": instance_id},
+        )
 
-        Returns:
-            Response indicating success or failure
+    def upgrade(self, request: UpgradeInstanceRequest) -> None:
+        """Upgrade an instance with a new configuration."""
 
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the upgrade is not valid
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
+        self._client.post(
             f"{BASE_PATH}/gpu/instance/upgrade",
-            json={"instance_id": instance_id, "instance_type": new_instance_type},
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def migrate(self, instance_id: str, target_region: str) -> InstanceActionResponse:
-        """Migrate a GPU instance to a different region.
+    def migrate(self, instance_id: str) -> None:
+        """Migrate an instance to a different region."""
 
-        Args:
-            instance_id: The ID of the instance
-            target_region: The target region to migrate to
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the migration is not valid
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
+        self._client.post(
             f"{BASE_PATH}/gpu/instance/migrate",
-            json={"instance_id": instance_id, "target_region": target_region},
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def renew(self, instance_id: str, duration_hours: int) -> InstanceActionResponse:
-        """Renew a GPU instance for additional time.
+    def renew(self, instance_id: str, month: int) -> None:
+        """Renew a subscription instance."""
 
-        Args:
-            instance_id: The ID of the instance
-            duration_hours: Number of hours to renew for
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the renewal is not valid
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
+        self._client.post(
             f"{BASE_PATH}/gpu/instance/renewInstance",
-            json={"instance_id": instance_id, "duration_hours": duration_hours},
+            json={"instanceId": instance_id, "month": month},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    def convert_to_monthly(self, instance_id: str) -> InstanceActionResponse:
-        """Convert an hourly instance to monthly billing.
+    def convert_to_monthly(self, instance_id: str, month: int) -> None:
+        """Convert a pay-as-you-go instance to subscription billing."""
 
-        Args:
-            instance_id: The ID of the instance
+        self._client.post(
+            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance",
+            json={"instanceId": instance_id, "month": month},
+        )
 
-        Returns:
-            Response indicating success or failure
+    def save_image(self, request: SaveImageRequest) -> str:
+        """Create an image from an instance and return the job ID."""
 
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the conversion is not valid
-            APIError: If the API returns an error
-        """
         response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", json={"instance_id": instance_id}
+            f"{BASE_PATH}/job/save/image",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
-
-    def save_image(self, instance_id: str, image_name: str) -> InstanceActionResponse:
-        """Save a GPU instance as a custom image.
-
-        Args:
-            instance_id: The ID of the instance
-            image_name: Name for the saved image
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the save operation is not valid
-            APIError: If the API returns an error
-        """
-        response = self._client.post(
-            f"{BASE_PATH}/gpu/instance/save",
-            json={"instance_id": instance_id, "image_name": image_name},
-        )
-        return InstanceActionResponse.model_validate(response.json())
+        payload = response.json()
+        return payload.get("jobId", "")
 
 
 class AsyncInstances(AsyncBaseResource):
     """Asynchronous GPU instances management resource."""
 
     async def create(self, request: CreateInstanceRequest) -> CreateInstanceResponse:
-        """Create a new GPU instance.
-
-        Args:
-            request: Instance creation parameters
-
-        Returns:
-            Response containing the created instance ID and status
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            BadRequestError: If request parameters are invalid
-            APIError: If the API returns an error
-        """
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/create", json=request.model_dump(exclude_none=True)
+            f"{BASE_PATH}/gpu/instance/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
         return CreateInstanceResponse.model_validate(response.json())
 
-    async def list(self) -> ListInstancesResponse:
-        """List all GPU instances.
-
-        Returns:
-            Response containing list of instances
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            APIError: If the API returns an error
-        """
-        response = await self._client.get(f"{BASE_PATH}/gpu/instances")
-        return ListInstancesResponse.model_validate(response.json())
+    async def list(
+        self,
+        *,
+        page_size: int | None = None,
+        page_num: int | None = None,
+        name: str | None = None,
+        product_name: str | None = None,
+        status: str | None = None,
+    ) -> list[InstanceInfo]:
+        params = _build_list_filters(page_size, page_num, name, product_name, status)
+        response = await self._client.get(
+            f"{BASE_PATH}/gpu/instances",
+            params=params or None,
+        )
+        parsed = ListInstancesResponse.model_validate(response.json())
+        return parsed.instances
 
     async def get(self, instance_id: str) -> InstanceInfo:
-        """Get details of a specific GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Detailed information about the instance
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
         response = await self._client.get(
-            f"{BASE_PATH}/gpu/instance", params={"instance_id": instance_id}
+            f"{BASE_PATH}/gpu/instance",
+            params={"instanceId": instance_id},
         )
         return InstanceInfo.model_validate(response.json())
 
-    async def edit(self, instance_id: str, request: UpdateInstanceRequest) -> InstanceInfo:
-        """Update a GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-            request: Update parameters
-
-        Returns:
-            Updated instance information
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If request parameters are invalid
-            APIError: If the API returns an error
-        """
-        data = {"instance_id": instance_id, **request.model_dump(exclude_none=True)}
-        response = await self._client.post(f"{BASE_PATH}/gpu/instance/edit", json=data)
-        return InstanceInfo.model_validate(response.json())
-
-    async def start(self, instance_id: str) -> InstanceActionResponse:
-        """Start a stopped GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/start", json={"instance_id": instance_id}
+    async def edit(self, request: EditInstanceRequest) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/edit",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def stop(self, instance_id: str) -> InstanceActionResponse:
-        """Stop a running GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/stop", json={"instance_id": instance_id}
+    async def start(self, instance_id: str) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/start",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def delete(self, instance_id: str) -> InstanceActionResponse:
-        """Delete a GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/delete", json={"instance_id": instance_id}
+    async def stop(self, instance_id: str) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/stop",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def restart(self, instance_id: str) -> InstanceActionResponse:
-        """Restart a GPU instance.
-
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/restart", json={"instance_id": instance_id}
+    async def delete(self, instance_id: str) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/delete",
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def upgrade(self, instance_id: str, new_instance_type: str) -> InstanceActionResponse:
-        """Upgrade a GPU instance to a different instance type.
+    async def restart(self, instance_id: str) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/restart",
+            json={"instanceId": instance_id},
+        )
 
-        Args:
-            instance_id: The ID of the instance
-            new_instance_type: The new instance type to upgrade to
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the upgrade is not valid
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
+    async def upgrade(self, request: UpgradeInstanceRequest) -> None:
+        await self._client.post(
             f"{BASE_PATH}/gpu/instance/upgrade",
-            json={"instance_id": instance_id, "instance_type": new_instance_type},
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def migrate(self, instance_id: str, target_region: str) -> InstanceActionResponse:
-        """Migrate a GPU instance to a different region.
-
-        Args:
-            instance_id: The ID of the instance
-            target_region: The target region to migrate to
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the migration is not valid
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
+    async def migrate(self, instance_id: str) -> None:
+        await self._client.post(
             f"{BASE_PATH}/gpu/instance/migrate",
-            json={"instance_id": instance_id, "target_region": target_region},
+            json={"instanceId": instance_id},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def renew(self, instance_id: str, duration_hours: int) -> InstanceActionResponse:
-        """Renew a GPU instance for additional time.
-
-        Args:
-            instance_id: The ID of the instance
-            duration_hours: Number of hours to renew for
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the renewal is not valid
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
+    async def renew(self, instance_id: str, month: int) -> None:
+        await self._client.post(
             f"{BASE_PATH}/gpu/instance/renewInstance",
-            json={"instance_id": instance_id, "duration_hours": duration_hours},
+            json={"instanceId": instance_id, "month": month},
         )
-        return InstanceActionResponse.model_validate(response.json())
 
-    async def convert_to_monthly(self, instance_id: str) -> InstanceActionResponse:
-        """Convert an hourly instance to monthly billing.
+    async def convert_to_monthly(self, instance_id: str, month: int) -> None:
+        await self._client.post(
+            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance",
+            json={"instanceId": instance_id, "month": month},
+        )
 
-        Args:
-            instance_id: The ID of the instance
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the conversion is not valid
-            APIError: If the API returns an error
-        """
+    async def save_image(self, request: SaveImageRequest) -> str:
         response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/transToMonthlyInstance", json={"instance_id": instance_id}
+            f"{BASE_PATH}/job/save/image",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        return InstanceActionResponse.model_validate(response.json())
-
-    async def save_image(self, instance_id: str, image_name: str) -> InstanceActionResponse:
-        """Save a GPU instance as a custom image.
-
-        Args:
-            instance_id: The ID of the instance
-            image_name: Name for the saved image
-
-        Returns:
-            Response indicating success or failure
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            NotFoundError: If instance doesn't exist
-            BadRequestError: If the save operation is not valid
-            APIError: If the API returns an error
-        """
-        response = await self._client.post(
-            f"{BASE_PATH}/gpu/instance/save",
-            json={"instance_id": instance_id, "image_name": image_name},
-        )
-        return InstanceActionResponse.model_validate(response.json())
+        payload = response.json()
+        return payload.get("jobId", "")

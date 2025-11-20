@@ -1,6 +1,8 @@
 """GPU clusters management resource."""
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Iterable
+
+from novita.generated.models import Cluster
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -8,10 +10,28 @@ if TYPE_CHECKING:
     pass
 
 
+def _parse_clusters(payload: Any) -> list[Cluster]:
+    """Normalize API payloads into a list of Cluster models."""
+    items: Iterable[Any]
+    if isinstance(payload, dict):
+        data = payload.get("data")
+        if isinstance(data, list):
+            items = data
+        elif data is None:
+            items = []
+        else:
+            items = [data]
+    elif isinstance(payload, list):
+        items = payload
+    else:
+        items = [payload]
+    return [Cluster.model_validate(item) for item in items]
+
+
 class Clusters(BaseResource):
     """Synchronous GPU clusters management resource."""
 
-    def list(self) -> list[dict[str, Any]]:
+    def list(self) -> list[Cluster]:
         """List all available GPU clusters.
 
         Returns:
@@ -22,13 +42,13 @@ class Clusters(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/clusters")
-        return response.json()
+        return _parse_clusters(response.json())
 
 
 class AsyncClusters(AsyncBaseResource):
     """Asynchronous GPU clusters management resource."""
 
-    async def list(self) -> list[dict[str, Any]]:
+    async def list(self) -> list[Cluster]:
         """List all available GPU clusters.
 
         Returns:
@@ -39,4 +59,4 @@ class AsyncClusters(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/clusters")
-        return response.json()
+        return _parse_clusters(response.json())

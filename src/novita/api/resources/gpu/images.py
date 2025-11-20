@@ -1,6 +1,14 @@
 """GPU images management resource."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
+
+from novita.generated.models import (
+    CreateImagePrewarmResponse,
+    ImagePrewarmTask,
+    ListImagePrewarmTasksResponse,
+)
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -11,20 +19,21 @@ if TYPE_CHECKING:
 class Images(BaseResource):
     """Synchronous GPU images management resource."""
 
-    def list(self) -> dict[str, Any]:
+    def list(self) -> list[ImagePrewarmTask]:
         """List all image prewarm tasks.
 
         Returns:
-            List of image prewarm tasks
+            List of image prewarm task objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/image/prewarm")
-        return response.json()
+        parsed = ListImagePrewarmTasksResponse.model_validate(response.json())
+        return parsed.data
 
-    def create(self, **kwargs: Any) -> dict[str, Any]:
+    def create(self, **kwargs: Any) -> CreateImagePrewarmResponse:
         """Create a new image prewarm task.
 
         Args:
@@ -39,9 +48,9 @@ class Images(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(f"{BASE_PATH}/image/prewarm", json=kwargs)
-        return response.json()
+        return CreateImagePrewarmResponse.model_validate(response.json())
 
-    def update(self, task_id: str, **kwargs: Any) -> dict[str, Any]:
+    def update(self, task_id: str, **kwargs: Any) -> ImagePrewarmTask:
         """Update an image prewarm task.
 
         Args:
@@ -59,7 +68,7 @@ class Images(BaseResource):
         """
         data = {"task_id": task_id, **kwargs}
         response = self._client.post(f"{BASE_PATH}/image/prewarm/edit", json=data)
-        return response.json()
+        return ImagePrewarmTask.model_validate(response.json())
 
     def delete(self, task_id: str) -> None:
         """Delete an image prewarm task.
@@ -91,20 +100,21 @@ class Images(BaseResource):
 class AsyncImages(AsyncBaseResource):
     """Asynchronous GPU images management resource."""
 
-    async def list(self) -> dict[str, Any]:
+    async def list(self) -> list[ImagePrewarmTask]:
         """List all image prewarm tasks.
 
         Returns:
-            List of image prewarm tasks
+            List of image prewarm task objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/image/prewarm")
-        return response.json()
+        parsed = ListImagePrewarmTasksResponse.model_validate(response.json())
+        return parsed.data
 
-    async def create(self, **kwargs: Any) -> dict[str, Any]:
+    async def create(self, **kwargs: Any) -> CreateImagePrewarmResponse:
         """Create a new image prewarm task.
 
         Args:
@@ -119,9 +129,9 @@ class AsyncImages(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(f"{BASE_PATH}/image/prewarm", json=kwargs)
-        return response.json()
+        return CreateImagePrewarmResponse.model_validate(response.json())
 
-    async def update(self, task_id: str, **kwargs: Any) -> dict[str, Any]:
+    async def update(self, task_id: str, **kwargs: Any) -> ImagePrewarmTask:
         """Update an image prewarm task.
 
         Args:
@@ -139,7 +149,7 @@ class AsyncImages(AsyncBaseResource):
         """
         data = {"task_id": task_id, **kwargs}
         response = await self._client.post(f"{BASE_PATH}/image/prewarm/edit", json=data)
-        return response.json()
+        return ImagePrewarmTask.model_validate(response.json())
 
     async def delete(self, task_id: str) -> None:
         """Delete an image prewarm task.

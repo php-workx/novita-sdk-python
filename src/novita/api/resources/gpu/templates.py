@@ -1,6 +1,15 @@
 """GPU templates management resource."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
+
+from novita.generated.models import (
+    CreateTemplateResponse,
+    GetTemplateResponse,
+    ListTemplatesResponse,
+    Template,
+)
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -11,20 +20,21 @@ if TYPE_CHECKING:
 class Templates(BaseResource):
     """Synchronous GPU templates management resource."""
 
-    def list(self) -> dict[str, Any]:
+    def list(self) -> list[Template]:
         """List all templates.
 
         Returns:
-            List of templates
+            List of template objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/templates")
-        return response.json()
+        parsed = ListTemplatesResponse.model_validate(response.json())
+        return parsed.template
 
-    def get(self, template_id: str) -> dict[str, Any]:
+    def get(self, template_id: str) -> Template:
         """Get details of a specific template.
 
         Args:
@@ -38,10 +48,11 @@ class Templates(BaseResource):
             NotFoundError: If template doesn't exist
             APIError: If the API returns an error
         """
-        response = self._client.get(f"{BASE_PATH}/template", params={"template_id": template_id})
-        return response.json()
+        response = self._client.get(f"{BASE_PATH}/template", params={"templateId": template_id})
+        parsed = GetTemplateResponse.model_validate(response.json())
+        return parsed.template
 
-    def create(self, **kwargs: Any) -> dict[str, Any]:
+    def create(self, **kwargs: Any) -> CreateTemplateResponse:
         """Create a new template.
 
         Args:
@@ -56,7 +67,7 @@ class Templates(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(f"{BASE_PATH}/template/create", json=kwargs)
-        return response.json()
+        return CreateTemplateResponse.model_validate(response.json())
 
     def delete(self, template_id: str) -> None:
         """Delete a template.
@@ -69,26 +80,27 @@ class Templates(BaseResource):
             NotFoundError: If template doesn't exist
             APIError: If the API returns an error
         """
-        self._client.post(f"{BASE_PATH}/template/delete", json={"template_id": template_id})
+        self._client.post(f"{BASE_PATH}/template/delete", json={"templateId": template_id})
 
 
 class AsyncTemplates(AsyncBaseResource):
     """Asynchronous GPU templates management resource."""
 
-    async def list(self) -> dict[str, Any]:
+    async def list(self) -> list[Template]:
         """List all templates.
 
         Returns:
-            List of templates
+            List of template objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/templates")
-        return response.json()
+        parsed = ListTemplatesResponse.model_validate(response.json())
+        return parsed.template
 
-    async def get(self, template_id: str) -> dict[str, Any]:
+    async def get(self, template_id: str) -> Template:
         """Get details of a specific template.
 
         Args:
@@ -103,11 +115,12 @@ class AsyncTemplates(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.get(
-            f"{BASE_PATH}/template", params={"template_id": template_id}
+            f"{BASE_PATH}/template", params={"templateId": template_id}
         )
-        return response.json()
+        parsed = GetTemplateResponse.model_validate(response.json())
+        return parsed.template
 
-    async def create(self, **kwargs: Any) -> dict[str, Any]:
+    async def create(self, **kwargs: Any) -> CreateTemplateResponse:
         """Create a new template.
 
         Args:
@@ -122,7 +135,7 @@ class AsyncTemplates(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(f"{BASE_PATH}/template/create", json=kwargs)
-        return response.json()
+        return CreateTemplateResponse.model_validate(response.json())
 
     async def delete(self, template_id: str) -> None:
         """Delete a template.
@@ -135,4 +148,4 @@ class AsyncTemplates(AsyncBaseResource):
             NotFoundError: If template doesn't exist
             APIError: If the API returns an error
         """
-        await self._client.post(f"{BASE_PATH}/template/delete", json={"template_id": template_id})
+        await self._client.post(f"{BASE_PATH}/template/delete", json={"templateId": template_id})

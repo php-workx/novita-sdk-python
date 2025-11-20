@@ -127,20 +127,23 @@ def test_create_instance(httpx_mock: HTTPXMock) -> None:
     # Mock the API response
     httpx_mock.add_response(
         method="POST",
-        url="https://api.novita.ai/v1/gpu/instances",
-        json={"instance_id": "inst-123", "status": "PENDING"},
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
+        json={"id": "inst-123"},
     )
 
     client = NovitaClient(api_key="test-key")
     request = CreateInstanceRequest(
         name="test-instance",
-        instance_type=InstanceType.A100_80GB
+        product_id="prod-1",
+        gpu_num=1,
+        rootfs_size=50,
+        image_url="docker.io/library/ubuntu:latest",
+        kind=Kind.gpu,
     )
 
-    response = client.gpu.create_instance(request)
+    response = client.gpu.instances.create(request)
 
-    assert response.instance_id == "inst-123"
-    assert response.status == "PENDING"
+    assert response.id == "inst-123"
 
     # Verify request was made correctly
     request_made = httpx_mock.get_request()

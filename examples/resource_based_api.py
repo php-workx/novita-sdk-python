@@ -19,16 +19,17 @@ def main() -> None:
         # List all instances
         print("Listing all instances...")
         instances = client.gpu.instances.list()
-        print(f"✓ Total instances: {instances.total}")
-        for instance in instances.instances[:3]:  # Show first 3
-            print(f"  - {instance.name} ({instance.status})")
+        print(f"✓ Total instances: {len(instances)}")
+        for instance in instances[:3]:  # Show first 3
+            print(f"  - {instance.name} ({instance.status.value})")
 
         # Get pricing information
         print("\n=== GPU Products/Pricing ===")
         products = client.gpu.products.list()
-        print(f"✓ Total GPU products: {len(products.pricing)}")
-        for product in products.pricing[:3]:  # Show first 3
-            print(f"  - {product.instance_type}: ${product.price_per_hour}/hour")
+        print(f"✓ Total GPU products: {len(products)}")
+        for product in products[:3]:  # Show first 3
+            hourly = (product.price or 0) / 100000
+            print(f"  - {product.id}: ${hourly:.2f}/hour")
 
         # Demonstrate clusters
         print("\n=== Available Clusters ===")

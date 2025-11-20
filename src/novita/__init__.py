@@ -10,17 +10,18 @@ from novita.exceptions import (
     RateLimitError,
     TimeoutError,
 )
-from novita.models import (
+from novita.generated.models import (
+    BillingMode,
     CreateInstanceRequest,
     CreateInstanceResponse,
-    EndpointStatus,
+    EditInstanceRequest,
     GPUProduct,
-    InstanceActionResponse,
     InstanceInfo,
-    InstanceType,
+    Kind,
     ListGPUProductsResponse,
     ListInstancesResponse,
-    UpdateInstanceRequest,
+    SaveImageRequest,
+    UpgradeInstanceRequest,
 )
 
 __version__ = "0.1.0"
@@ -40,12 +41,13 @@ __all__ = [
     # Models
     "CreateInstanceRequest",
     "CreateInstanceResponse",
-    "UpdateInstanceRequest",
+    "EditInstanceRequest",
+    "UpgradeInstanceRequest",
+    "SaveImageRequest",
     "InstanceInfo",
     "ListInstancesResponse",
-    "InstanceActionResponse",
     "GPUProduct",
     "ListGPUProductsResponse",
-    "InstanceType",
-    "EndpointStatus",
+    "Kind",
+    "BillingMode",
 ]

@@ -4,6 +4,7 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient, RateLimitError
+from novita.generated.models import CPUProduct, GPUProduct
 
 
 def test_list_gpu_products(httpx_mock: HTTPXMock) -> None:
@@ -52,13 +53,15 @@ def test_list_gpu_products(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.products.list()
+    products = client.gpu.products.list()
 
-    assert len(response.data) == 2
-    assert response.data[0].id == "gpu-a100-80gb"
-    assert response.data[0].name == "A100 80GB"
-    assert response.data[0].price == 350
-    assert response.data[1].id == "gpu-a10"
+    assert isinstance(products, list)
+    assert all(isinstance(product, GPUProduct) for product in products)
+    assert len(products) == 2
+    assert products[0].id == "gpu-a100-80gb"
+    assert products[0].name == "A100 80GB"
+    assert products[0].price == 350
+    assert products[1].id == "gpu-a10"
 
     request_made = httpx_mock.get_request()
     assert request_made.method == "GET"
@@ -76,31 +79,26 @@ def test_list_cpu_products(httpx_mock: HTTPXMock) -> None:
                 {
                     "id": "cpu-4-8",
                     "name": "CPU 4 cores 8GB",
-                    "cpuPerGpu": 4,
-                    "memoryPerGpu": 8,
-                    "diskPerGpu": 50,
+                    "cpuNum": 4,
+                    "memorySize": 8,
+                    "rootfsSize": 50,
+                    "localVolumeSize": 50,
                     "availableDeploy": True,
-                    "minRootFS": 10,
-                    "maxRootFS": 500,
-                    "minLocalStorage": 0,
-                    "maxLocalStorage": 100,
-                    "regions": [],
                     "price": 20,
-                    "monthlyPrice": [],
-                    "billingMethods": ["onDemand"],
-                    "spotPrice": "0",
                 },
             ]
         },
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.products.list_cpu()
+    products = client.gpu.products.list_cpu()
 
-    assert len(response.data) == 1
-    assert response.data[0].id == "cpu-4-8"
-    assert response.data[0].name == "CPU 4 cores 8GB"
-    assert response.data[0].price == 20
+    assert isinstance(products, list)
+    assert all(isinstance(product, CPUProduct) for product in products)
+    assert len(products) == 1
+    assert products[0].id == "cpu-4-8"
+    assert products[0].name == "CPU 4 cores 8GB"
+    assert products[0].price == 20
     client.close()
 
 
@@ -153,7 +151,9 @@ async def test_async_list_gpu_products(httpx_mock: HTTPXMock) -> None:
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
-        response = await client.gpu.products.list()
+        products = await client.gpu.products.list()
 
-        assert len(response.data) == 1
-        assert response.data[0].id == "gpu-a100-80gb"
+        assert isinstance(products, list)
+        assert all(isinstance(product, GPUProduct) for product in products)
+        assert len(products) == 1
+        assert products[0].id == "gpu-a100-80gb"

@@ -30,18 +30,18 @@ Always use `httpx_mock` to set up expected HTTP responses:
 ```python
 def test_create_instance(httpx_mock: HTTPXMock) -> None:
     # Mock the HTTP response
-    httpx_mock.add_response(
-        method="POST",
-        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
-        json={"instance_id": "inst-123", "status": "PENDING"}
-    )
-    
-    # Make the API call (will use the mock)
-    client = NovitaClient(api_key="test-key")
-    response = client.gpu.instances.create(request)
-    
-    # Assert the results
-    assert response.instance_id == "inst-123"
+httpx_mock.add_response(
+    method="POST",
+    url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
+    json={"id": "inst-123"}
+)
+
+# Make the API call (will use the mock)
+client = NovitaClient(api_key="test-key")
+response = client.gpu.instances.create(request)
+
+# Assert the results
+assert response.id == "inst-123"
 ```
 
 ### ⚠️ Important: Use Real API Documentation

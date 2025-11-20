@@ -40,18 +40,18 @@ paths:
       parameters:
       - name: pageSize
         in: query
-        required: true
+        required: false
         schema:
           type: integer
           minimum: 0
-        description: Items per page
+        description: Maximum number of items returned per page
       - name: pageNum
         in: query
-        required: true
+        required: false
         schema:
           type: integer
           minimum: 0
-        description: Page number
+        description: Page number to retrieve
       - name: name
         in: query
         required: false
@@ -111,7 +111,7 @@ paths:
       tags:
       - Instances
       parameters:
-      - name: instance_id
+      - name: instanceId
         in: query
         required: true
         schema:
@@ -161,21 +161,15 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-              - type: object
-                required:
-                - instance_id
-                properties:
-                  instance_id:
-                    type: string
-              - $ref: '#/components/schemas/UpdateInstanceRequest'
+              $ref: '#/components/schemas/EditInstanceRequest'
       responses:
         '200':
           description: Instance updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceInfo'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -195,9 +189,9 @@ paths:
             schema:
               type: object
               required:
-              - instance_id
+              - instanceId
               properties:
-                instance_id:
+                instanceId:
                   type: string
       responses:
         '200':
@@ -205,7 +199,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -223,9 +218,9 @@ paths:
             schema:
               type: object
               required:
-              - instance_id
+              - instanceId
               properties:
-                instance_id:
+                instanceId:
                   type: string
       responses:
         '200':
@@ -233,7 +228,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -251,9 +247,9 @@ paths:
             schema:
               type: object
               required:
-              - instance_id
+              - instanceId
               properties:
-                instance_id:
+                instanceId:
                   type: string
       responses:
         '200':
@@ -261,7 +257,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -279,9 +276,9 @@ paths:
             schema:
               type: object
               required:
-              - instance_id
+              - instanceId
               properties:
-                instance_id:
+                instanceId:
                   type: string
       responses:
         '200':
@@ -289,7 +286,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -312,7 +310,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -332,12 +331,9 @@ paths:
             schema:
               type: object
               required:
-              - instance_id
-              - target_region
+              - instanceId
               properties:
-                instance_id:
-                  type: string
-                target_region:
+                instanceId:
                   type: string
       responses:
         '200':
@@ -345,7 +341,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -365,22 +362,23 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
-                - duration_hours
+                - instanceId
+                - month
               properties:
-                instance_id:
+                instanceId:
                   type: string
                   description: The ID of the subscription instance to be renewed
-                duration_hours:
+                month:
                   type: integer
-                  description: Renewal duration in hours
+                  description: Renewal duration in months
       responses:
         '200':
           description: Instance renewal initiated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -400,18 +398,23 @@ paths:
             schema:
               type: object
               required:
-                - instance_id
+                - instanceId
+                - month
               properties:
-                instance_id:
+                instanceId:
                   type: string
                   description: The pay-as-you-go instance identifier to convert to subscription format
+                month:
+                  type: integer
+                  description: Subscription duration after conversion (months)
       responses:
         '200':
           description: Instance conversion initiated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -424,6 +427,73 @@ paths:
       operationId: list_jobs
       tags:
         - Jobs
+      parameters:
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Items per page
+      - name: pageNum
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Page number to retrieve
+      - name: jobId
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Filter by job identifier
+      - name: state
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - pulling
+          - running
+          - fail
+          - success
+          - break
+        description: Filter by status
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - saveImage
+          - instanceMigrate
+          - autoInstanceMigrate
+        description: Filter by category
+      - name: startTime
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Time range start (Unix seconds)
+      - name: endTime
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Time range end (Unix seconds)
+      - name: creators
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by initiating user ID
       responses:
         '200':
           description: Successful response
@@ -446,10 +516,13 @@ paths:
             schema:
               type: object
               required:
-              - job_id
+              - jobId
               properties:
-                job_id:
+                jobId:
                   type: string
+                  description: The job ID to be interrupted
+                  minLength: 0
+                  maxLength: 255
       responses:
         '200':
           description: Job cancelled successfully
@@ -457,6 +530,12 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - jobId
+                properties:
+                  jobId:
+                    type: string
+                    description: Identifier for the interrupted job
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -479,7 +558,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                required:
+                - jobId
+                properties:
+                  jobId:
+                    type: string
+                    description: A unique identifier for the image save operation
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -597,7 +682,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EndpointDetail'
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The newly created Endpoint identifier
+                    nullable: true
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -620,16 +710,18 @@ paths:
       parameters:
       - name: pageSize
         in: query
-        required: true
+        required: false
         schema:
           type: integer
+          default: 10
         description: Maximum number of items returned per page
       - name: pageNum
         in: query
-        required: true
+        required: false
         schema:
           type: integer
-        description: Current page number
+          default: 0
+        description: Current page number (0-indexed)
   /endpoint:
     get:
       summary: Get single serverless endpoint
@@ -642,7 +734,7 @@ paths:
         required: true
         schema:
           type: string
-        description: Identifier for the endpoint being retrieved
+        description: Endpoint ID
       responses:
         '200':
           description: Successful response
@@ -672,7 +764,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      description: Endpoint ID to update
+                      description: Identifier for the endpoint being modified
                 - $ref: '#/components/schemas/UpdateEndpointRequest'
       responses:
         '200':
@@ -700,11 +792,11 @@ paths:
             schema:
               type: object
               required:
-                - id
+                - name
               properties:
-                id:
+                name:
                   type: string
-                  description: The ID of the endpoint to delete
+                  description: The identifier of the endpoint to remove
       responses:
         '200':
           description: Endpoint deleted successfully
@@ -729,6 +821,20 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - total
+                - limit
+                - perImageSize
+                properties:
+                  total:
+                    type: integer
+                    description: Number of existing prewarm tasks.
+                  limit:
+                    type: integer
+                    description: Maximum number of prewarm tasks that can be created.
+                  perImageSize:
+                    type: integer
+                    description: Maximum image size per prewarm task (GB).
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   /image/prewarm:
@@ -749,7 +855,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImagePrewarmTask'
+                $ref: '#/components/schemas/CreateImagePrewarmResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -759,6 +865,44 @@ paths:
       operationId: list_image_prewarm_tasks
       tags:
         - Image
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number.
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Page size.
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - Pending
+              - Running
+              - Succeeded
+              - Failed
+          description: Prewarm task state filter.
+        - name: clusterId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cluster ID filter.
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Image name or task note for fuzzy matching.
       responses:
         '200':
           description: Successful response
@@ -786,7 +930,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImagePrewarmTask'
+                type: object
+                description: Empty response on success.
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -804,7 +949,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/DeleteImagePrewarmRequest'
       responses:
         '200':
           description: Prewarm tasks deleted successfully
@@ -812,6 +957,7 @@ paths:
             application/json:
               schema:
                 type: object
+                description: Empty response on success.
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -868,17 +1014,62 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                required:
+                - instance_id
+                - success
+                properties:
+                  instance_id:
+                    type: string
+                    description: Instance ID
+                  success:
+                    type: boolean
+                    description: Whether the action succeeded
+                  message:
+                    type: string
+                    description: Optional message
+                    nullable: true
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
   /networks:
     get:
-      summary: List networks
+      summary: List VPC networks
       operationId: list_networks
       tags:
         - Network
+      parameters:
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Number of items per page
+      - name: pageNum
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+        description: Page number to retrieve
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Custom network name (supports fuzzy search)
+      - name: creators
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 0
+          maxLength: 255
+        description: Creator user ID for filtering
       responses:
         '200':
           description: Successful response
@@ -890,16 +1081,19 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
   /network:
     get:
-      summary: Get network details
+      summary: Get VPC network details
       operationId: get_network
       tags:
       - Network
       parameters:
-      - name: network_id
+      - name: networkId
         in: query
         required: true
         schema:
           type: string
+          minLength: 1
+          maxLength: 255
+        description: VPC network identifier
       responses:
         '200':
           description: Successful response
@@ -907,13 +1101,21 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                - network
+                properties:
+                  network:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Network'
+                    description: VPC network information
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundError'
   /network/create:
     post:
-      summary: Create network storage
+      summary: Create VPC network
       operationId: create_network
       tags:
         - Network
@@ -925,18 +1127,26 @@ paths:
               $ref: '#/components/schemas/CreateNetworkRequest'
       responses:
         '200':
-          description: Network created successfully
+          description: VPC network created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Network'
+                type: object
+                required:
+                - network
+                properties:
+                  network:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Network'
+                    description: Created VPC network details
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   /network/update:
     post:
-      summary: Update network storage
+      summary: Update VPC network
       operationId: update_network
       tags:
         - Network
@@ -948,11 +1158,11 @@ paths:
               $ref: '#/components/schemas/UpdateNetworkRequest'
       responses:
         '200':
-          description: Network updated successfully
+          description: VPC network updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Network'
+                type: object
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -961,7 +1171,7 @@ paths:
           $ref: '#/components/responses/NotFoundError'
   /network/delete:
     post:
-      summary: Delete network storage
+      summary: Delete VPC network
       operationId: delete_network
       tags:
         - Network
@@ -973,11 +1183,11 @@ paths:
               $ref: '#/components/schemas/DeleteNetworkRequest'
       responses:
         '200':
-          description: Network deleted successfully
+          description: VPC network deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -988,6 +1198,31 @@ paths:
       operationId: list_network_storages
       tags:
         - Network Storage
+      parameters:
+      - name: pageNo
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: Page number for pagination
+      - name: pageSize
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: Number of records per page
+      - name: storageName
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by storage name
+      - name: storageId
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Filter by storage identifier
       responses:
         '200':
           description: Successful response
@@ -1015,7 +1250,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkStorage'
+                type: string
+                description: Created resource identifier or status confirmation
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1038,7 +1274,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkStorage'
+                type: object
+                description: Empty response object upon successful update
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1063,7 +1300,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                type: object
+                description: Empty response object upon successful deletion
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -1074,6 +1312,43 @@ paths:
       operationId: list_templates
       tags:
         - Template
+      parameters:
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of entries returned on one page.
+        - name: pageNum
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Current page index.
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter the templates by name.
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter the templates by type.
+        - name: channel
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter the templates by channel.
       responses:
         '200':
           description: Successful response
@@ -1090,18 +1365,19 @@ paths:
       tags:
       - Template
       parameters:
-      - name: template_id
+      - name: templateId
         in: query
-        required: true
+        required: false
         schema:
           type: string
+        description: ID of the template being queried.
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/GetTemplateResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -1124,7 +1400,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Template'
+                $ref: '#/components/schemas/CreateTemplateResponse'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -1147,7 +1423,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InstanceActionResponse'
+                $ref: '#/components/schemas/DeleteTemplateResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -1380,6 +1656,13 @@ components:
           description: Tool configuration (e.g., Jupyter)
           items:
             type: object
+            properties:
+              name:
+                type: string
+              port:
+                type: string
+              type:
+                type: string
         command:
           type: string
           description: Startup command
@@ -1396,6 +1679,11 @@ components:
           maxItems: 30
           items:
             type: object
+            properties:
+              Id:
+                type: string
+              mountPoint:
+                type: string
         networkId:
           type: string
           description: VPC network reference
@@ -1412,37 +1700,6 @@ components:
           - monthly
           - spot
           nullable: true
-    UpdateInstanceRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          description: New name for the instance
-          nullable: true
-        ports:
-          type: array
-          description: Port configurations (max 15 combined with tools)
-          nullable: true
-          maxItems: 15
-          items:
-            type: object
-            properties:
-              port:
-                type: integer
-                description: Port number (1-65535, excluding 2222, 2223, 2224)
-                minimum: 1
-                maximum: 65535
-              type:
-                type: string
-                description: Protocol type
-                enum:
-                - tcp
-                - http
-        expandRootDisk:
-          type: integer
-          description: Disk expansion in GB (0 means no expansion)
-          nullable: true
-          minimum: 0
     UpgradeInstanceRequest:
       type: object
       required:
@@ -1519,43 +1776,79 @@ components:
                     minLength: 1
                     maxLength: 4095
                     default: /network
+    EditInstanceRequest:
+      type: object
+      required:
+      - instanceId
+      properties:
+        instanceId:
+          type: string
+          description: ID of the instance to edit.
+        ports:
+          type: array
+          description: Ports to expose (ports + tools must not exceed 15).
+          maxItems: 15
+          items:
+            type: object
+            required:
+            - port
+            - type
+            properties:
+              port:
+                type: integer
+                description: Port number (1-65535, excluding 2222/2223/2224).
+                minimum: 1
+                maximum: 65535
+              type:
+                type: string
+                description: Protocol type.
+                enum:
+                - tcp
+                - http
+        expandRootDisk:
+          type: integer
+          description: Size to expand the root disk (GB). Set to 0 if no expansion is needed.
+          minimum: 0
     CreateInstanceResponse:
       type: object
       required:
-      - instance_id
-      - status
+      - id
       properties:
-        instance_id:
+        id:
           type: string
-          description: ID of the created instance
-          example: inst-abc123
-        status:
-          type: string
-          description: Initial status of the instance
-          example: PENDING
+          description: Created instance ID.
     InstanceInfo:
       type: object
       required:
       - id
       - name
-      - status
       - clusterId
+      - status
+      - imageUrl
+      - cpuNum
+      - memory
+      - gpuNum
+      - productId
+      - productName
+      - rootfsSize
+      - billingMode
       properties:
         id:
           type: string
-          description: Unique identifier
+          description: Instance ID.
         name:
           type: string
-          description: Instance name
+          description: Instance name.
         clusterId:
           type: string
-          description: Cluster ID where instance is running
+          description: Cluster ID.
         clusterName:
           type: string
-          description: Cluster name
+          description: Cluster name.
           nullable: true
         status:
           type: string
+          description: Instance status.
           enum:
           - toCreate
           - creating
@@ -1577,86 +1870,124 @@ components:
           - freezing
         imageUrl:
           type: string
-          description: Container image URL
-          nullable: true
+          description: Container image URL.
         imageAuthId:
           type: string
-          description: Image authentication ID
-          nullable: true
-        cpuNum:
-          type: integer
-          description: Number of CPU cores
-          nullable: true
-        memory:
-          type: integer
-          description: Memory size in GB
-          nullable: true
-        gpuNum:
-          type: integer
-          description: Number of GPUs
-          nullable: true
-        rootfsSize:
-          type: integer
-          description: Root filesystem size in GB
+          description: Image registry authentication information.
           nullable: true
         command:
           type: string
-          description: Startup command
+          description: Container startup command.
           nullable: true
+        cpuNum:
+          type: string
+          description: Number of CPU cores.
+        memory:
+          type: string
+          description: Memory size (GB).
+        gpuNum:
+          type: string
+          description: Number of GPUs.
         portMappings:
           type: array
-          description: Port mapping configurations
+          description: Instance port information.
+          nullable: true
           items:
             type: object
             properties:
               port:
                 type: integer
+                description: Port number.
+                nullable: true
               endpoint:
                 type: string
-              protocol:
+                description: Port endpoint URL.
+                nullable: true
+              type:
                 type: string
+                description: Protocol type.
+                nullable: true
+        productId:
+          type: string
+          description: Product ID used to deploy the instance.
+        productName:
+          type: string
+          description: Product name used to deploy the instance.
+        rootfsSize:
+          type: integer
+          description: Root filesystem size (GB).
         volumeMounts:
           type: array
-          description: Volume mount configurations
+          description: Instance storage configuration.
+          nullable: true
           items:
             type: object
             properties:
               type:
                 type: string
+                description: Storage type.
                 enum:
                 - network
                 - local
+                nullable: true
+              size:
+                type: string
+                description: Storage capacity.
+                nullable: true
               id:
                 type: string
-              size:
-                type: integer
+                description: Cloud storage ID (present when type=network).
+                nullable: true
               mountPath:
                 type: string
+                description: Storage mount path.
+                nullable: true
+        statusError:
+          type: object
+          description: Error information when the instance fails.
+          nullable: true
+          properties:
+            state:
+              type: string
+              description: Abnormal instance status.
+              nullable: true
+            message:
+              type: string
+              description: Error message.
+              nullable: true
         envs:
           type: array
-          description: Environment variables
+          description: Instance environment variable information.
+          nullable: true
           items:
             type: object
             properties:
               key:
                 type: string
+                description: Environment variable name.
+                nullable: true
               value:
                 type: string
+                description: Environment variable value.
+                nullable: true
+        kind:
+          type: string
+          description: Instance type.
+          nullable: true
         billingMode:
           type: string
-          description: Billing mode
+          description: Billing mode for the instance.
           enum:
           - onDemand
           - monthly
           - spot
-          nullable: true
         endTime:
-          type: integer
-          description: Expiration timestamp for subscription instances
+          type: string
+          description: Expiration time for subscription instances (pay-as-you-go returns -1).
           nullable: true
         spotStatus:
           type: string
-          description: Spot instance status
+          description: Spot instance status.
           enum:
           - running
           - notified
@@ -1664,115 +1995,95 @@ components:
           - terminated
           nullable: true
         spotReclaimTime:
-          type: integer
-          description: Spot instance reclaim timestamp
-          nullable: true
-        productId:
           type: string
-          description: Product ID
+          description: Spot instance reclaim time ("0" when reclaim has not started).
           nullable: true
-        productName:
-          type: string
-          description: Product name
-          nullable: true
-        statusError:
-          type: object
-          description: Error information if instance failed
-          nullable: true
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-        connectComponentSSH:
-          type: object
-          description: SSH connection details
-          nullable: true
-          properties:
-            sshCommand:
-              type: string
-            password:
-              type: string
-            isRunning:
-              type: boolean
-        connectComponentWebTerminal:
-          type: object
-          description: Web terminal connection details
-          nullable: true
-          properties:
-            address:
-              type: string
-            username:
-              type: string
-            password:
-              type: string
-            isRunning:
-              type: boolean
-        connectComponentJupyter:
-          type: object
-          description: Jupyter connection details
-          nullable: true
-          properties:
-            port:
-              type: integer
-            address:
-              type: string
-            isRunning:
-              type: boolean
-        connectComponentLog:
-          type: object
-          description: Log access details
-          nullable: true
-          properties:
-            systemLogAddress:
-              type: string
-            instanceLogAddress:
-              type: string
         network:
           type: object
-          description: VPC network configuration
+          description: VPC network information.
           nullable: true
           properties:
             id:
               type: string
-            ipAddress:
+              description: Network ID.
+              nullable: true
+            ip:
               type: string
-        jobs:
-          type: array
-          description: Running jobs
-          items:
-            type: object
-        keepDataDay:
-          type: integer
-          description: Data retention period in days
+              description: Instance IP in the VPC network.
+              nullable: true
+        connectComponentSSH:
+          type: object
+          description: SSH connection credentials and command.
           nullable: true
-        freeStorageSize:
-          type: integer
-          description: Free storage size in GB
+          properties:
+            user:
+              type: string
+              nullable: true
+            password:
+              type: string
+              nullable: true
+            command:
+              type: string
+              nullable: true
+        connectComponentWebTerminal:
+          type: object
+          description: Web-based terminal access details.
           nullable: true
+          properties:
+            url:
+              type: string
+              nullable: true
+        connectComponentJupyter:
+          type: object
+          description: Jupyter connection information.
+          nullable: true
+          properties:
+            url:
+              type: string
+              nullable: true
+            token:
+              type: string
+              nullable: true
+        connectComponentLog:
+          type: object
+          description: Log streaming addresses.
+          nullable: true
+          properties:
+            url:
+              type: string
+              nullable: true
         node:
           type: object
-          description: Node information
+          description: Node metadata.
           nullable: true
           properties:
             maxRootfsSize:
               type: integer
-    InstanceActionResponse:
-      type: object
-      required:
-      - instance_id
-      - success
-      properties:
-        instance_id:
-          type: string
-          description: Instance ID
-        success:
-          type: boolean
-          description: Whether the action succeeded
-        message:
-          type: string
-          description: Optional message
+              description: Maximum root filesystem size.
+              nullable: true
+        freeStorageSize:
+          type: integer
+          description: Available system disk space in GB.
           nullable: true
+        keepDataDay:
+          type: integer
+          description: Data retention duration post-shutdown.
+          nullable: true
+        jobs:
+          type: array
+          description: Tasks currently running on the instance.
+          nullable: true
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Job ID.
+                nullable: true
+              type:
+                type: string
+                description: Job type.
+                nullable: true
     ListInstancesResponse:
       type: object
       required:
@@ -1815,7 +2126,6 @@ components:
       - price
       - monthlyPrice
       - billingMethods
-      - spotPrice
       properties:
         id:
           type: string
@@ -1892,12 +2202,6 @@ components:
       required:
       - id
       - name
-      - cpuNum
-      - memorySize
-      - rootfsSize
-      - localVolumeSize
-      - availableDeploy
-      - price
       properties:
         id:
           type: string
@@ -1908,21 +2212,27 @@ components:
         cpuNum:
           type: integer
           description: Number of CPU cores
+          nullable: true
         memorySize:
           type: integer
           description: RAM allocation in GB
+          nullable: true
         rootfsSize:
           type: integer
           description: Root filesystem capacity in GB
+          nullable: true
         localVolumeSize:
           type: integer
           description: Local storage in GB
+          nullable: true
         availableDeploy:
           type: boolean
           description: Whether this product can be used to create an instance
+          nullable: true
         price:
           type: integer
           description: Product unit cost
+          nullable: true
     ListCPUProductsResponse:
       type: object
       required:
@@ -1948,96 +2258,526 @@ components:
     ListEndpointsResponse:
       type: object
       required:
-      - data
+      - endpoints
       - total
       properties:
-        data:
+        endpoints:
           type: array
           items:
             $ref: '#/components/schemas/EndpointDetail'
-          description: List of serverless endpoints
+          description: Collection of endpoint configurations
         total:
           type: integer
-          description: Total number of endpoints
+          description: Count of all available results
     
     EndpointDetail:
       type: object
-      required:
-      - id
-      - name
-      - status
       properties:
         id:
           type: string
           description: Unique endpoint identifier
+          nullable: true
         name:
           type: string
-          description: Endpoint name
-        status:
-          type: string
-          description: Current endpoint status
-          enum:
-          - pending
-          - running
-          - stopped
-          - error
-        imageUrl:
-          type: string
-          description: Container image URL
+          description: Display name for the endpoint
           nullable: true
-        productId:
+        appName:
           type: string
-          description: GPU product ID
+          description: Associated application name
           nullable: true
-        gpuNum:
+        url:
+          type: string
+          description: Endpoint URL. You can access your HTTP service via this URL
+          nullable: true
+        state:
+          type: object
+          description: Status details
+          nullable: true
+          properties:
+            state:
+              type: string
+              description: Status value (e.g., "serving" when available)
+              nullable: true
+            error:
+              type: string
+              description: Error code if applicable
+              nullable: true
+            message:
+              type: string
+              description: Status message
+              nullable: true
+        workerConfig:
+          type: object
+          description: Worker scaling configuration
+          nullable: true
+          properties:
+            minNum:
+              type: integer
+              description: Minimum worker count
+              nullable: true
+            maxNum:
+              type: integer
+              description: Maximum worker count
+              nullable: true
+            freeTimeout:
+              type: integer
+              description: Idle timeout in seconds
+              nullable: true
+            maxConcurrent:
+              type: integer
+              description: Request concurrency limit
+              nullable: true
+            gpuNum:
+              type: integer
+              description: GPUs allocated per worker
+              nullable: true
+            cudaVersion:
+              type: string
+              description: CUDA version
+              nullable: true
+        policy:
+          type: object
+          description: Auto-scaling rules
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: Scaling strategy (queue or concurrency)
+              enum:
+              - queue
+              - concurrency
+              nullable: true
+            value:
+              type: integer
+              description: Threshold value (seconds for queue, request count for concurrency)
+              nullable: true
+        image:
+          type: object
+          description: Container specifications
+          nullable: true
+          properties:
+            image:
+              type: string
+              description: Container image URL
+              nullable: true
+            authId:
+              type: string
+              description: Registry credentials ID
+              nullable: true
+            command:
+              type: string
+              description: Startup command
+              nullable: true
+        rootfsSize:
           type: integer
-          description: Number of GPUs
+          description: System disk size in GB
           nullable: true
-        createdAt:
-          type: string
-          format: date-time
-          description: Creation timestamp
+        volumeMounts:
+          type: array
+          description: Storage mounts
           nullable: true
-        updatedAt:
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Storage type (local or network)
+                enum:
+                - local
+                - network
+                nullable: true
+              id:
+                type: string
+                description: Storage identifier (for network storage)
+                nullable: true
+              size:
+                type: integer
+                description: Storage size in GB (for local storage)
+                nullable: true
+              mountPath:
+                type: string
+                description: Mount path
+                nullable: true
+        envs:
+          type: array
+          description: Environment variables
+          nullable: true
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                nullable: true
+              value:
+                type: string
+                nullable: true
+        ports:
+          type: array
+          description: HTTP port configurations
+          nullable: true
+          items:
+            type: object
+            properties:
+              port:
+                type: string
+                description: Port number
+                nullable: true
+        workers:
+          type: array
+          description: Active worker details
+          nullable: true
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Worker identifier
+                nullable: true
+              state:
+                type: object
+                description: Worker state information
+                nullable: true
+              log:
+                type: string
+                description: Worker log path
+                nullable: true
+              metrics:
+                type: object
+                description: Worker metrics
+                nullable: true
+              health:
+                type: object
+                description: Worker health status
+                nullable: true
+        products:
+          type: array
+          description: Associated product IDs
+          nullable: true
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Product identifier
+                nullable: true
+        healthy:
+          type: object
+          description: Health check settings
+          nullable: true
+          properties:
+            path:
+              type: string
+              description: Health check endpoint path
+              nullable: true
+        clusterID:
           type: string
-          format: date-time
-          description: Last update timestamp
+          description: Cluster location for cloud storage
+          nullable: true
+        log:
+          type: string
+          description: Endpoint logging path
           nullable: true
     
     CreateEndpointRequest:
       type: object
       required:
-      - name
-      - imageUrl
-      - productId
-      - gpuNum
+      - endpoint
+      properties:
+        endpoint:
+          type: object
+          required:
+          - workerConfig
+          - ports
+          - policy
+          - image
+          - products
+          - rootfsSize
+          - volumeMounts
+          - healthy
+          properties:
+            name:
+              type: string
+              description: Endpoint identifier
+              maxLength: 220
+              nullable: true
+            appName:
+              type: string
+              description: URL component (defaults to Endpoint ID if omitted)
+              nullable: true
+            workerConfig:
+              type: array
+              description: Worker scaling specifications
+              items:
+                type: object
+                required:
+                - minNum
+                - maxNum
+                - freeTimeout
+                - maxConcurrent
+                - gpuNum
+                properties:
+                  minNum:
+                    type: integer
+                    description: Minimum worker count
+                  maxNum:
+                    type: integer
+                    description: Maximum worker count
+                  freeTimeout:
+                    type: integer
+                    description: Idle timeout in seconds
+                  maxConcurrent:
+                    type: integer
+                    description: Request concurrency limit
+                  gpuNum:
+                    type: integer
+                    description: GPUs per worker
+            ports:
+              type: array
+              description: HTTP port configuration (1-65535, excluding 2222-2224)
+              items:
+                type: object
+                required:
+                - port
+                properties:
+                  port:
+                    type: string
+                    description: Port number
+            policy:
+              type: array
+              description: Auto-scaling rules
+              items:
+                type: object
+                required:
+                - type
+                - value
+                properties:
+                  type:
+                    type: string
+                    description: Scaling strategy
+                    enum:
+                    - queue
+                    - concurrency
+                  value:
+                    type: integer
+                    description: Threshold value (seconds for queue, request count for concurrency)
+            image:
+              type: array
+              description: Container image details
+              items:
+                type: object
+                required:
+                - image
+                properties:
+                  image:
+                    type: string
+                    description: Container image URL
+                    maxLength: 511
+                  authId:
+                    type: string
+                    description: Private registry credentials ID
+                    maxLength: 255
+                    nullable: true
+                  command:
+                    type: string
+                    description: Container startup command
+                    maxLength: 2047
+                    nullable: true
+            products:
+              type: array
+              description: Product identifiers
+              items:
+                type: object
+                required:
+                - id
+                properties:
+                  id:
+                    type: string
+                    description: Product ID
+            rootfsSize:
+              type: integer
+              description: System disk size in GB (fixed at 100)
+            volumeMounts:
+              type: array
+              description: Storage configuration
+              items:
+                type: object
+                required:
+                - type
+                - mountPath
+                properties:
+                  type:
+                    type: string
+                    description: Storage type
+                    enum:
+                    - local
+                    - network
+                  size:
+                    type: integer
+                    description: Local storage only, fixed at 30 GB
+                    nullable: true
+                  id:
+                    type: string
+                    description: Network storage only
+                    nullable: true
+                  mountPath:
+                    type: string
+                    description: Mount path
+                    maxLength: 255
+            clusterID:
+              type: string
+              description: Required for cloud storage mounting
+              nullable: true
+            envs:
+              type: array
+              description: Environment variable pairs
+              nullable: true
+              items:
+                type: object
+                required:
+                - key
+                - value
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+            healthy:
+              type: object
+              description: Health check configuration
+              required:
+              - path
+              properties:
+                path:
+                  type: string
+                  description: HTTP health check endpoint
+    
+    UpdateEndpointRequest:
+      type: object
+      required:
+      - workerConfig
+      - ports
+      - policy
+      - image
       properties:
         name:
           type: string
-          description: Endpoint name
-          minLength: 1
-          maxLength: 255
-        imageUrl:
-          type: string
-          description: Container image URL
-          minLength: 1
-          maxLength: 500
-        productId:
-          type: string
-          description: GPU product identifier
-        gpuNum:
-          type: integer
-          description: Number of GPUs
-          minimum: 1
-          maximum: 8
-        imageAuthId:
-          type: string
-          description: Image registry authentication ID
+          description: Display name for the endpoint
           nullable: true
+        clusterID:
+          type: string
+          description: Cluster information (required when mounting cloud storage)
+          maxLength: 255
+          nullable: true
+        workerConfig:
+          type: array
+          description: Worker scaling configuration
+          items:
+            type: object
+            required:
+            - minNum
+            - maxNum
+            - freeTimeout
+            - maxConcurrent
+            - gpuNum
+            properties:
+              minNum:
+                type: integer
+                description: Minimum worker count
+              maxNum:
+                type: integer
+                description: Maximum worker count
+              freeTimeout:
+                type: integer
+                description: Idle timeout (seconds)
+              maxConcurrent:
+                type: integer
+                description: Request concurrency limit
+              gpuNum:
+                type: integer
+                description: GPUs allocated per worker
+        ports:
+          type: array
+          description: HTTP port (range 1-65535, excluding 2222-2224)
+          items:
+            type: object
+            required:
+            - port
+            properties:
+              port:
+                type: string
+                description: Port number
+        policy:
+          type: array
+          description: Auto-scaling policy
+          items:
+            type: object
+            required:
+            - type
+            - value
+            properties:
+              type:
+                type: string
+                description: Scaling strategy
+                enum:
+                - queue
+                - concurrency
+              value:
+                type: integer
+                description: Threshold value (seconds for queue, request count for concurrency)
+        image:
+          type: array
+          description: Container image configuration
+          items:
+            type: object
+            required:
+            - image
+            properties:
+              image:
+                type: string
+                description: Container image URL
+                maxLength: 511
+              authId:
+                type: string
+                description: Private registry credentials ID
+                maxLength: 255
+                nullable: true
+              command:
+                type: string
+                description: Container startup command
+                maxLength: 2047
+                nullable: true
+        volumeMounts:
+          type: array
+          description: Storage mounts
+          nullable: true
+          items:
+            type: object
+            required:
+            - type
+            - mountPath
+            properties:
+              type:
+                type: string
+                description: Storage type
+                enum:
+                - local
+                - network
+              size:
+                type: integer
+                description: Local storage size (fixed at 30 GB)
+                nullable: true
+              id:
+                type: string
+                description: Network storage identifier
+                nullable: true
+              mountPath:
+                type: string
+                description: Mount path
+                maxLength: 255
         envs:
           type: array
           description: Environment variables
-          maxItems: 100
+          nullable: true
           items:
             type: object
             required:
@@ -2048,89 +2788,117 @@ components:
                 type: string
               value:
                 type: string
-        command:
-          type: string
-          description: Startup command
+        healthy:
+          type: array
+          description: Health check configuration
           nullable: true
+          items:
+            type: object
+            required:
+            - path
+            properties:
+              path:
+                type: string
+                description: Health verification endpoint path
     
-    UpdateEndpointRequest:
+    # Job Schemas
+    ListJobsResponse:
       type: object
+      required:
+      - jobs
+      - total
       properties:
-        name:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+          description: Collection of job records
+        total:
+          type: integer
+          description: Count of matching jobs
+    
+    Job:
+      type: object
+      required:
+      - Id
+      - user
+      - type
+      - state
+      - createdAt
+      - instanceId
+      properties:
+        Id:
           type: string
-          description: New endpoint name
-          nullable: true
-        imageUrl:
+          description: Unique job identifier
+        user:
           type: string
-          description: New container image URL
-          nullable: true
+          description: User ID who created the job
+        type:
+          type: string
+          description: Job category
+          enum:
+          - saveImage
+          - instanceMigrate
+          - autoInstanceMigrate
         envs:
           type: array
-          description: Environment variables
+          description: Environmental variables
           nullable: true
           items:
             type: object
             properties:
               key:
                 type: string
+                nullable: true
               value:
                 type: string
-    
-    # Job Schemas
-    ListJobsResponse:
-      type: object
-      required:
-      - data
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Job'
-          description: List of jobs
-    
-    Job:
-      type: object
-      required:
-      - id
-      - type
-      - status
-      properties:
-        id:
+                nullable: true
+        state:
+          type: object
+          description: Status information
+          properties:
+            state:
+              type: string
+              description: Job state
+              nullable: true
+            error:
+              type: string
+              description: Error code
+              nullable: true
+            message:
+              type: string
+              description: Error message
+              nullable: true
+        logAddress:
           type: string
-          description: Job identifier
-        type:
-          type: string
-          description: Job type
-        status:
-          type: string
-          description: Job status
-        instanceId:
-          type: string
-          description: Associated instance ID
+          description: URL for accessing execution logs
           nullable: true
         createdAt:
           type: string
-          format: date-time
-          description: Job creation time
-          nullable: true
+          description: Job creation timestamp (Unix seconds)
+        instanceId:
+          type: string
+          description: Associated GPU instance identifier
     
     SaveImageRequest:
       type: object
       required:
       - instanceId
-      - imageName
+      - image
       properties:
         instanceId:
           type: string
-          description: Instance ID to save image from
-        imageName:
-          type: string
-          description: Name for the saved image
+          description: The identifier for the compute instance
           minLength: 1
           maxLength: 255
-        description:
+        image:
           type: string
-          description: Image description
+          description: Complete image reference with registry, repository, and tag
+          minLength: 1
+          maxLength: 4095
+        registryAuthId:
+          type: string
+          description: Authentication credentials for private registries (omit for public or platform registries)
           nullable: true
     
     # Image Prewarm Schemas
@@ -2138,38 +2906,95 @@ components:
       type: object
       required:
       - data
+      - total
       properties:
         data:
           type: array
+          description: List of prewarm tasks.
           items:
             $ref: '#/components/schemas/ImagePrewarmTask'
-          description: List of image prewarm tasks
+        total:
+          type: integer
+          description: Total number of tasks.
     
     ImagePrewarmTask:
       type: object
       required:
       - id
+      - imageName
       - imageUrl
-      - status
+      - clusterId
+      - clusterName
+      - products
+      - createTime
+      - state
       properties:
         id:
           type: string
-          description: Task identifier
+          description: Prewarm task ID.
+        imageName:
+          type: string
+          description: Image name (last segment of the image URL without the tag).
         imageUrl:
           type: string
-          description: Container image URL
-        status:
+          description: Image URL.
+        repositoryAuth:
           type: string
-          description: Task status
+          description: Image registry authentication ID.
+          nullable: true
         clusterId:
           type: string
-          description: Target cluster ID
-          nullable: true
-        createdAt:
+          description: Cluster ID.
+        clusterName:
           type: string
-          format: date-time
-          description: Task creation time
+          description: Cluster name.
+        products:
+          type: array
+          description: Products to prewarm.
+          items:
+            $ref: '#/components/schemas/ImagePrewarmProduct'
+        imageSize:
+          type: string
+          description: Image size in bytes.
           nullable: true
+        createTime:
+          type: string
+          description: Task creation time (Unix timestamp in seconds).
+        state:
+          type: string
+          description: Task state.
+          enum:
+          - Pending
+          - Running
+          - Succeeded
+          - Failed
+        completeTime:
+          type: string
+          description: Task completion time (Unix timestamp in seconds).
+          nullable: true
+        note:
+          type: string
+          description: Task note.
+          nullable: true
+        reason:
+          type: array
+          description: Reason messages when the task fails.
+          items:
+            type: string
+          nullable: true
+    
+    ImagePrewarmProduct:
+      type: object
+      required:
+      - productId
+      - productName
+      properties:
+        productId:
+          type: string
+          description: Product ID.
+        productName:
+          type: string
+          description: Product name.
     
     CreateImagePrewarmRequest:
       type: object
@@ -2179,16 +3004,34 @@ components:
       properties:
         imageUrl:
           type: string
-          description: Container image URL to prewarm
+          description: Image address to prewarm.
           minLength: 1
           maxLength: 500
+        repositoryAuth:
+          type: string
+          description: Image registry authentication ID (required for private registries).
+          nullable: true
         clusterId:
           type: string
-          description: Target cluster ID
-        imageAuthId:
+          description: Cluster ID where the image should be prewarmed.
+        productIds:
+          type: array
+          description: Product IDs to prewarm on. Leave empty to prewarm globally in the cluster.
+          items:
+            type: string
+        note:
           type: string
-          description: Image registry authentication ID
+          description: Task note or description.
           nullable: true
+    
+    CreateImagePrewarmResponse:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          description: Created prewarm task ID.
     
     UpdateImagePrewarmRequest:
       type: object
@@ -2197,11 +3040,23 @@ components:
       properties:
         id:
           type: string
-          description: Prewarm task ID to update
-        imageUrl:
+          description: Prewarm task ID.
+        note:
           type: string
-          description: New image URL
+          description: Task note.
           nullable: true
+    
+    DeleteImagePrewarmRequest:
+      type: object
+      required:
+      - ids
+      properties:
+        ids:
+          type: array
+          description: IDs of prewarm tasks to delete.
+          items:
+            type: string
+          minItems: 1
     
     # Registry Auth Schemas
     ListRepositoryAuthsResponse:
@@ -2274,231 +3129,453 @@ components:
     ListNetworksResponse:
       type: object
       required:
-      - data
+      - network
+      - total
       properties:
-        data:
+        network:
           type: array
           items:
             $ref: '#/components/schemas/Network'
           description: List of VPC networks
-    
+        total:
+          type: string
+          description: Total count of VPC networks
+
     Network:
       type: object
       required:
-      - id
+      - Id
+      - user
       - name
+      - state
+      - segment
       - clusterId
+      - Addresses
+      - createTime
       properties:
-        id:
+        Id:
           type: string
-          description: Network identifier
+          description: VPC network identifier
+        user:
+          type: string
+          description: User account ID
         name:
           type: string
-          description: Network name
+          description: VPC network name
+        state:
+          type: object
+          required:
+          - state
+          properties:
+            state:
+              type: string
+              enum:
+              - creating
+              - ready
+              description: Network status
+            error:
+              type: string
+              description: Error details if creation fails
+              nullable: true
+          description: Network operational status
+        segment:
+          type: string
+          description: VPC network segment designation
         clusterId:
           type: string
-          description: Cluster ID
-        cidr:
+          description: Associated cluster identifier
+        Addresses:
+          type: array
+          items:
+            type: object
+            required:
+            - Id
+            - Ip
+            properties:
+              Id:
+                type: string
+                description: Instance identifier
+              Ip:
+                type: string
+                description: Instance IP address
+          description: Instances within the VPC network
+        createTime:
           type: string
-          description: Network CIDR block
-          nullable: true
-        createdAt:
-          type: string
-          format: date-time
-          description: Creation time
-          nullable: true
+          description: VPC network creation time (Unix timestamp format)
     
     CreateNetworkRequest:
       type: object
       required:
-      - name
       - clusterId
       properties:
-        name:
-          type: string
-          description: Network name
-          minLength: 1
-          maxLength: 255
         clusterId:
           type: string
-          description: Target cluster ID
+          description: Target cluster ID (obtain via List Clusters API)
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          description: Custom VPC network name
+          minLength: 0
+          maxLength: 30
+          nullable: true
     
     UpdateNetworkRequest:
       type: object
       required:
-      - id
+      - networkId
       properties:
-        id:
+        networkId:
           type: string
-          description: Network ID to update
+          description: VPC network ID to update
+          minLength: 1
+          maxLength: 255
         name:
           type: string
-          description: New network name
+          description: Custom network name
+          minLength: 1
+          maxLength: 30
           nullable: true
     
     DeleteNetworkRequest:
       type: object
       required:
-      - id
+      - networkId
       properties:
-        id:
+        networkId:
           type: string
-          description: Network ID to delete
+          description: VPC network ID to delete (ensure no instances are under this VPC network before deletion)
+          minLength: 1
+          maxLength: 255
     
     # Network Storage Schemas
     ListNetworkStoragesResponse:
       type: object
-      required:
-      - data
       properties:
         data:
           type: array
           items:
             $ref: '#/components/schemas/NetworkStorage'
-          description: List of network storage volumes
+          description: Collection of storage records
+          nullable: true
+        total:
+          type: integer
+          description: Total count of matching storages
+          nullable: true
     
     NetworkStorage:
       type: object
-      required:
-      - id
-      - name
-      - size
-      - clusterId
       properties:
-        id:
+        storageId:
           type: string
-          description: Storage identifier
-        name:
+          description: Unique storage identifier
+          nullable: true
+        storageName:
           type: string
-          description: Storage volume name
-        size:
+          description: User-defined storage name
+          nullable: true
+        storageSize:
           type: integer
-          description: Storage size in GB
+          description: Storage capacity measurement
+          nullable: true
         clusterId:
           type: string
-          description: Cluster ID
-        status:
-          type: string
-          description: Storage status
+          description: Associated cluster identifier
           nullable: true
-        createdAt:
+        clusterName:
           type: string
-          format: date-time
-          description: Creation time
+          description: Associated cluster name
+          nullable: true
+        price:
+          type: string
+          description: Storage pricing information
           nullable: true
     
     CreateNetworkStorageRequest:
       type: object
       required:
-      - name
-      - size
       - clusterId
+      - storageName
+      - storageSize
       properties:
-        name:
-          type: string
-          description: Storage volume name
-          minLength: 1
-          maxLength: 255
-        size:
-          type: integer
-          description: Storage size in GB
-          minimum: 10
-          maximum: 10240
         clusterId:
           type: string
-          description: Target cluster ID
+          description: Identifier for the cluster
+        storageName:
+          type: string
+          description: Name assigned to the storage resource
+        storageSize:
+          type: integer
+          description: Capacity allocation for storage
     
     UpdateNetworkStorageRequest:
       type: object
       required:
-      - id
+      - storageId
+      - storageName
+      - storageSize
       properties:
-        id:
+        storageId:
           type: string
-          description: Storage ID to update
-        name:
+          description: Unique identifier distinguishing the storage resource
+        storageName:
           type: string
-          description: New storage name
-          nullable: true
-        size:
-          type: integer
-          description: New storage size in GB
-          nullable: true
+          description: The display name assigned to the storage
+        storageSize:
+          type: string
+          description: Capacity measurement in appropriate units
     
     DeleteNetworkStorageRequest:
       type: object
       required:
-      - id
+      - storageId
       properties:
-        id:
+        storageId:
           type: string
-          description: Storage ID to delete
+          description: Identifier for the network storage to be removed
     
     # Template Schemas
     ListTemplatesResponse:
       type: object
       required:
-      - data
+      - template
+      - pageSize
+      - pageNum
+      - total
       properties:
-        data:
+        template:
           type: array
+          description: List of templates.
           items:
             $ref: '#/components/schemas/Template'
-          description: List of templates
+        pageSize:
+          type: integer
+          description: Maximum number of entries returned on one page.
+        pageNum:
+          type: integer
+          description: Current page index.
+        total:
+          type: integer
+          description: Total number of templates.
+    
+    GetTemplateResponse:
+      type: object
+      required:
+      - template
+      properties:
+        template:
+          $ref: '#/components/schemas/Template'
+          description: Template details.
     
     Template:
       type: object
       required:
-      - id
+      - Id
       - name
+      - type
+      - channel
+      - image
+      - startCommand
+      - rootfsSize
       properties:
-        id:
+        Id:
           type: string
-          description: Template identifier
-        name:
-          type: string
-          description: Template name
-        imageUrl:
-          type: string
-          description: Container image URL
-          nullable: true
-        description:
-          type: string
-          description: Template description
-          nullable: true
-        createdAt:
+          description: Unique template identifier.
+        createTime:
           type: string
           format: date-time
-          description: Creation time
-          nullable: true
+          description: Template creation time.
+        user:
+          type: string
+          description: ID of the user who created the template.
+        tools:
+          type: array
+          description: Tools enabled for the template.
+          items:
+            type: string
+        name:
+          type: string
+          description: Template name.
+        readme:
+          type: string
+          description: Template README content (Markdown).
+        type:
+          type: string
+          description: Template type.
+          enum:
+          - instance
+        channel:
+          type: string
+          description: Template channel.
+          enum:
+          - private
+        image:
+          type: string
+          description: Docker image address for instance startup.
+        imageAuth:
+          type: string
+          description: Credentials for the Docker image registry to pull private images.
+        startCommand:
+          type: string
+          description: Startup command for the instance.
+        rootfsSize:
+          type: integer
+          description: Root filesystem storage size (GB).
+        volumes:
+          type: array
+          description: Volume settings.
+          items:
+            $ref: '#/components/schemas/TemplateVolume'
+        ports:
+          type: array
+          description: Exposed port settings.
+          items:
+            $ref: '#/components/schemas/TemplatePort'
+        envs:
+          type: array
+          description: Environment variables injected into the instance.
+          items:
+            $ref: '#/components/schemas/TemplateEnvironmentVariable'
+    
+    TemplateVolume:
+      type: object
+      required:
+      - type
+      - size
+      - mountPath
+      properties:
+        type:
+          type: string
+          description: Volume type.
+        size:
+          type: integer
+          description: Volume size (GB).
+        mountPath:
+          type: string
+          description: Volume mount path.
+    
+    TemplatePort:
+      type: object
+      required:
+      - type
+      - ports
+      properties:
+        type:
+          type: string
+          description: Exposed port type.
+          enum:
+          - http
+          - tcp
+        ports:
+          type: array
+          description: Exposed ports (maximum of 10 per entry).
+          maxItems: 10
+          items:
+            type: integer
+    
+    TemplateEnvironmentVariable:
+      type: object
+      required:
+      - key
+      - value
+      properties:
+        key:
+          type: string
+          description: Environment variable key.
+        value:
+          type: string
+          description: Environment variable value.
     
     CreateTemplateRequest:
       type: object
       required:
+      - template
+      properties:
+        template:
+          $ref: '#/components/schemas/TemplateCreatePayload'
+          description: Template settings.
+    
+    TemplateCreatePayload:
+      type: object
+      required:
       - name
-      - instanceId
+      - readme
+      - type
+      - channel
+      - image
+      - startCommand
+      - rootfsSize
+      - ports
+      - volumes
+      - envs
       properties:
         name:
           type: string
-          description: Template name
-          minLength: 1
-          maxLength: 255
-        instanceId:
+          description: Template name.
+        readme:
           type: string
-          description: Source instance ID
-        description:
+          description: Template README content (Markdown).
+        type:
           type: string
-          description: Template description
-          nullable: true
+          description: Template type.
+          enum:
+          - instance
+        channel:
+          type: string
+          description: Template channel.
+          enum:
+          - private
+        image:
+          type: string
+          description: Docker image address for instance startup.
+        startCommand:
+          type: string
+          description: Startup command for the instance.
+        rootfsSize:
+          type: integer
+          description: Root filesystem storage size (GB).
+        ports:
+          type: array
+          description: Exposed port settings.
+          items:
+            $ref: '#/components/schemas/TemplatePort'
+        volumes:
+          type: array
+          description: Volume settings.
+          items:
+            $ref: '#/components/schemas/TemplateVolume'
+        envs:
+          type: array
+          description: Environment variables injected into the instance.
+          items:
+            $ref: '#/components/schemas/TemplateEnvironmentVariable'
+    
+    CreateTemplateResponse:
+      type: object
+      required:
+      - templateId
+      properties:
+        templateId:
+          type: string
+          description: ID of the created template.
     
     DeleteTemplateRequest:
       type: object
       required:
-      - id
+      - templateId
       properties:
-        id:
+        templateId:
           type: string
-          description: Template ID to delete
+          description: Template ID to delete.
+    
+    DeleteTemplateResponse:
+      type: object
+      required:
+      - templateId
+      properties:
+        templateId:
+          type: string
+          description: ID of the deleted template.
   
   responses:
     UnauthorizedError:

@@ -1,28 +1,28 @@
 """GPU jobs management resource."""
 
-from typing import TYPE_CHECKING, Any
+from __future__ import annotations
+
+from novita.generated.models import Job, ListJobsResponse
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 class Jobs(BaseResource):
     """Synchronous GPU jobs management resource."""
 
-    def list(self) -> dict[str, Any]:
+    def list(self) -> list[Job]:
         """List all jobs.
 
         Returns:
-            List of jobs
+            List of job objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/jobs")
-        return response.json()
+        parsed = ListJobsResponse.model_validate(response.json())
+        return parsed.jobs
 
     def break_job(self, job_id: str) -> None:
         """Break/cancel a job.
@@ -41,18 +41,19 @@ class Jobs(BaseResource):
 class AsyncJobs(AsyncBaseResource):
     """Asynchronous GPU jobs management resource."""
 
-    async def list(self) -> dict[str, Any]:
+    async def list(self) -> list[Job]:
         """List all jobs.
 
         Returns:
-            List of jobs
+            List of job objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/jobs")
-        return response.json()
+        parsed = ListJobsResponse.model_validate(response.json())
+        return parsed.jobs
 
     async def break_job(self, job_id: str) -> None:
         """Break/cancel a job.

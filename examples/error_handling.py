@@ -12,7 +12,7 @@ from novita import (
     AuthenticationError,
     BadRequestError,
     CreateInstanceRequest,
-    InstanceType,
+    Kind,
     NotFoundError,
     NovitaClient,
 )
@@ -31,12 +31,15 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
     try:
         request = CreateInstanceRequest(
             name=name,
-            instance_type=InstanceType.A100_80GB,
-            disk_size=50,
+            product_id="prod-1",
+            gpu_num=1,
+            rootfs_size=50,
+            image_url="docker.io/library/ubuntu:latest",
+            kind=Kind.gpu,
         )
         response = client.gpu.instances.create(request)
-        print(f"✓ Successfully created instance: {response.instance_id}")
-        return response.instance_id
+        print(f"✓ Successfully created instance: {response.id}")
+        return response.id
 
     except AuthenticationError as e:
         print(f"✗ Authentication failed: {e.message}")
@@ -71,7 +74,8 @@ def get_instance_with_retry(client: NovitaClient, instance_id: str, max_retries:
     for attempt in range(max_retries):
         try:
             instance = client.gpu.instances.get(instance_id)
-            print(f"✓ Found instance: {instance.name} ({instance.status})")
+            status = instance.status.value if hasattr(instance.status, "value") else instance.status
+            print(f"✓ Found instance: {instance.name} ({status})")
             return
 
         except NotFoundError:

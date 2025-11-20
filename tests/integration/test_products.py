@@ -1,0 +1,157 @@
+"""Integration tests for product endpoints."""
+
+
+class TestGPUProducts:
+    """Test GPU product-related endpoints."""
+
+    def test_list_gpu_products(self, client):
+        """Test listing all GPU products."""
+        products = client.gpu.products.list()
+
+        assert products is not None
+        assert isinstance(products, list)
+
+        if len(products) > 0:
+            product = products[0]
+            # Verify product structure
+            assert hasattr(product, "id")
+            assert hasattr(product, "name")
+            assert hasattr(product, "cpu_per_gpu")
+            assert hasattr(product, "memory_per_gpu")
+            assert hasattr(product, "disk_per_gpu")
+            assert hasattr(product, "available_deploy")
+            assert hasattr(product, "min_root_fs")
+            assert hasattr(product, "max_root_fs")
+            assert hasattr(product, "regions")
+            assert hasattr(product, "price")
+            assert hasattr(product, "billing_methods")
+
+            # Verify data types
+            assert isinstance(product.id, str)
+            assert isinstance(product.name, str)
+            assert isinstance(product.cpu_per_gpu, int)
+            assert isinstance(product.memory_per_gpu, int)
+            assert isinstance(product.disk_per_gpu, int)
+            assert isinstance(product.available_deploy, bool)
+            assert isinstance(product.regions, list)
+            assert isinstance(product.billing_methods, list)
+
+    def test_list_gpu_products_with_cluster_filter(self, client, cluster_id):
+        """Test listing GPU products filtered by cluster."""
+        products = client.gpu.products.list(cluster_id=cluster_id)
+
+        assert products is not None
+        assert isinstance(products, list)
+
+        # All products should be available in the specified cluster
+        for product in products:
+            assert cluster_id in product.regions
+
+    def test_list_gpu_products_with_gpu_num_filter(self, client):
+        """Test listing GPU products filtered by GPU count."""
+        gpu_num = 1
+        products = client.gpu.products.list(gpu_num=gpu_num)
+
+        assert products is not None
+        assert isinstance(products, list)
+
+    def test_list_gpu_products_with_billing_method_filter(self, client):
+        """Test listing GPU products filtered by billing method."""
+        products = client.gpu.products.list(billing_method="onDemand")
+
+        assert products is not None
+        assert isinstance(products, list)
+
+        # All products should support onDemand billing
+        for product in products:
+            assert "onDemand" in product.billing_methods
+
+    def test_list_gpu_products_with_product_name_filter(self, client):
+        """Test listing GPU products filtered by product name."""
+        # Get all products first
+        all_products = client.gpu.products.list()
+
+        if len(all_products) > 0:
+            # Use part of the first product's name for fuzzy search
+            search_term = all_products[0].name[:5]
+            filtered_products = client.gpu.products.list(product_name=search_term)
+
+            assert filtered_products is not None
+            assert isinstance(filtered_products, list)
+
+    def test_gpu_product_has_valid_price_info(self, client):
+        """Test that GPU products have valid pricing information."""
+        products = client.gpu.products.list()
+
+        if len(products) > 0:
+            for product in products:
+                # Price should be a non-negative integer
+                assert isinstance(product.price, int)
+                assert product.price >= 0
+
+                # Monthly price should be a list
+                if hasattr(product, "monthly_price") and product.monthly_price:
+                    assert isinstance(product.monthly_price, list)
+
+
+class TestCPUProducts:
+    """Test CPU product-related endpoints."""
+
+    def test_list_cpu_products(self, client):
+        """Test listing all CPU products."""
+        products = client.gpu.cpu_products.list()
+
+        assert products is not None
+        assert isinstance(products, list)
+
+        if len(products) > 0:
+            product = products[0]
+            # Verify product structure
+            assert hasattr(product, "id")
+            assert hasattr(product, "name")
+            assert hasattr(product, "cpu_num")
+            assert hasattr(product, "memory_size")
+            assert hasattr(product, "rootfs_size")
+            assert hasattr(product, "local_volume_size")
+            assert hasattr(product, "available_deploy")
+            assert hasattr(product, "price")
+
+            # Verify data types
+            assert isinstance(product.id, str)
+            assert isinstance(product.name, str)
+            assert isinstance(product.cpu_num, int)
+            assert isinstance(product.memory_size, int)
+            assert isinstance(product.rootfs_size, int)
+            assert isinstance(product.local_volume_size, int)
+            assert isinstance(product.available_deploy, bool)
+            assert isinstance(product.price, int)
+
+    def test_list_cpu_products_with_cluster_filter(self, client, cluster_id):
+        """Test listing CPU products filtered by cluster."""
+        products = client.gpu.cpu_products.list(cluster_id=cluster_id)
+
+        assert products is not None
+        assert isinstance(products, list)
+
+    def test_list_cpu_products_with_product_name_filter(self, client):
+        """Test listing CPU products filtered by product name."""
+        # Get all products first
+        all_products = client.gpu.cpu_products.list()
+
+        if len(all_products) > 0:
+            # Use part of the first product's name for fuzzy search
+            search_term = all_products[0].name[:5]
+            filtered_products = client.gpu.cpu_products.list(product_name=search_term)
+
+            assert filtered_products is not None
+            assert isinstance(filtered_products, list)
+
+    def test_cpu_product_has_valid_price_info(self, client):
+        """Test that CPU products have valid pricing information."""
+        products = client.gpu.cpu_products.list()
+
+        if len(products) > 0:
+            for product in products:
+                # Price should be a non-negative integer
+                assert isinstance(product.price, int)
+                assert product.price >= 0

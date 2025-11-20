@@ -21,9 +21,13 @@ def test_get_instance_metrics(httpx_mock: HTTPXMock) -> None:
     client = NovitaClient(api_key="test-key")
     response = client.gpu.metrics.get("inst-123")
 
-    assert "cpu_usage" in response
-    assert response["cpu_usage"] == 45.5
-    assert response["gpu_usage"] == 85.0
+    expected = {
+        "cpu_usage": 45.5,
+        "memory_usage": 60.2,
+        "gpu_usage": 85.0,
+    }
+
+    assert response == expected
     client.close()
 
 
@@ -45,5 +49,9 @@ async def test_async_get_instance_metrics(httpx_mock: HTTPXMock) -> None:
     async with AsyncNovitaClient(api_key="test-key") as client:
         response = await client.gpu.metrics.get("inst-123")
 
-        assert response["cpu_usage"] == 50.0
-        assert response["gpu_usage"] == 90.0
+        expected = {
+            "cpu_usage": 50.0,
+            "memory_usage": 70.0,
+            "gpu_usage": 90.0,
+        }
+        assert response == expected

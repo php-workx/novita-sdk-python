@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
 from pydantic import SecretStr
 
 from novita.generated.models import (
@@ -53,7 +51,7 @@ class Registries(BaseResource):
         """
         # Convert plain string to SecretStr if needed
         secret_password = password if isinstance(password, SecretStr) else SecretStr(password)
-        
+
         request = CreateRepositoryAuthRequest(
             name=name,
             username=username,
@@ -119,7 +117,7 @@ class AsyncRegistries(AsyncBaseResource):
         """
         # Convert plain string to SecretStr if needed
         secret_password = password if isinstance(password, SecretStr) else SecretStr(password)
-        
+
         request = CreateRepositoryAuthRequest(
             name=name,
             username=username,

@@ -26,7 +26,7 @@ def test_list_repository_auths(httpx_mock: HTTPXMock) -> None:
 
     assert isinstance(auths, list)
     assert len(auths) == 3
-    
+
     for i, expected_item in enumerate(mock_data):
         auth = auths[i]
         assert isinstance(auth, RepositoryAuth)
@@ -36,7 +36,7 @@ def test_list_repository_auths(httpx_mock: HTTPXMock) -> None:
         # Password is returned as SecretStr, so we need to get the secret value
         assert isinstance(auth.password, SecretStr)
         assert auth.password.get_secret_value() == expected_item["password"]
-    
+
     client.close()
 
 
@@ -113,7 +113,7 @@ def test_create_accepts_plain_string_password(httpx_mock: HTTPXMock) -> None:
     client = NovitaClient(api_key="test-key")
     # Should work with plain string
     client.gpu.registries.create(name="docker.io", username="user", password="plain-password")
-    
+
     # Should also work with SecretStr
     client.gpu.registries.create(
         name="ghcr.io", username="user", password=SecretStr("secret-password")
@@ -127,7 +127,9 @@ async def test_async_list_repository_auths(httpx_mock: HTTPXMock) -> None:
     """Test listing repository auths using async client."""
     from novita import AsyncNovitaClient
 
-    mock_data = [{"id": "auth-1", "name": "docker.io", "username": "user1", "password": "password1"}]
+    mock_data = [
+        {"id": "auth-1", "name": "docker.io", "username": "user1", "password": "password1"}
+    ]
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/repository/auths",

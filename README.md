@@ -40,26 +40,25 @@ client = NovitaClient(api_key="your-api-key-here")
 ### Synchronous Client
 
 ```python
-from novita import NovitaClient, CreateInstanceRequest, InstanceType
+from novita import NovitaClient, CreateInstanceRequest, Kind
 
-# Initialize client
 client = NovitaClient()
 
-# Create a GPU instance
 request = CreateInstanceRequest(
     name="my-gpu-instance",
-    instance_type=InstanceType.A100_80GB,
-    disk_size=100
+    product_id="prod-123",  # fetch via client.gpu.products.list()
+    gpu_num=1,
+    rootfs_size=50,
+    image_url="docker.io/library/ubuntu:latest",
+    kind=Kind.gpu,
 )
-response = client.gpu.create_instance(request)
-print(f"Created instance: {response.instance_id}")
+response = client.gpu.instances.create(request)
+print(f"Created instance: {response.id}")
 
-# List all instances
-instances = client.gpu.list_instances()
-for instance in instances.instances:
-    print(f"{instance.name}: {instance.status}")
+instances = client.gpu.instances.list()
+for instance in instances:
+    print(f"{instance.name}: {instance.status.value}")
 
-# Clean up
 client.close()
 ```
 
@@ -69,22 +68,23 @@ client.close()
 
 ```python
 import asyncio
-from novita import AsyncNovitaClient, CreateInstanceRequest, InstanceType
+from novita import AsyncNovitaClient, CreateInstanceRequest, Kind
 
 async def main():
-    # Use async context manager
     async with AsyncNovitaClient() as client:
-        # Create instance
         request = CreateInstanceRequest(
             name="my-async-instance",
-            instance_type=InstanceType.A100_80GB
+            product_id="prod-123",
+            gpu_num=1,
+            rootfs_size=50,
+            image_url="docker.io/library/ubuntu:latest",
+            kind=Kind.gpu,
         )
-        response = await client.gpu.create_instance(request)
-        print(f"Created: {response.instance_id}")
-        
-        # Get instance details
-        instance = await client.gpu.get_instance(response.instance_id)
-        print(f"Status: {instance.status}")
+        response = await client.gpu.instances.create(request)
+        print(f"Created: {response.id}")
+
+        instance = await client.gpu.instances.get(response.id)
+        print(f"Status: {instance.status.value}")
 
 asyncio.run(main())
 ```

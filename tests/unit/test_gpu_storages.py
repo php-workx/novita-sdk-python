@@ -4,21 +4,43 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
+from novita.generated.models import NetworkStorageModel
+
+
+def _storage_payload(**overrides: object) -> dict[str, object]:
+    base = {
+        "storageId": "stor-1",
+        "storageName": "Storage 1",
+        "storageSize": 100,
+        "clusterId": "cluster-1",
+        "clusterName": "Cluster",
+    }
+    base.update(overrides)
+    model = NetworkStorageModel.model_validate(base)
+    return model.model_dump(by_alias=True, mode="json")
 
 
 def test_list_storages(httpx_mock: HTTPXMock) -> None:
     """Test listing network storages."""
+    mock_storages = [
+        _storage_payload(storageId="stor-1", storageName="Storage 1"),
+        _storage_payload(storageId="stor-2", storageName="Storage 2"),
+    ]
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networkstorages/list",
-        json={"storages": []},
+        json={"data": mock_storages, "total": len(mock_storages)},
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.storages.list()
+    storages = client.gpu.storages.list()
 
-    assert "storages" in response
-    assert isinstance(response["storages"], list)
+    assert isinstance(storages, list)
+    assert len(storages) == 2
+    assert isinstance(storages[0], NetworkStorageModel)
+    assert storages[0].storage_id == "stor-1"
+    assert storages[0].storage_name == "Storage 1"
+    assert storages[1].storage_id == "stor-2"
     client.close()
 
 
@@ -27,13 +49,15 @@ def test_create_storage(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="POST",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networkstorage/create",
-        json={"storage_id": "stor-123", "status": "creating"},
+        json=_storage_payload(storageId="stor-123", storageName="Storage created"),
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.storages.create(name="test-storage", size=100)
+    storage = client.gpu.storages.create(name="test-storage", size=100)
 
-    assert response["storage_id"] == "stor-123"
+    assert isinstance(storage, NetworkStorageModel)
+    assert storage.storage_id == "stor-123"
+    assert storage.storage_name == "Storage created"
     client.close()
 
 
@@ -42,13 +66,14 @@ def test_update_storage(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="POST",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networkstorage/update",
-        json={"storage_id": "stor-123", "status": "active"},
+        json=_storage_payload(storageId="stor-123", storageName="Updated storage"),
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.storages.update("stor-123", name="updated-storage")
+    storage = client.gpu.storages.update("stor-123", name="updated-storage")
 
-    assert response["storage_id"] == "stor-123"
+    assert storage.storage_id == "stor-123"
+    assert storage.storage_name == "Updated storage"
     client.close()
 
 
@@ -76,10 +101,13 @@ async def test_async_list_storages(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networkstorages/list",
-        json={"storages": [{"storage_id": "stor-1"}]},
+        json={"data": [_storage_payload()], "total": 1},
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
-        response = await client.gpu.storages.list()
+        storages = await client.gpu.storages.list()
 
-        assert len(response["storages"]) == 1
+        assert isinstance(storages, list)
+        assert len(storages) == 1
+        assert storages[0].storage_id == "stor-1"
+        assert isinstance(storages[0], NetworkStorageModel)

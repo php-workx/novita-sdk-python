@@ -1,6 +1,10 @@
 """GPU endpoints management resource."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any
+
+from novita.generated.models import EndpointDetail, ListEndpointsResponse
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -24,7 +28,7 @@ class Endpoints(BaseResource):
         response = self._client.get(f"{BASE_PATH}/endpoint/limit")
         return response.json()
 
-    def create(self, **kwargs: Any) -> dict[str, Any]:
+    def create(self, **kwargs: Any) -> EndpointDetail:
         """Create a new endpoint.
 
         Args:
@@ -39,22 +43,23 @@ class Endpoints(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.post(f"{BASE_PATH}/endpoint/create", json=kwargs)
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
-    def list(self) -> dict[str, Any]:
+    def list(self) -> list[EndpointDetail]:
         """List all endpoints.
 
         Returns:
-            List of endpoints
+            List of endpoint objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/endpoints")
-        return response.json()
+        parsed = ListEndpointsResponse.model_validate(response.json())
+        return parsed.endpoints
 
-    def get(self, endpoint_id: str) -> dict[str, Any]:
+    def get(self, endpoint_id: str) -> EndpointDetail:
         """Get details of a specific endpoint.
 
         Args:
@@ -69,9 +74,9 @@ class Endpoints(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id})
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
-    def update(self, endpoint_id: str, **kwargs: Any) -> dict[str, Any]:
+    def update(self, endpoint_id: str, **kwargs: Any) -> EndpointDetail:
         """Update an endpoint.
 
         Args:
@@ -89,7 +94,7 @@ class Endpoints(BaseResource):
         """
         data = {"endpoint_id": endpoint_id, **kwargs}
         response = self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
     def delete(self, endpoint_id: str) -> None:
         """Delete an endpoint.
@@ -121,7 +126,7 @@ class AsyncEndpoints(AsyncBaseResource):
         response = await self._client.get(f"{BASE_PATH}/endpoint/limit")
         return response.json()
 
-    async def create(self, **kwargs: Any) -> dict[str, Any]:
+    async def create(self, **kwargs: Any) -> EndpointDetail:
         """Create a new endpoint.
 
         Args:
@@ -136,22 +141,23 @@ class AsyncEndpoints(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.post(f"{BASE_PATH}/endpoint/create", json=kwargs)
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
-    async def list(self) -> dict[str, Any]:
+    async def list(self) -> list[EndpointDetail]:
         """List all endpoints.
 
         Returns:
-            List of endpoints
+            List of endpoint objects
 
         Raises:
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/endpoints")
-        return response.json()
+        parsed = ListEndpointsResponse.model_validate(response.json())
+        return parsed.endpoints
 
-    async def get(self, endpoint_id: str) -> dict[str, Any]:
+    async def get(self, endpoint_id: str) -> EndpointDetail:
         """Get details of a specific endpoint.
 
         Args:
@@ -168,9 +174,9 @@ class AsyncEndpoints(AsyncBaseResource):
         response = await self._client.get(
             f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id}
         )
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
-    async def update(self, endpoint_id: str, **kwargs: Any) -> dict[str, Any]:
+    async def update(self, endpoint_id: str, **kwargs: Any) -> EndpointDetail:
         """Update an endpoint.
 
         Args:
@@ -188,7 +194,7 @@ class AsyncEndpoints(AsyncBaseResource):
         """
         data = {"endpoint_id": endpoint_id, **kwargs}
         response = await self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
-        return response.json()
+        return EndpointDetail.model_validate(response.json())
 
     async def delete(self, endpoint_id: str) -> None:
         """Delete an endpoint.

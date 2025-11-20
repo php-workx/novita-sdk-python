@@ -4,21 +4,50 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
+from novita.generated.models import CreateTemplateResponse, Template
+
+
+def _template_payload(**overrides: object) -> dict[str, object]:
+    base = {
+        "Id": "tpl-1",
+        "name": "Template 1",
+        "type": "instance",
+        "channel": "private",
+        "image": "repo/image:tag",
+        "startCommand": "bash run.sh",
+        "rootfsSize": 50,
+    }
+    base.update(overrides)
+    model = Template.model_validate(base)
+    return model.model_dump(by_alias=True, mode="json")
 
 
 def test_list_templates(httpx_mock: HTTPXMock) -> None:
     """Test listing templates."""
+    mock_templates = [
+        _template_payload(Id="tpl-1", name="Serving template"),
+        _template_payload(Id="tpl-2", name="Batch template"),
+    ]
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/templates",
-        json={"templates": []},
+        json={
+            "template": mock_templates,
+            "pageSize": len(mock_templates),
+            "pageNum": 1,
+            "total": len(mock_templates),
+        },
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.templates.list()
+    templates = client.gpu.templates.list()
 
-    assert "templates" in response
-    assert isinstance(response["templates"], list)
+    assert isinstance(templates, list)
+    assert len(templates) == 2
+    assert isinstance(templates[0], Template)
+    assert templates[0].id == "tpl-1"
+    assert templates[0].name == "Serving template"
+    assert templates[1].id == "tpl-2"
     client.close()
 
 
@@ -26,14 +55,16 @@ def test_get_template(httpx_mock: HTTPXMock) -> None:
     """Test getting a specific template."""
     httpx_mock.add_response(
         method="GET",
-        url="https://api.novita.ai/gpu-instance/openapi/v1/template?template_id=tpl-123",
-        json={"template_id": "tpl-123", "name": "My Template"},
+        url="https://api.novita.ai/gpu-instance/openapi/v1/template?templateId=tpl-123",
+        json={"template": _template_payload(Id="tpl-123", name="My Template")},
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.templates.get("tpl-123")
+    template = client.gpu.templates.get("tpl-123")
 
-    assert response["template_id"] == "tpl-123"
+    assert isinstance(template, Template)
+    assert template.id == "tpl-123"
+    assert template.name == "My Template"
     client.close()
 
 
@@ -42,13 +73,14 @@ def test_create_template(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="POST",
         url="https://api.novita.ai/gpu-instance/openapi/v1/template/create",
-        json={"template_id": "tpl-new", "name": "New Template"},
+        json={"templateId": "tpl-new"},
     )
 
     client = NovitaClient(api_key="test-key")
     response = client.gpu.templates.create(name="New Template", instance_id="inst-123")
 
-    assert response["template_id"] == "tpl-new"
+    assert isinstance(response, CreateTemplateResponse)
+    assert response.template_id == "tpl-new"
     client.close()
 
 
@@ -76,10 +108,18 @@ async def test_async_list_templates(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/templates",
-        json={"templates": [{"template_id": "tpl-1"}]},
+        json={
+            "template": [_template_payload()],
+            "pageSize": 10,
+            "pageNum": 1,
+            "total": 1,
+        },
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
-        response = await client.gpu.templates.list()
+        templates = await client.gpu.templates.list()
 
-        assert len(response["templates"]) == 1
+        assert isinstance(templates, list)
+        assert len(templates) == 1
+        assert templates[0].id == "tpl-1"
+        assert isinstance(templates[0], Template)
