@@ -26,8 +26,7 @@ async def main() -> None:
         print(f"✓ Total instances: {len(instances)}")
         print(f"✓ Available GPU types: {len(products)}")
         for product in products[:3]:  # Show first 3
-            hourly = (product.price or 0) / 100000
-            print(f"  - {product.name}: ${hourly:.2f}/hour")
+            print(f"  - {product.name}: ${product.price:.2f}/hour")
 
 
 if __name__ == "__main__":
