@@ -29,8 +29,7 @@ def main() -> None:
         products = client.gpu.products.list()
         print(f"✓ Total GPU products: {len(products)}")
         for product in products:
-            hourly = (product.price or 0) / 100000
-            print(f"  - {product.name} (${hourly:.2f}/hour)")
+            print(f"  - {product.name} (${product.price:.2f}/hour)")
 
     finally:
         # Always close the client
