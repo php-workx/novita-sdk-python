@@ -78,7 +78,7 @@ def wait_for_endpoint_status(
     """
 
     def check_status():
-        endpoint = client.gpu.endpoints.get(id=endpoint_id)
+        endpoint = client.gpu.endpoints.get(endpoint_id=endpoint_id)
         return endpoint.status == target_status
 
     wait_for_condition(
@@ -137,7 +137,7 @@ def cleanup_network(client: Any, network_id: str) -> None:
         network_id: ID of the network to delete
     """
     try:
-        client.gpu.networks.delete(id=network_id)
+        client.gpu.networks.delete(network_id=network_id)
         time.sleep(2)  # Allow time for deletion to process
     except Exception as e:
         print(f"Warning: Failed to cleanup network {network_id}: {e}")

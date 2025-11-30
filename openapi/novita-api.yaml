@@ -2253,7 +2253,7 @@ components:
         details:
           type: object
           additionalProperties: true
-    
+
     # Serverless Endpoint Schemas
     ListEndpointsResponse:
       type: object
@@ -2269,7 +2269,7 @@ components:
         total:
           type: integer
           description: Count of all available results
-    
+
     EndpointDetail:
       type: object
       properties:
@@ -2477,7 +2477,7 @@ components:
           type: string
           description: Endpoint logging path
           nullable: true
-    
+
     CreateEndpointRequest:
       type: object
       required:
@@ -2650,7 +2650,7 @@ components:
                 path:
                   type: string
                   description: HTTP health check endpoint
-    
+
     UpdateEndpointRequest:
       type: object
       required:
@@ -2800,7 +2800,7 @@ components:
               path:
                 type: string
                 description: Health verification endpoint path
-    
+
     # Job Schemas
     ListJobsResponse:
       type: object
@@ -2816,7 +2816,7 @@ components:
         total:
           type: integer
           description: Count of matching jobs
-    
+
     Job:
       type: object
       required:
@@ -2879,7 +2879,7 @@ components:
         instanceId:
           type: string
           description: Associated GPU instance identifier
-    
+
     SaveImageRequest:
       type: object
       required:
@@ -2900,7 +2900,7 @@ components:
           type: string
           description: Authentication credentials for private registries (omit for public or platform registries)
           nullable: true
-    
+
     # Image Prewarm Schemas
     ListImagePrewarmTasksResponse:
       type: object
@@ -2916,7 +2916,7 @@ components:
         total:
           type: integer
           description: Total number of tasks.
-    
+
     ImagePrewarmTask:
       type: object
       required:
@@ -2982,7 +2982,7 @@ components:
           items:
             type: string
           nullable: true
-    
+
     ImagePrewarmProduct:
       type: object
       required:
@@ -2995,7 +2995,7 @@ components:
         productName:
           type: string
           description: Product name.
-    
+
     CreateImagePrewarmRequest:
       type: object
       required:
@@ -3023,7 +3023,7 @@ components:
           type: string
           description: Task note or description.
           nullable: true
-    
+
     CreateImagePrewarmResponse:
       type: object
       required:
@@ -3032,7 +3032,7 @@ components:
         id:
           type: string
           description: Created prewarm task ID.
-    
+
     UpdateImagePrewarmRequest:
       type: object
       required:
@@ -3045,7 +3045,7 @@ components:
           type: string
           description: Task note.
           nullable: true
-    
+
     DeleteImagePrewarmRequest:
       type: object
       required:
@@ -3057,7 +3057,7 @@ components:
           items:
             type: string
           minItems: 1
-    
+
     # Registry Auth Schemas
     ListRepositoryAuthsResponse:
       type: object
@@ -3069,7 +3069,7 @@ components:
           items:
             $ref: '#/components/schemas/RepositoryAuth'
           description: List of container registry authentications
-    
+
     RepositoryAuth:
       type: object
       required:
@@ -3091,7 +3091,7 @@ components:
           type: string
           description: Registry password (returned as masked)
           format: password
-    
+
     CreateRepositoryAuthRequest:
       type: object
       required:
@@ -3115,7 +3115,7 @@ components:
           format: password
           minLength: 1
           maxLength: 500
-    
+
     DeleteRepositoryAuthRequest:
       type: object
       required:
@@ -3124,7 +3124,7 @@ components:
         id:
           type: string
           description: Authentication ID to delete
-    
+
     # Network Schemas
     ListNetworksResponse:
       type: object
@@ -3138,7 +3138,7 @@ components:
             $ref: '#/components/schemas/Network'
           description: List of VPC networks
         total:
-          type: string
+          type: integer
           description: Total count of VPC networks
 
     Network:
@@ -3202,7 +3202,7 @@ components:
         createTime:
           type: string
           description: VPC network creation time (Unix timestamp format)
-    
+
     CreateNetworkRequest:
       type: object
       required:
@@ -3219,7 +3219,7 @@ components:
           minLength: 0
           maxLength: 30
           nullable: true
-    
+
     UpdateNetworkRequest:
       type: object
       required:
@@ -3236,7 +3236,7 @@ components:
           minLength: 1
           maxLength: 30
           nullable: true
-    
+
     DeleteNetworkRequest:
       type: object
       required:
@@ -3247,7 +3247,7 @@ components:
           description: VPC network ID to delete (ensure no instances are under this VPC network before deletion)
           minLength: 1
           maxLength: 255
-    
+
     # Network Storage Schemas
     ListNetworkStoragesResponse:
       type: object
@@ -3262,7 +3262,7 @@ components:
           type: integer
           description: Total count of matching storages
           nullable: true
-    
+
     NetworkStorage:
       type: object
       properties:
@@ -3290,7 +3290,7 @@ components:
           type: string
           description: Storage pricing information
           nullable: true
-    
+
     CreateNetworkStorageRequest:
       type: object
       required:
@@ -3307,7 +3307,7 @@ components:
         storageSize:
           type: integer
           description: Capacity allocation for storage
-    
+
     UpdateNetworkStorageRequest:
       type: object
       required:
@@ -3322,9 +3322,9 @@ components:
           type: string
           description: The display name assigned to the storage
         storageSize:
-          type: string
+          type: integer
           description: Capacity measurement in appropriate units
-    
+
     DeleteNetworkStorageRequest:
       type: object
       required:
@@ -3333,7 +3333,7 @@ components:
         storageId:
           type: string
           description: Identifier for the network storage to be removed
-    
+
     # Template Schemas
     ListTemplatesResponse:
       type: object
@@ -3357,7 +3357,7 @@ components:
         total:
           type: integer
           description: Total number of templates.
-    
+
     GetTemplateResponse:
       type: object
       required:
@@ -3366,7 +3366,7 @@ components:
         template:
           $ref: '#/components/schemas/Template'
           description: Template details.
-    
+
     Template:
       type: object
       required:
@@ -3436,7 +3436,7 @@ components:
           description: Environment variables injected into the instance.
           items:
             $ref: '#/components/schemas/TemplateEnvironmentVariable'
-    
+
     TemplateVolume:
       type: object
       required:
@@ -3453,7 +3453,7 @@ components:
         mountPath:
           type: string
           description: Volume mount path.
-    
+
     TemplatePort:
       type: object
       required:
@@ -3472,7 +3472,7 @@ components:
           maxItems: 10
           items:
             type: integer
-    
+
     TemplateEnvironmentVariable:
       type: object
       required:
@@ -3485,7 +3485,7 @@ components:
         value:
           type: string
           description: Environment variable value.
-    
+
     CreateTemplateRequest:
       type: object
       required:
@@ -3494,7 +3494,7 @@ components:
         template:
           $ref: '#/components/schemas/TemplateCreatePayload'
           description: Template settings.
-    
+
     TemplateCreatePayload:
       type: object
       required:
@@ -3549,7 +3549,7 @@ components:
           description: Environment variables injected into the instance.
           items:
             $ref: '#/components/schemas/TemplateEnvironmentVariable'
-    
+
     CreateTemplateResponse:
       type: object
       required:
@@ -3558,7 +3558,7 @@ components:
         templateId:
           type: string
           description: ID of the created template.
-    
+
     DeleteTemplateRequest:
       type: object
       required:
@@ -3567,7 +3567,7 @@ components:
         templateId:
           type: string
           description: Template ID to delete.
-    
+
     DeleteTemplateResponse:
       type: object
       required:
@@ -3576,7 +3576,7 @@ components:
         templateId:
           type: string
           description: ID of the deleted template.
-  
+
   responses:
     UnauthorizedError:
       description: Authentication failed

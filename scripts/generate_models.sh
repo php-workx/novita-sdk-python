@@ -22,12 +22,7 @@ OUTPUT_FILE="src/novita/generated/models.py"
 OUTPUT_DIR="src/novita/generated"
 PYTHON_VERSION="3.11"
 
-# Check if --split flag is provided
-SPLIT_MODE=false
-if [ "$1" = "--split" ]; then
-    SPLIT_MODE=true
-    echo -e "${YELLOW}Split mode enabled: Models will be generated in separate files${NC}\n"
-fi
+
 
 # Check if OpenAPI spec exists
 if [ ! -f "$OPENAPI_SPEC" ]; then
@@ -63,8 +58,6 @@ Run `./scripts/generate_models.sh` to regenerate.
 """
 
 from .models import *
-
-__all__ = []
 EOF
 
 echo -e "${GREEN}✓ __init__.py created${NC}\n"

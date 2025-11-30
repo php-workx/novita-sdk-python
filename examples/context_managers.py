@@ -109,9 +109,11 @@ def nested_context_managers() -> None:
 
     # You can create multiple clients if needed
     # (though usually one is sufficient)
-    with NovitaClient(api_key="key1"), NovitaClient(api_key="key2"):
+    with NovitaClient(api_key="key1") as client1, NovitaClient(api_key="key2") as client2:
         print("✓ Both clients initialized")
         # Use both clients...
+        _ = client1.gpu.instances.list()
+        _ = client2.gpu.instances.list()
         print("✓ Both clients will be cleaned up in reverse order")
 
 

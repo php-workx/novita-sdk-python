@@ -47,7 +47,7 @@ The following is a comprehensive list of all API resource groups and their actio
 
 | **Jobs** | `POST` | `/job/break` | Break (Cancel) Job | https://novita.ai/docs/api-reference/gpu-instance-break-job |
 
-| **Jobs** | `POST` | `job/save/image` | Save Instance Image | https://novita.ai/docs/api-reference/gpu-instance-save-image |
+| **Jobs** | `POST` | `/job/save/image` | Save Instance Image | https://novita.ai/docs/api-reference/gpu-instance-save-image |
 
 | **Image** | `GET` | `/image/prewarm/quota` | Get Image Prewarm Quota | https://novita.ai/docs/api-reference/gpu-instance-get-image-quota |
 

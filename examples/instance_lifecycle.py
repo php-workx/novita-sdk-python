@@ -30,9 +30,14 @@ def main() -> None:
             image_url="docker.io/library/ubuntu:latest",
             kind=Kind.gpu,
         )
-        response = client.gpu.instances.create(request)
-        instance_id = response.id
-        print(f"✓ Created instance: {instance_id}")
+
+        try:
+            response = client.gpu.instances.create(request)
+            instance_id = response.id
+            print(f"✓ Created instance: {instance_id}")
+        except Exception as e:
+            print(f"✗ Failed to create instance: {e}")
+            return
 
         print("\n" + "=" * 60)
         print("STEP 2: Getting instance details")
@@ -56,7 +61,13 @@ def main() -> None:
         print("=" * 60)
         client.gpu.instances.stop(instance_id)
         print("✓ Stop initiated")
-        time.sleep(2)
+
+        # Poll for stopped status
+        for _ in range(30):  # 30 second timeout
+            instance = client.gpu.instances.get(instance_id)
+            if instance.status.value == "exited":
+                break
+            time.sleep(2)
 
         print("\n" + "=" * 60)
         print("STEP 5: Starting instance")

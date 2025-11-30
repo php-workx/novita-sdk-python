@@ -30,18 +30,18 @@ Always use `httpx_mock` to set up expected HTTP responses:
 ```python
 def test_create_instance(httpx_mock: HTTPXMock) -> None:
     # Mock the HTTP response
-httpx_mock.add_response(
-    method="POST",
-    url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
-    json={"id": "inst-123"}
-)
+    httpx_mock.add_response(
+        method="POST",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance/create",
+        json={"id": "inst-123"}
+    )
 
-# Make the API call (will use the mock)
-client = NovitaClient(api_key="test-key")
-response = client.gpu.instances.create(request)
+    # Make the API call (will use the mock)
+    client = NovitaClient(api_key="test-key")
+    response = client.gpu.instances.create(request)
 
-# Assert the results
-assert response.id == "inst-123"
+    # Assert the results
+    assert response.id == "inst-123"
 ```
 
 ### ⚠️ Important: Use Real API Documentation
@@ -97,12 +97,12 @@ If you see `httpx.TimeoutException`, it means:
 
 ### Benefits of This Approach
 
-✅ **Fast** - No network latency  
-✅ **Reliable** - No flaky tests from network issues  
-✅ **Isolated** - Tests don't depend on external services  
-✅ **Safe** - Can't accidentally hit production API  
-✅ **Predictable** - Same results every time  
-✅ **Free** - No API quota usage during testing  
+✅ **Fast** - No network latency
+✅ **Reliable** - No flaky tests from network issues
+✅ **Isolated** - Tests don't depend on external services
+✅ **Safe** - Can't accidentally hit production API
+✅ **Predictable** - Same results every time
+✅ **Free** - No API quota usage during testing
 
 ### Test Organization
 
@@ -125,7 +125,7 @@ def test_authentication_error(httpx_mock: HTTPXMock) -> None:
         status_code=401,
         json={"error": "Unauthorized"}
     )
-    
+
     client = NovitaClient(api_key="invalid")
     with pytest.raises(AuthenticationError):
         client.gpu.instances.list()
@@ -140,7 +140,7 @@ def test_with_request_body(httpx_mock: HTTPXMock) -> None:
         url="...",
         json={"success": True}
     )
-    
+
     # The mock will match regardless of request body
     # unless you specifically check it
     client.gpu.instances.create(request)
@@ -152,7 +152,7 @@ If a test fails with URL mismatch:
 
 ```python
 # The error shows:
-# httpx.TimeoutException: No response can be found for GET request on 
+# httpx.TimeoutException: No response can be found for GET request on
 # https://api.novita.ai/gpu-instance/openapi/v1/products amongst:
 #   - Match GET request on https://api.novita.ai/gpu-instance/openapi/v1/gpu/pricing
 
@@ -175,7 +175,7 @@ If a test fails with URL mismatch:
 
 Tests run automatically in CI without any special configuration:
 - No API keys needed
-- No network access required  
+- No network access required
 - Fast execution (<1 second for all tests)
 
 ```yaml
