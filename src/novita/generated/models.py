@@ -7,7 +7,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated, Any, Literal, Optional
 
-from pydantic import AwareDatetime, BaseModel, Field, SecretStr
+from pydantic import AwareDatetime, BaseModel, Field, SecretStr, computed_field
 
 
 class Cluster(BaseModel):
@@ -502,8 +502,27 @@ class ListInstancesResponse(BaseModel):
 
 
 class SubscriptionPrice(BaseModel):
-    price: Annotated[int, Field(description="Unit price for the subscription instance")]
+    """Subscription pricing information.
+
+    Note: Prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD. For example, an API value of 350000 represents $3.50.
+    """
+
+    price_raw: Annotated[
+        int,
+        Field(alias="price", description="Raw price value from API (in units of 1/100000 USD)"),
+    ]
     month: Annotated[int, Field(description="Subscription duration, in months")]
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def price(self) -> float:
+        """Get subscription price in USD.
+
+        Returns:
+            Price in USD (converted from raw API value in 1/100000 USD units)
+        """
+        return self.price_raw / 100000
 
 
 class InventoryState(Enum):
@@ -518,6 +537,12 @@ class InventoryState(Enum):
 
 
 class GPUProduct(BaseModel):
+    """GPU product information.
+
+    Note: All prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD per hour. For example, an API value of 350 represents $0.0035/hour.
+    """
+
     id: Annotated[str, Field(description="Product ID")]
     name: Annotated[str, Field(description="Product name")]
     cpu_per_gpu: Annotated[int, Field(alias="cpuPerGpu", description="Number of CPU cores per GPU")]
@@ -555,7 +580,10 @@ class GPUProduct(BaseModel):
         ),
     ]
     regions: Annotated[list[str], Field(description="Available clusters")]
-    price: Annotated[int, Field(description="Price for creating a pay-as-you-go instance")]
+    price_raw: Annotated[
+        int,
+        Field(alias="price", description="Raw price value from API (in units of 1/100000 USD)"),
+    ]
     monthly_price: Annotated[
         list[SubscriptionPrice],
         Field(
@@ -567,14 +595,37 @@ class GPUProduct(BaseModel):
         list[str],
         Field(alias="billingMethods", description="Supported billing methods"),
     ]
-    spot_price: Annotated[
+    spot_price_raw: Annotated[
         str | None,
-        Field(alias="spotPrice", description="Spot billing instance price"),
+        Field(alias="spotPrice", description="Raw spot price value from API"),
     ] = None
     inventory_state: Annotated[
         InventoryState | None,
         Field(alias="inventoryState", description="Stock status"),
     ] = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def price(self) -> float:
+        """Get pay-as-you-go price in USD per hour.
+
+        Returns:
+            Price in USD per hour (converted from raw API value in 1/100000 USD units)
+        """
+        return self.price_raw / 100000
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def spot_price(self) -> float | None:
+        """Get spot instance price in USD per hour.
+
+        Returns:
+            Price in USD per hour, or None if spot pricing is not available
+        """
+        if self.spot_price_raw is None:
+            return None
+        # Spot price is returned as a string, convert to float then normalize
+        return float(self.spot_price_raw) / 100000
 
 
 class ListGPUProductsResponse(BaseModel):
@@ -582,6 +633,12 @@ class ListGPUProductsResponse(BaseModel):
 
 
 class CPUProduct(BaseModel):
+    """CPU product information.
+
+    Note: Prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD per hour.
+    """
+
     id: Annotated[str, Field(description="Unique product identifier")]
     name: Annotated[str, Field(description="Product display name")]
     cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = None
@@ -602,7 +659,22 @@ class CPUProduct(BaseModel):
             description="Whether this product can be used to create an instance",
         ),
     ] = None
-    price: Annotated[int | None, Field(description="Product unit cost")] = None
+    price_raw: Annotated[
+        int | None,
+        Field(alias="price", description="Raw price value from API (in units of 1/100000 USD)"),
+    ] = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def price(self) -> float | None:
+        """Get price in USD per hour.
+
+        Returns:
+            Price in USD per hour, or None if pricing is not available
+        """
+        if self.price_raw is None:
+            return None
+        return self.price_raw / 100000
 
 
 class ListCPUProductsResponse(BaseModel):

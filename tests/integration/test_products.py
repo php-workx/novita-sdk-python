@@ -80,25 +80,40 @@ class TestGPUProducts:
             assert isinstance(filtered_products, list)
 
     def test_gpu_product_has_valid_price_info(self, client):
-        """Test that GPU products have valid pricing information."""
+        """Test that GPU products have valid pricing information.
+
+        Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
+        """
         products = client.gpu.products.list()
 
         if len(products) > 0:
             for product in products:
-                # Price should be a non-negative integer
-                assert isinstance(product.price, int)
+                # Price should be a non-negative float (in USD)
+                assert isinstance(product.price, float)
                 assert product.price >= 0
+
+                # Spot price should be float or None
+                if product.spot_price is not None:
+                    assert isinstance(product.spot_price, float)
+                    assert product.spot_price >= 0
 
                 # Monthly price should be a list
                 if hasattr(product, "monthly_price") and product.monthly_price:
                     assert isinstance(product.monthly_price, list)
+                    # Each monthly price should have a price property that returns float
+                    for monthly in product.monthly_price:
+                        assert isinstance(monthly.price, float)
+                        assert monthly.price >= 0
 
 
 class TestCPUProducts:
     """Test CPU product-related endpoints."""
 
     def test_list_cpu_products(self, client):
-        """Test listing all CPU products."""
+        """Test listing all CPU products.
+
+        Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
+        """
         products = client.gpu.cpu_products.list()
 
         assert products is not None
@@ -119,12 +134,19 @@ class TestCPUProducts:
             # Verify data types
             assert isinstance(product.id, str)
             assert isinstance(product.name, str)
-            assert isinstance(product.cpu_num, int)
-            assert isinstance(product.memory_size, int)
-            assert isinstance(product.rootfs_size, int)
-            assert isinstance(product.local_volume_size, int)
-            assert isinstance(product.available_deploy, bool)
-            assert isinstance(product.price, int)
+            if product.cpu_num is not None:
+                assert isinstance(product.cpu_num, int)
+            if product.memory_size is not None:
+                assert isinstance(product.memory_size, int)
+            if product.rootfs_size is not None:
+                assert isinstance(product.rootfs_size, int)
+            if product.local_volume_size is not None:
+                assert isinstance(product.local_volume_size, int)
+            if product.available_deploy is not None:
+                assert isinstance(product.available_deploy, bool)
+            # Price is now a float property
+            if product.price is not None:
+                assert isinstance(product.price, float)
 
     def test_list_cpu_products_with_cluster_filter(self, client, cluster_id):
         """Test listing CPU products filtered by cluster."""
@@ -147,11 +169,15 @@ class TestCPUProducts:
             assert isinstance(filtered_products, list)
 
     def test_cpu_product_has_valid_price_info(self, client):
-        """Test that CPU products have valid pricing information."""
+        """Test that CPU products have valid pricing information.
+
+        Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
+        """
         products = client.gpu.cpu_products.list()
 
         if len(products) > 0:
             for product in products:
-                # Price should be a non-negative integer
-                assert isinstance(product.price, int)
-                assert product.price >= 0
+                # Price should be a non-negative float (in USD) or None
+                if product.price is not None:
+                    assert isinstance(product.price, float)
+                    assert product.price >= 0
