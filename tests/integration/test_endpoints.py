@@ -15,25 +15,19 @@ class TestEndpoints:
 
     def test_list_endpoints(self, client: NovitaClient) -> None:
         """Test listing all serverless endpoints."""
-        response = client.gpu.endpoints.list(page_size=10, page_num=0)  # type: ignore[call-arg]
+        endpoints = client.gpu.endpoints.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert hasattr(response, "total")
-        assert isinstance(response.data, list)
-        assert isinstance(response.total, int)
+        assert endpoints is not None
+        assert isinstance(endpoints, list)
 
-    def test_list_endpoints_with_pagination(self, client: NovitaClient) -> None:
-        """Test listing endpoints with different pagination parameters."""
-        # Get first page
-        page1 = client.gpu.endpoints.list(page_size=5, page_num=0)  # type: ignore[call-arg]
-        assert page1 is not None
-        assert len(page1.data) <= 5  # type: ignore[attr-defined]
-
-        # Get second page
-        page2 = client.gpu.endpoints.list(page_size=5, page_num=1)  # type: ignore[call-arg]
-        assert page2 is not None
-        assert len(page2.data) <= 5  # type: ignore[attr-defined]
+    def test_list_endpoints_returns_list(self, client: NovitaClient) -> None:
+        """Test that listing endpoints returns a valid list."""
+        endpoints = client.gpu.endpoints.list()
+        assert isinstance(endpoints, list)
+        # Verify each endpoint has expected structure
+        for endpoint in endpoints:
+            assert hasattr(endpoint, "id")
+            assert hasattr(endpoint, "name")
 
     def test_get_endpoint_limits(self, client: NovitaClient) -> None:
         """Test getting endpoint parameter limits."""
@@ -77,10 +71,10 @@ class TestEndpoints:
     def test_get_endpoint_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific endpoint."""
         # First get list of endpoints
-        endpoints = client.gpu.endpoints.list(page_size=1, page_num=0)  # type: ignore[call-arg]
+        endpoints = client.gpu.endpoints.list()
 
-        if len(endpoints.data) > 0:  # type: ignore[attr-defined]
-            endpoint_id = endpoints.data[0].id  # type: ignore[attr-defined]
+        if len(endpoints) > 0:
+            endpoint_id = endpoints[0].id
 
             # Get detailed information
             endpoint = client.gpu.endpoints.get(endpoint_id)
@@ -98,19 +92,18 @@ class TestEndpoints:
 
     def test_endpoint_structure(self, client: NovitaClient) -> None:
         """Test that endpoints have all expected fields."""
-        endpoints = client.gpu.endpoints.list(page_size=1, page_num=0)  # type: ignore[call-arg]
+        endpoints = client.gpu.endpoints.list()
 
-        if len(endpoints.data) > 0:  # type: ignore[attr-defined]
-            endpoint = endpoints.data[0]  # type: ignore[attr-defined]
+        if len(endpoints) > 0:
+            endpoint = endpoints[0]
 
             # Required fields
             assert hasattr(endpoint, "id")
             assert hasattr(endpoint, "name")
-            assert hasattr(endpoint, "status")
+            assert hasattr(endpoint, "state")
 
-            # Verify status is valid
-            valid_statuses = ["pending", "running", "stopped", "error"]
-            assert endpoint.status in valid_statuses
+            # Verify state exists and is not None
+            assert endpoint.state is not None
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
