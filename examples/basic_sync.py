@@ -29,7 +29,8 @@ def main() -> None:
         products = client.gpu.products.list()
         print(f"✓ Total GPU products: {len(products)}")
         for product in products:
-            print(f"  - {product.name} (${product.price:.2f}/hour)")
+            price_str = f"${product.price:.2f}" if product.price is not None else "N/A"
+            print(f"  - {product.name} ({price_str}/hour)")
 
     finally:
         # Always close the client

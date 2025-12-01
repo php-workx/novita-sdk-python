@@ -165,6 +165,8 @@ class AsyncInstances(AsyncBaseResource):
     """Asynchronous GPU instances management resource."""
 
     async def create(self, request: CreateInstanceRequest) -> CreateInstanceResponse:
+        """Create a new GPU instance."""
+
         response = await self._client.post(
             f"{BASE_PATH}/gpu/instance/create",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
@@ -180,6 +182,8 @@ class AsyncInstances(AsyncBaseResource):
         product_name: str | None = None,
         status: str | None = None,
     ) -> list[InstanceInfo]:
+        """List GPU instances with optional filters."""
+
         params = _build_list_filters(page_size, page_num, name, product_name, status)
         response = await self._client.get(
             f"{BASE_PATH}/gpu/instances",
@@ -189,6 +193,8 @@ class AsyncInstances(AsyncBaseResource):
         return parsed.instances
 
     async def get(self, instance_id: str) -> InstanceInfo:
+        """Fetch details for a specific instance."""
+
         response = await self._client.get(
             f"{BASE_PATH}/gpu/instance",
             params={"instanceId": instance_id},
@@ -196,60 +202,80 @@ class AsyncInstances(AsyncBaseResource):
         return InstanceInfo.model_validate(response.json())
 
     async def edit(self, request: EditInstanceRequest) -> None:
+        """Edit instance ports or root disk."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/edit",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
 
     async def start(self, instance_id: str) -> None:
+        """Start an instance."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/start",
             json={"instanceId": instance_id},
         )
 
     async def stop(self, instance_id: str) -> None:
+        """Stop an instance."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/stop",
             json={"instanceId": instance_id},
         )
 
     async def delete(self, instance_id: str) -> None:
+        """Delete an instance."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/delete",
             json={"instanceId": instance_id},
         )
 
     async def restart(self, instance_id: str) -> None:
+        """Restart an instance."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/restart",
             json={"instanceId": instance_id},
         )
 
     async def upgrade(self, request: UpgradeInstanceRequest) -> None:
+        """Upgrade an instance with a new configuration."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/upgrade",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
 
     async def migrate(self, instance_id: str) -> None:
+        """Migrate an instance to a different region."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/migrate",
             json={"instanceId": instance_id},
         )
 
     async def renew(self, instance_id: str, month: int) -> None:
+        """Renew a subscription instance."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/renewInstance",
             json={"instanceId": instance_id, "month": month},
         )
 
     async def convert_to_monthly(self, instance_id: str, month: int) -> None:
+        """Convert a pay-as-you-go instance to subscription billing."""
+
         await self._client.post(
             f"{BASE_PATH}/gpu/instance/transToMonthlyInstance",
             json={"instanceId": instance_id, "month": month},
         )
 
     async def save_image(self, request: SaveImageRequest) -> str:
+        """Create an image from an instance and return the job ID."""
+
         response = await self._client.post(
             f"{BASE_PATH}/job/save/image",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),

@@ -37,41 +37,42 @@ class TestEndpoints:
 
     def test_get_endpoint_limits(self, client: NovitaClient) -> None:
         """Test getting endpoint parameter limits."""
-        limits = client.gpu.endpoints.get_limits()  # type: ignore[attr-defined]
+        limits = client.gpu.endpoints.get_limit_ranges()
 
         assert limits is not None
+        assert isinstance(limits, dict)
 
         # Verify required fields
-        assert hasattr(limits, "min_rootfs_size")
-        assert hasattr(limits, "max_rootfs_size")
-        assert hasattr(limits, "free_rootfs_size")
-        assert hasattr(limits, "min_local_volume_size")
-        assert hasattr(limits, "max_local_volume_size")
-        assert hasattr(limits, "free_local_volume_size")
-        assert hasattr(limits, "min_worker_num")
-        assert hasattr(limits, "max_worker_num")
-        assert hasattr(limits, "min_free_timeout")
-        assert hasattr(limits, "max_free_timeout")
-        assert hasattr(limits, "min_concurrency_num")
-        assert hasattr(limits, "max_concurrency_num")
-        assert hasattr(limits, "min_queue_wait_time")
-        assert hasattr(limits, "max_queue_wait_time")
-        assert hasattr(limits, "min_request_num")
-        assert hasattr(limits, "max_request_num")
-        assert hasattr(limits, "min_gpu_num")
-        assert hasattr(limits, "max_gpu_num")
-        assert hasattr(limits, "cuda_version_list")
+        assert "min_rootfs_size" in limits
+        assert "max_rootfs_size" in limits
+        assert "free_rootfs_size" in limits
+        assert "min_local_volume_size" in limits
+        assert "max_local_volume_size" in limits
+        assert "free_local_volume_size" in limits
+        assert "min_worker_num" in limits
+        assert "max_worker_num" in limits
+        assert "min_free_timeout" in limits
+        assert "max_free_timeout" in limits
+        assert "min_concurrency_num" in limits
+        assert "max_concurrency_num" in limits
+        assert "min_queue_wait_time" in limits
+        assert "max_queue_wait_time" in limits
+        assert "min_request_num" in limits
+        assert "max_request_num" in limits
+        assert "min_gpu_num" in limits
+        assert "max_gpu_num" in limits
+        assert "cuda_version_list" in limits
 
         # Verify data types
-        assert isinstance(limits.min_rootfs_size, int)
-        assert isinstance(limits.max_rootfs_size, int)
-        assert isinstance(limits.cuda_version_list, list)
+        assert isinstance(limits["min_rootfs_size"], int)
+        assert isinstance(limits["max_rootfs_size"], int)
+        assert isinstance(limits["cuda_version_list"], list)
 
         # Verify logical constraints
-        assert limits.min_rootfs_size <= limits.max_rootfs_size
-        assert limits.min_local_volume_size <= limits.max_local_volume_size
-        assert limits.min_worker_num <= limits.max_worker_num
-        assert limits.min_gpu_num <= limits.max_gpu_num
+        assert limits["min_rootfs_size"] <= limits["max_rootfs_size"]
+        assert limits["min_local_volume_size"] <= limits["max_local_volume_size"]
+        assert limits["min_worker_num"] <= limits["max_worker_num"]
+        assert limits["min_gpu_num"] <= limits["max_gpu_num"]
 
     def test_get_endpoint_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific endpoint."""
@@ -82,17 +83,17 @@ class TestEndpoints:
             endpoint_id = endpoints.data[0].id  # type: ignore[attr-defined]
 
             # Get detailed information
-            endpoint = client.gpu.endpoints.get(id=endpoint_id)  # type: ignore[call-arg]
+            endpoint = client.gpu.endpoints.get(endpoint_id)
 
             assert endpoint is not None
             assert hasattr(endpoint, "id")
             assert hasattr(endpoint, "name")
-            assert hasattr(endpoint, "status")
+            assert hasattr(endpoint, "state")
 
             # Verify data types
             assert isinstance(endpoint.id, str)
-            assert isinstance(endpoint.name, str)
-            assert isinstance(endpoint.status, str)
+            if endpoint.name is not None:
+                assert isinstance(endpoint.name, str)
             assert endpoint.id == endpoint_id
 
     def test_endpoint_structure(self, client: NovitaClient) -> None:

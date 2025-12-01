@@ -66,13 +66,11 @@ def test_get_network(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    networks = client.gpu.networks.get("net-123")
+    network = client.gpu.networks.get("net-123")
 
-    assert isinstance(networks, list)
-    assert len(networks) == 1
-    assert isinstance(networks[0], Network)
-    assert networks[0].id == "net-123"
-    assert networks[0].ip == "10.0.0.5"
+    assert isinstance(network, Network)
+    assert network.id == "net-123"
+    assert network.ip == "10.0.0.5"
     client.close()
 
 
@@ -85,12 +83,10 @@ def test_create_network(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    networks = client.gpu.networks.create(name="test-network")
+    network = client.gpu.networks.create(name="test-network")
 
-    assert isinstance(networks, list)
-    assert len(networks) == 1
-    assert isinstance(networks[0], Network)
-    assert networks[0].id == "net-new"
+    assert isinstance(network, Network)
+    assert network.id == "net-new"
     client.close()
 
 
@@ -103,11 +99,11 @@ def test_update_network(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    networks = client.gpu.networks.update("net-123", name="updated-network")
+    network = client.gpu.networks.update("net-123", name="updated-network")
 
-    assert len(networks) == 1
-    assert networks[0].id == "net-123"
-    assert networks[0].ip == "10.0.0.10"
+    assert isinstance(network, Network)
+    assert network.id == "net-123"
+    assert network.ip == "10.0.0.10"
     client.close()
 
 

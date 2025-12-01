@@ -93,7 +93,7 @@ def wait_for_endpoint_status(
     def check_status() -> bool:
         endpoint = client.gpu.endpoints.get(endpoint_id=endpoint_id)
         # EndpointDetail doesn't have status attribute, using type: ignore
-        return endpoint.status == target_status  # type: ignore[attr-defined,no-any-return]
+        return str(endpoint.status) == target_status  # type: ignore[attr-defined]
 
     wait_for_condition(
         condition_func=check_status,
