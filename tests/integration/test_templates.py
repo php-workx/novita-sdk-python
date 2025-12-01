@@ -1,12 +1,19 @@
 """Integration tests for template endpoints."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pytest
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
 
 
 class TestTemplates:
     """Test template-related endpoints."""
 
-    def test_list_templates(self, client):
+    def test_list_templates(self, client: NovitaClient) -> None:
         """Test listing all templates."""
         response = client.gpu.templates.list()
 
@@ -14,12 +21,12 @@ class TestTemplates:
         assert hasattr(response, "data")
         assert isinstance(response.data, list)
 
-    def test_template_structure(self, client):
+    def test_template_structure(self, client: NovitaClient) -> None:
         """Test that templates have all expected fields."""
         templates = client.gpu.templates.list()
 
-        if len(templates.data) > 0:
-            template = templates.data[0]
+        if len(templates) > 0:
+            template = templates[0]
 
             # Required fields
             assert hasattr(template, "id")
@@ -33,25 +40,25 @@ class TestTemplates:
             assert len(template.id) > 0
             assert len(template.name) > 0
 
-    def test_get_template_details(self, client):
+    def test_get_template_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific template."""
         # First get list of templates
         templates = client.gpu.templates.list()
 
-        if len(templates.data) > 0:
-            template_id = templates.data[0].id
+        if len(templates) > 0:
+            template_id = templates[0].id
 
             # Get detailed information
             template = client.gpu.templates.get(template_id=template_id)
 
             assert template is not None
 
-    def test_templates_have_unique_ids(self, client):
+    def test_templates_have_unique_ids(self, client: NovitaClient) -> None:
         """Test that all templates have unique IDs."""
         templates = client.gpu.templates.list()
 
-        if len(templates.data) > 1:
-            ids = [template.id for template in templates.data]
+        if len(templates) > 1:
+            ids = [template.id for template in templates]
             # Check for uniqueness
             assert len(ids) == len(set(ids))
 
@@ -61,7 +68,7 @@ class TestTemplates:
 class TestTemplateLifecycle:
     """Test full template lifecycle (create, delete)."""
 
-    def test_create_delete_template(self, client):
+    def test_create_delete_template(self, client: NovitaClient) -> None:
         """
         Test full template lifecycle.
 

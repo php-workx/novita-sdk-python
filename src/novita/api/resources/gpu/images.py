@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from novita.generated.models import (
     CreateImagePrewarmResponse,
@@ -94,7 +94,7 @@ class Images(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/image/prewarm/quota")
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
 
 class AsyncImages(AsyncBaseResource):
@@ -175,4 +175,4 @@ class AsyncImages(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/image/prewarm/quota")
-        return response.json()
+        return cast(dict[str, Any], response.json())

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from novita.generated.models import Job, ListJobsResponse
+from novita.generated.models import JobModel, ListJobsResponse
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -10,7 +10,7 @@ from .base import BASE_PATH, AsyncBaseResource, BaseResource
 class Jobs(BaseResource):
     """Synchronous GPU jobs management resource."""
 
-    def list(self) -> list[Job]:
+    def list(self) -> list[JobModel]:
         """List all jobs.
 
         Returns:
@@ -41,7 +41,7 @@ class Jobs(BaseResource):
 class AsyncJobs(AsyncBaseResource):
     """Asynchronous GPU jobs management resource."""
 
-    async def list(self) -> list[Job]:
+    async def list(self) -> list[JobModel]:
         """List all jobs.
 
         Returns:

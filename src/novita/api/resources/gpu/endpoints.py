@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from novita.generated.models import EndpointDetail, ListEndpointsResponse
 
@@ -26,7 +26,7 @@ class Endpoints(BaseResource):
             APIError: If the API returns an error
         """
         response = self._client.get(f"{BASE_PATH}/endpoint/limit")
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     def create(self, **kwargs: Any) -> EndpointDetail:
         """Create a new endpoint.
@@ -124,7 +124,7 @@ class AsyncEndpoints(AsyncBaseResource):
             APIError: If the API returns an error
         """
         response = await self._client.get(f"{BASE_PATH}/endpoint/limit")
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
     async def create(self, **kwargs: Any) -> EndpointDetail:
         """Create a new endpoint.

@@ -1,10 +1,17 @@
 """Integration tests for cluster endpoints."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
+
 
 class TestClusters:
     """Test cluster-related endpoints."""
 
-    def test_list_clusters(self, client):
+    def test_list_clusters(self, client: NovitaClient) -> None:
         """Test listing all clusters."""
         clusters = client.gpu.clusters.list()
 
@@ -27,7 +34,7 @@ class TestClusters:
             assert isinstance(cluster.support_network_storage, bool)
             assert isinstance(cluster.support_instance_network, bool)
 
-    def test_clusters_have_valid_gpu_types(self, client):
+    def test_clusters_have_valid_gpu_types(self, client: NovitaClient) -> None:
         """Test that clusters have valid GPU type information."""
         clusters = client.gpu.clusters.list()
 

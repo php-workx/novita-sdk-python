@@ -1,6 +1,6 @@
 """GPU metrics management resource."""
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -28,7 +28,7 @@ class Metrics(BaseResource):
         response = self._client.get(
             f"{BASE_PATH}/instance/metrics", params={"instance_id": instance_id}
         )
-        return response.json()
+        return cast(dict[str, Any], response.json())
 
 
 class AsyncMetrics(AsyncBaseResource):
@@ -51,4 +51,4 @@ class AsyncMetrics(AsyncBaseResource):
         response = await self._client.get(
             f"{BASE_PATH}/instance/metrics", params={"instance_id": instance_id}
         )
-        return response.json()
+        return cast(dict[str, Any], response.json())

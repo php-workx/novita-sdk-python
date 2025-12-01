@@ -1,32 +1,38 @@
 """Integration tests for image prewarm endpoints."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pytest
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
 
 
 class TestImagePrewarm:
     """Test image prewarm-related endpoints."""
 
-    def test_list_image_prewarm_tasks(self, client):
+    def test_list_image_prewarm_tasks(self, client: NovitaClient) -> None:
         """Test listing all image prewarm tasks."""
-        response = client.gpu.image_prewarm.list()
+        tasks = client.gpu.images.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert isinstance(response.data, list)
+        assert tasks is not None
+        assert isinstance(tasks, list)
 
-    def test_get_image_prewarm_quota(self, client):
+    def test_get_image_prewarm_quota(self, client: NovitaClient) -> None:
         """Test getting image prewarm quota."""
-        quota = client.gpu.image_prewarm.get_quota()
+        quota = client.gpu.images.get_quota()
 
         assert quota is not None
         # Quota should be a dictionary or object with quota information
 
-    def test_image_prewarm_task_structure(self, client):
+    def test_image_prewarm_task_structure(self, client: NovitaClient) -> None:
         """Test that image prewarm tasks have all expected fields."""
-        tasks = client.gpu.image_prewarm.list()
+        tasks = client.gpu.images.list()
 
-        if len(tasks.data) > 0:
-            task = tasks.data[0]
+        if len(tasks) > 0:
+            task = tasks[0]
 
             # Required fields
             assert hasattr(task, "id")
@@ -42,12 +48,12 @@ class TestImagePrewarm:
             assert len(task.id) > 0
             assert len(task.image_url) > 0
 
-    def test_image_prewarm_tasks_have_unique_ids(self, client):
+    def test_image_prewarm_tasks_have_unique_ids(self, client: NovitaClient) -> None:
         """Test that all image prewarm tasks have unique IDs."""
-        tasks = client.gpu.image_prewarm.list()
+        tasks = client.gpu.images.list()
 
-        if len(tasks.data) > 1:
-            ids = [task.id for task in tasks.data]
+        if len(tasks) > 1:
+            ids = [task.id for task in tasks]
             # Check for uniqueness
             assert len(ids) == len(set(ids))
 
@@ -57,7 +63,7 @@ class TestImagePrewarm:
 class TestImagePrewarmLifecycle:
     """Test full image prewarm lifecycle (create, update, delete)."""
 
-    def test_create_update_delete_prewarm_task(self, client, cluster_id):
+    def test_create_update_delete_prewarm_task(self, client: NovitaClient, cluster_id: str) -> None:
         """
         Test full image prewarm task lifecycle.
 

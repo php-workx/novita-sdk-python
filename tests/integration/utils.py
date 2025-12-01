@@ -1,8 +1,13 @@
 """Utility functions for integration tests."""
 
+from __future__ import annotations
+
 import time
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
 
 
 def wait_for_condition(
@@ -32,7 +37,11 @@ def wait_for_condition(
 
 
 def wait_for_instance_status(
-    client: Any, instance_id: str, target_status: str, timeout: int = 600, interval: int = 10
+    client: NovitaClient,
+    instance_id: str,
+    target_status: str,
+    timeout: int = 600,
+    interval: int = 10,
 ) -> None:
     """
     Wait for an instance to reach a specific status.
@@ -48,9 +57,9 @@ def wait_for_instance_status(
         TimeoutError: If instance doesn't reach target status within timeout
     """
 
-    def check_status():
+    def check_status() -> bool:
         instance = client.gpu.instances.get(instance_id=instance_id)
-        return instance.status == target_status
+        return str(instance.status) == target_status
 
     wait_for_condition(
         condition_func=check_status,
@@ -61,7 +70,11 @@ def wait_for_instance_status(
 
 
 def wait_for_endpoint_status(
-    client: Any, endpoint_id: str, target_status: str, timeout: int = 600, interval: int = 10
+    client: NovitaClient,
+    endpoint_id: str,
+    target_status: str,
+    timeout: int = 600,
+    interval: int = 10,
 ) -> None:
     """
     Wait for an endpoint to reach a specific status.
@@ -77,9 +90,10 @@ def wait_for_endpoint_status(
         TimeoutError: If endpoint doesn't reach target status within timeout
     """
 
-    def check_status():
+    def check_status() -> bool:
         endpoint = client.gpu.endpoints.get(endpoint_id=endpoint_id)
-        return endpoint.status == target_status
+        # EndpointDetail doesn't have status attribute, using type: ignore
+        return endpoint.status == target_status  # type: ignore[attr-defined,no-any-return]
 
     wait_for_condition(
         condition_func=check_status,
@@ -89,7 +103,7 @@ def wait_for_endpoint_status(
     )
 
 
-def cleanup_instance(client: Any, instance_id: str, wait: bool = True) -> None:
+def cleanup_instance(client: NovitaClient, instance_id: str, wait: bool = True) -> None:
     """
     Clean up an instance by deleting it.
 
@@ -113,7 +127,7 @@ def cleanup_instance(client: Any, instance_id: str, wait: bool = True) -> None:
         print(f"Warning: Failed to cleanup instance {instance_id}: {e}")
 
 
-def cleanup_endpoint(client: Any, endpoint_id: str) -> None:
+def cleanup_endpoint(client: NovitaClient, endpoint_id: str) -> None:
     """
     Clean up an endpoint by deleting it.
 
@@ -122,13 +136,13 @@ def cleanup_endpoint(client: Any, endpoint_id: str) -> None:
         endpoint_id: ID of the endpoint to delete
     """
     try:
-        client.gpu.endpoints.delete(id=endpoint_id)
+        client.gpu.endpoints.delete(endpoint_id=endpoint_id)
         time.sleep(2)  # Allow time for deletion to process
     except Exception as e:
         print(f"Warning: Failed to cleanup endpoint {endpoint_id}: {e}")
 
 
-def cleanup_network(client: Any, network_id: str) -> None:
+def cleanup_network(client: NovitaClient, network_id: str) -> None:
     """
     Clean up a network by deleting it.
 
@@ -143,7 +157,7 @@ def cleanup_network(client: Any, network_id: str) -> None:
         print(f"Warning: Failed to cleanup network {network_id}: {e}")
 
 
-def cleanup_network_storage(client: Any, storage_id: str) -> None:
+def cleanup_network_storage(client: NovitaClient, storage_id: str) -> None:
     """
     Clean up a network storage by deleting it.
 
@@ -152,13 +166,13 @@ def cleanup_network_storage(client: Any, storage_id: str) -> None:
         storage_id: ID of the network storage to delete
     """
     try:
-        client.gpu.network_storage.delete(id=storage_id)
+        client.gpu.storages.delete(storage_id=storage_id)
         time.sleep(2)  # Allow time for deletion to process
     except Exception as e:
         print(f"Warning: Failed to cleanup network storage {storage_id}: {e}")
 
 
-def cleanup_template(client: Any, template_id: str) -> None:
+def cleanup_template(client: NovitaClient, template_id: str) -> None:
     """
     Clean up a template by deleting it.
 
@@ -167,13 +181,13 @@ def cleanup_template(client: Any, template_id: str) -> None:
         template_id: ID of the template to delete
     """
     try:
-        client.gpu.templates.delete(id=template_id)
+        client.gpu.templates.delete(template_id=template_id)
         time.sleep(2)  # Allow time for deletion to process
     except Exception as e:
         print(f"Warning: Failed to cleanup template {template_id}: {e}")
 
 
-def _instance_exists(client: Any, instance_id: str) -> bool:
+def _instance_exists(client: NovitaClient, instance_id: str) -> bool:
     """
     Check if an instance exists.
 

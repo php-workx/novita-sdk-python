@@ -28,7 +28,7 @@ def main() -> None:
         products = client.gpu.products.list()
         print(f"✓ Total GPU products: {len(products)}")
         for product in products[:3]:  # Show first 3
-            hourly = (product.price or 0) / 100000
+            hourly = product.price or 0.0
             print(f"  - {product.id}: ${hourly:.2f}/hour")
 
         # Demonstrate clusters

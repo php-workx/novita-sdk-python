@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import TYPE_CHECKING
 
 from novita.generated.models import (
@@ -20,8 +21,21 @@ if TYPE_CHECKING:
 class Products(BaseResource):
     """Synchronous GPU products and pricing resource."""
 
-    def list(self) -> list[GPUProduct]:
+    def list(
+        self,
+        *,
+        cluster_id: str | None = None,
+        gpu_num: int | None = None,
+        product_name: str | None = None,
+        billing_method: str | None = None,
+    ) -> builtins.list[GPUProduct]:
         """Get pricing information for GPU instance types.
+
+        Args:
+            cluster_id: Filter by cluster
+            gpu_num: Filter by GPU count
+            product_name: Fuzzy matching on product names
+            billing_method: Filter by billing method
 
         Returns:
             List of GPU product objects with pricing information
@@ -30,12 +44,31 @@ class Products(BaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        response = self._client.get(f"{BASE_PATH}/products")
+        params: dict[str, str | int] = {}
+        if cluster_id is not None:
+            params["clusterId"] = cluster_id
+        if gpu_num is not None:
+            params["gpuNum"] = gpu_num
+        if product_name is not None:
+            params["productName"] = product_name
+        if billing_method is not None:
+            params["billingMethod"] = billing_method
+
+        response = self._client.get(f"{BASE_PATH}/products", params=params or None)
         parsed = ListGPUProductsResponse.model_validate(response.json())
         return parsed.data
 
-    def list_cpu(self) -> list[CPUProduct]:
+    def list_cpu(
+        self,
+        *,
+        cluster_id: str | None = None,
+        product_name: str | None = None,
+    ) -> builtins.list[CPUProduct]:
         """Get pricing information for CPU instance types.
+
+        Args:
+            cluster_id: Filter by cluster identifier
+            product_name: Fuzzy match filtering by product name
 
         Returns:
             List of CPU product objects with pricing information
@@ -44,7 +77,13 @@ class Products(BaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        response = self._client.get(f"{BASE_PATH}/cpu/products")
+        params: dict[str, str] = {}
+        if cluster_id is not None:
+            params["clusterId"] = cluster_id
+        if product_name is not None:
+            params["productName"] = product_name
+
+        response = self._client.get(f"{BASE_PATH}/cpu/products", params=params or None)
         parsed = ListCPUProductsResponse.model_validate(response.json())
         return parsed.data
 
@@ -52,8 +91,21 @@ class Products(BaseResource):
 class AsyncProducts(AsyncBaseResource):
     """Asynchronous GPU products and pricing resource."""
 
-    async def list(self) -> list[GPUProduct]:
+    async def list(
+        self,
+        *,
+        cluster_id: str | None = None,
+        gpu_num: int | None = None,
+        product_name: str | None = None,
+        billing_method: str | None = None,
+    ) -> builtins.list[GPUProduct]:
         """Get pricing information for GPU instance types.
+
+        Args:
+            cluster_id: Filter by cluster
+            gpu_num: Filter by GPU count
+            product_name: Fuzzy matching on product names
+            billing_method: Filter by billing method
 
         Returns:
             List of GPU product objects with pricing information
@@ -62,12 +114,31 @@ class AsyncProducts(AsyncBaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        response = await self._client.get(f"{BASE_PATH}/products")
+        params: dict[str, str | int] = {}
+        if cluster_id is not None:
+            params["clusterId"] = cluster_id
+        if gpu_num is not None:
+            params["gpuNum"] = gpu_num
+        if product_name is not None:
+            params["productName"] = product_name
+        if billing_method is not None:
+            params["billingMethod"] = billing_method
+
+        response = await self._client.get(f"{BASE_PATH}/products", params=params or None)
         parsed = ListGPUProductsResponse.model_validate(response.json())
         return parsed.data
 
-    async def list_cpu(self) -> list[CPUProduct]:
+    async def list_cpu(
+        self,
+        *,
+        cluster_id: str | None = None,
+        product_name: str | None = None,
+    ) -> builtins.list[CPUProduct]:
         """Get pricing information for CPU instance types.
+
+        Args:
+            cluster_id: Filter by cluster identifier
+            product_name: Fuzzy match filtering by product name
 
         Returns:
             List of CPU product objects with pricing information
@@ -76,6 +147,12 @@ class AsyncProducts(AsyncBaseResource):
             AuthenticationError: If API key is invalid
             APIError: If the API returns an error
         """
-        response = await self._client.get(f"{BASE_PATH}/cpu/products")
+        params: dict[str, str] = {}
+        if cluster_id is not None:
+            params["clusterId"] = cluster_id
+        if product_name is not None:
+            params["productName"] = product_name
+
+        response = await self._client.get(f"{BASE_PATH}/cpu/products", params=params or None)
         parsed = ListCPUProductsResponse.model_validate(response.json())
         return parsed.data

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from novita.generated.models import (
     CreateInstanceRequest,
@@ -157,8 +157,8 @@ class Instances(BaseResource):
             f"{BASE_PATH}/job/save/image",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        payload = response.json()
-        return payload.get("jobId", "")
+        payload = cast(dict[str, Any], response.json())
+        return str(payload.get("jobId", ""))
 
 
 class AsyncInstances(AsyncBaseResource):
@@ -254,5 +254,5 @@ class AsyncInstances(AsyncBaseResource):
             f"{BASE_PATH}/job/save/image",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        payload = response.json()
-        return payload.get("jobId", "")
+        payload = cast(dict[str, Any], response.json())
+        return str(payload.get("jobId", ""))

@@ -1,23 +1,29 @@
 """Integration tests for job endpoints."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
+
 
 class TestJobs:
     """Test job-related endpoints."""
 
-    def test_list_jobs(self, client):
+    def test_list_jobs(self, client: NovitaClient) -> None:
         """Test listing all jobs."""
-        response = client.gpu.jobs.list()
+        jobs = client.gpu.jobs.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert isinstance(response.data, list)
+        assert jobs is not None
+        assert isinstance(jobs, list)
 
-    def test_job_structure(self, client):
+    def test_job_structure(self, client: NovitaClient) -> None:
         """Test that jobs have all expected fields."""
         jobs = client.gpu.jobs.list()
 
-        if len(jobs.data) > 0:
-            job = jobs.data[0]
+        if len(jobs) > 0:
+            job = jobs[0]
 
             # Required fields
             assert hasattr(job, "id")
@@ -29,10 +35,10 @@ class TestJobs:
             assert isinstance(job.type, str)
             assert isinstance(job.status, str)
 
-    def test_jobs_have_valid_ids(self, client):
+    def test_jobs_have_valid_ids(self, client: NovitaClient) -> None:
         """Test that all jobs have non-empty IDs."""
         jobs = client.gpu.jobs.list()
 
-        for job in jobs.data:
+        for job in jobs:
             assert job.id
             assert len(job.id) > 0

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     pass
 
 
-def _parse_network_details(payload: Any) -> list[Network]:
+def _parse_network_details(payload: Any) -> builtins.list[Network]:
     """Normalize network detail payloads into model instances."""
     items: Iterable[Any]
     raw = payload.get("network", payload) if isinstance(payload, dict) else payload
@@ -45,7 +46,7 @@ class Networks(BaseResource):
         parsed = ListNetworksResponse.model_validate(response.json())
         return parsed.network
 
-    def get(self, network_id: str) -> list[Network]:
+    def get(self, network_id: str) -> builtins.list[Network]:
         """Get details of a specific network.
 
         Args:
@@ -62,7 +63,7 @@ class Networks(BaseResource):
         response = self._client.get(f"{BASE_PATH}/network", params={"network_id": network_id})
         return _parse_network_details(response.json())
 
-    def create(self, **kwargs: Any) -> list[Network]:
+    def create(self, **kwargs: Any) -> builtins.list[Network]:
         """Create a new VPC network.
 
         Args:
@@ -79,7 +80,7 @@ class Networks(BaseResource):
         response = self._client.post(f"{BASE_PATH}/network/create", json=kwargs)
         return _parse_network_details(response.json())
 
-    def update(self, network_id: str, **kwargs: Any) -> list[Network]:
+    def update(self, network_id: str, **kwargs: Any) -> builtins.list[Network]:
         """Update a VPC network.
 
         Args:
@@ -130,7 +131,7 @@ class AsyncNetworks(AsyncBaseResource):
         parsed = ListNetworksResponse.model_validate(response.json())
         return parsed.network
 
-    async def get(self, network_id: str) -> list[Network]:
+    async def get(self, network_id: str) -> builtins.list[Network]:
         """Get details of a specific network.
 
         Args:
@@ -147,7 +148,7 @@ class AsyncNetworks(AsyncBaseResource):
         response = await self._client.get(f"{BASE_PATH}/network", params={"network_id": network_id})
         return _parse_network_details(response.json())
 
-    async def create(self, **kwargs: Any) -> list[Network]:
+    async def create(self, **kwargs: Any) -> builtins.list[Network]:
         """Create a new VPC network.
 
         Args:
@@ -164,7 +165,7 @@ class AsyncNetworks(AsyncBaseResource):
         response = await self._client.post(f"{BASE_PATH}/network/create", json=kwargs)
         return _parse_network_details(response.json())
 
-    async def update(self, network_id: str, **kwargs: Any) -> list[Network]:
+    async def update(self, network_id: str, **kwargs: Any) -> builtins.list[Network]:
         """Update a VPC network.
 
         Args:

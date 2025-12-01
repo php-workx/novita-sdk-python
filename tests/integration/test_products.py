@@ -1,10 +1,17 @@
 """Integration tests for product endpoints."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from novita import NovitaClient
+
 
 class TestGPUProducts:
     """Test GPU product-related endpoints."""
 
-    def test_list_gpu_products(self, client):
+    def test_list_gpu_products(self, client: NovitaClient) -> None:
         """Test listing all GPU products."""
         products = client.gpu.products.list()
 
@@ -36,7 +43,9 @@ class TestGPUProducts:
             assert isinstance(product.regions, list)
             assert isinstance(product.billing_methods, list)
 
-    def test_list_gpu_products_with_cluster_filter(self, client, cluster_id):
+    def test_list_gpu_products_with_cluster_filter(
+        self, client: NovitaClient, cluster_id: str
+    ) -> None:
         """Test listing GPU products filtered by cluster."""
         products = client.gpu.products.list(cluster_id=cluster_id)
 
@@ -47,7 +56,7 @@ class TestGPUProducts:
         for product in products:
             assert cluster_id in product.regions
 
-    def test_list_gpu_products_with_gpu_num_filter(self, client):
+    def test_list_gpu_products_with_gpu_num_filter(self, client: NovitaClient) -> None:
         """Test listing GPU products filtered by GPU count."""
         gpu_num = 1
         products = client.gpu.products.list(gpu_num=gpu_num)
@@ -55,7 +64,7 @@ class TestGPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
-    def test_list_gpu_products_with_billing_method_filter(self, client):
+    def test_list_gpu_products_with_billing_method_filter(self, client: NovitaClient) -> None:
         """Test listing GPU products filtered by billing method."""
         products = client.gpu.products.list(billing_method="onDemand")
 
@@ -66,7 +75,7 @@ class TestGPUProducts:
         for product in products:
             assert "onDemand" in product.billing_methods
 
-    def test_list_gpu_products_with_product_name_filter(self, client):
+    def test_list_gpu_products_with_product_name_filter(self, client: NovitaClient) -> None:
         """Test listing GPU products filtered by product name."""
         # Get all products first
         all_products = client.gpu.products.list()
@@ -79,7 +88,7 @@ class TestGPUProducts:
             assert filtered_products is not None
             assert isinstance(filtered_products, list)
 
-    def test_gpu_product_has_valid_price_info(self, client):
+    def test_gpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that GPU products have valid pricing information.
 
         Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
@@ -109,12 +118,12 @@ class TestGPUProducts:
 class TestCPUProducts:
     """Test CPU product-related endpoints."""
 
-    def test_list_cpu_products(self, client):
+    def test_list_cpu_products(self, client: NovitaClient) -> None:
         """Test listing all CPU products.
 
         Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
         """
-        products = client.gpu.cpu_products.list()
+        products = client.gpu.products.list_cpu()
 
         assert products is not None
         assert isinstance(products, list)
@@ -148,32 +157,34 @@ class TestCPUProducts:
             if product.price is not None:
                 assert isinstance(product.price, float)
 
-    def test_list_cpu_products_with_cluster_filter(self, client, cluster_id):
+    def test_list_cpu_products_with_cluster_filter(
+        self, client: NovitaClient, cluster_id: str
+    ) -> None:
         """Test listing CPU products filtered by cluster."""
-        products = client.gpu.cpu_products.list(cluster_id=cluster_id)
+        products = client.gpu.products.list_cpu(cluster_id=cluster_id)
 
         assert products is not None
         assert isinstance(products, list)
 
-    def test_list_cpu_products_with_product_name_filter(self, client):
+    def test_list_cpu_products_with_product_name_filter(self, client: NovitaClient) -> None:
         """Test listing CPU products filtered by product name."""
         # Get all products first
-        all_products = client.gpu.cpu_products.list()
+        all_products = client.gpu.products.list_cpu()
 
         if len(all_products) > 0:
             # Use part of the first product's name for fuzzy search
             search_term = all_products[0].name[:5]
-            filtered_products = client.gpu.cpu_products.list(product_name=search_term)
+            filtered_products = client.gpu.products.list_cpu(product_name=search_term)
 
             assert filtered_products is not None
             assert isinstance(filtered_products, list)
 
-    def test_cpu_product_has_valid_price_info(self, client):
+    def test_cpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that CPU products have valid pricing information.
 
         Note: SDK returns prices as float in USD (converted from API's 1/100000 USD units).
         """
-        products = client.gpu.cpu_products.list()
+        products = client.gpu.products.list_cpu()
 
         if len(products) > 0:
             for product in products:
