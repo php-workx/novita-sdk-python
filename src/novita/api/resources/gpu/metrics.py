@@ -1,11 +1,8 @@
 """GPU metrics management resource."""
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 class Metrics(BaseResource):

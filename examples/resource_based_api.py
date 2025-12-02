@@ -10,9 +10,7 @@ from novita import NovitaClient
 def main() -> None:
     """Demonstrate the resource-based GPU API structure."""
     # Initialize client (uses NOVITA_API_KEY environment variable)
-    client = NovitaClient()
-
-    try:
+    with NovitaClient() as client:
         # === Instance Management ===
         print("\n=== GPU Instances ===")
 
@@ -38,10 +36,6 @@ def main() -> None:
             print(f"✓ Available clusters: {len(clusters) if clusters else 0}")
         except Exception as e:
             print(f"⚠ Clusters endpoint: {type(e).__name__}")
-
-    finally:
-        # Always close the client
-        client.close()
 
 
 if __name__ == "__main__":

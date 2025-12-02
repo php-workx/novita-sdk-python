@@ -2,23 +2,31 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from novita.exceptions import NotFoundError
 from novita.generated.models import ListNetworksResponse, Network, NetworkModel
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
-if TYPE_CHECKING:
-    pass
-
 
 def _parse_single_network(payload: Any) -> Network:
-    """Parse a single network from API response."""
+    """Parse a single network from API response.
+
+    Args:
+        payload: API response payload containing network data
+
+    Returns:
+        Network object
+
+    Raises:
+        NotFoundError: If the API returns an empty list (network not found)
+    """
     raw = payload.get("network", payload) if isinstance(payload, dict) else payload
     # Handle case where API returns a list with single item
     if isinstance(raw, list):
         if len(raw) == 0:
-            raise ValueError("Expected a network object but received empty list")
+            raise NotFoundError("Network not found")
         raw = raw[0]
     return Network.model_validate(raw)
 
@@ -90,7 +98,7 @@ class Networks(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"network_id": network_id, **kwargs}
+        data = {**kwargs, "network_id": network_id}
         response = self._client.post(f"{BASE_PATH}/network/update", json=data)
         return _parse_single_network(response.json())
 
@@ -175,7 +183,7 @@ class AsyncNetworks(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"network_id": network_id, **kwargs}
+        data = {**kwargs, "network_id": network_id}
         response = await self._client.post(f"{BASE_PATH}/network/update", json=data)
         return _parse_single_network(response.json())
 

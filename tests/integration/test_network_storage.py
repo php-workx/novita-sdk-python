@@ -24,27 +24,29 @@ class TestNetworkStorage:
         """Test that network storages have all expected fields."""
         storages = client.gpu.storages.list()
 
-        if len(storages) > 0:
-            storage = storages[0]
+        if not storages:
+            pytest.skip("No network storages available to test structure")
 
-            # Required fields
-            assert hasattr(storage, "storage_id")
-            assert hasattr(storage, "storage_name")
-            assert hasattr(storage, "storage_size")
-            assert hasattr(storage, "cluster_id")
+        storage = storages[0]
 
-            # Verify data types
-            if storage.storage_id is not None:
-                assert isinstance(storage.storage_id, str)
-                assert len(storage.storage_id) > 0
-            if storage.storage_name is not None:
-                assert isinstance(storage.storage_name, str)
-            if storage.storage_size is not None:
-                assert isinstance(storage.storage_size, int)
-                assert storage.storage_size > 0
-            if storage.cluster_id is not None:
-                assert isinstance(storage.cluster_id, str)
-                assert len(storage.cluster_id) > 0
+        # Required fields
+        assert hasattr(storage, "storage_id")
+        assert hasattr(storage, "storage_name")
+        assert hasattr(storage, "storage_size")
+        assert hasattr(storage, "cluster_id")
+
+        # Verify data types
+        if storage.storage_id is not None:
+            assert isinstance(storage.storage_id, str)
+            assert len(storage.storage_id) > 0
+        if storage.storage_name is not None:
+            assert isinstance(storage.storage_name, str)
+        if storage.storage_size is not None:
+            assert isinstance(storage.storage_size, int)
+            assert storage.storage_size > 0
+        if storage.cluster_id is not None:
+            assert isinstance(storage.cluster_id, str)
+            assert len(storage.cluster_id) > 0
 
     def test_network_storages_have_valid_sizes(self, client: NovitaClient) -> None:
         """Test that network storages have valid size values."""
@@ -62,10 +64,12 @@ class TestNetworkStorage:
         """Test that all network storages have unique IDs."""
         storages = client.gpu.storages.list()
 
-        if len(storages) > 1:
-            ids = [storage.storage_id for storage in storages if storage.storage_id is not None]
-            # Check for uniqueness
-            assert len(ids) == len(set(ids))
+        if len(storages) <= 1:
+            pytest.skip("Need at least two network storages to check ID uniqueness")
+
+        ids = [storage.storage_id for storage in storages if storage.storage_id is not None]
+        # Check for uniqueness
+        assert len(ids) == len(set(ids))
 
 
 # Placeholder for full lifecycle tests (to be implemented later)

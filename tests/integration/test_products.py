@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
+
 if TYPE_CHECKING:
     from novita import NovitaClient
 
@@ -18,30 +20,32 @@ class TestGPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
-        if len(products) > 0:
-            product = products[0]
-            # Verify product structure
-            assert hasattr(product, "id")
-            assert hasattr(product, "name")
-            assert hasattr(product, "cpu_per_gpu")
-            assert hasattr(product, "memory_per_gpu")
-            assert hasattr(product, "disk_per_gpu")
-            assert hasattr(product, "available_deploy")
-            assert hasattr(product, "min_root_fs")
-            assert hasattr(product, "max_root_fs")
-            assert hasattr(product, "regions")
-            assert hasattr(product, "price")
-            assert hasattr(product, "billing_methods")
+        if not products:
+            pytest.skip("No GPU products available to test product structure")
 
-            # Verify data types
-            assert isinstance(product.id, str)
-            assert isinstance(product.name, str)
-            assert isinstance(product.cpu_per_gpu, int)
-            assert isinstance(product.memory_per_gpu, int)
-            assert isinstance(product.disk_per_gpu, int)
-            assert isinstance(product.available_deploy, bool)
-            assert isinstance(product.regions, list)
-            assert isinstance(product.billing_methods, list)
+        product = products[0]
+        # Verify product structure
+        assert hasattr(product, "id")
+        assert hasattr(product, "name")
+        assert hasattr(product, "cpu_per_gpu")
+        assert hasattr(product, "memory_per_gpu")
+        assert hasattr(product, "disk_per_gpu")
+        assert hasattr(product, "available_deploy")
+        assert hasattr(product, "min_root_fs")
+        assert hasattr(product, "max_root_fs")
+        assert hasattr(product, "regions")
+        assert hasattr(product, "price")
+        assert hasattr(product, "billing_methods")
+
+        # Verify data types
+        assert isinstance(product.id, str)
+        assert isinstance(product.name, str)
+        assert isinstance(product.cpu_per_gpu, int)
+        assert isinstance(product.memory_per_gpu, int)
+        assert isinstance(product.disk_per_gpu, int)
+        assert isinstance(product.available_deploy, bool)
+        assert isinstance(product.regions, list)
+        assert isinstance(product.billing_methods, list)
 
     def test_list_gpu_products_with_cluster_filter(
         self, client: NovitaClient, cluster_id: str
@@ -80,13 +84,15 @@ class TestGPUProducts:
         # Get all products first
         all_products = client.gpu.products.list()
 
-        if len(all_products) > 0:
-            # Use part of the first product's name for fuzzy search
-            search_term = all_products[0].name[:5]
-            filtered_products = client.gpu.products.list(product_name=search_term)
+        if not all_products:
+            pytest.skip("No GPU products available to test product name filter")
 
-            assert filtered_products is not None
-            assert isinstance(filtered_products, list)
+        # Use part of the first product's name for fuzzy search
+        search_term = all_products[0].name[:5]
+        filtered_products = client.gpu.products.list(product_name=search_term)
+
+        assert filtered_products is not None
+        assert isinstance(filtered_products, list)
 
     def test_gpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that GPU products have valid pricing information.
@@ -95,24 +101,26 @@ class TestGPUProducts:
         """
         products = client.gpu.products.list()
 
-        if len(products) > 0:
-            for product in products:
-                # Price should be a non-negative float (in USD)
-                assert isinstance(product.price, float)
-                assert product.price >= 0
+        if not products:
+            pytest.skip("No GPU products available to test price information")
 
-                # Spot price should be float or None
-                if product.spot_price is not None:
-                    assert isinstance(product.spot_price, float)
-                    assert product.spot_price >= 0
+        for product in products:
+            # Price should be a non-negative float (in USD)
+            assert isinstance(product.price, float)
+            assert product.price >= 0
 
-                # Monthly price should be a list
-                if hasattr(product, "monthly_price") and product.monthly_price:
-                    assert isinstance(product.monthly_price, list)
-                    # Each monthly price should have a price property that returns float
-                    for monthly in product.monthly_price:
-                        assert isinstance(monthly.price, float)
-                        assert monthly.price >= 0
+            # Spot price should be float or None
+            if product.spot_price is not None:
+                assert isinstance(product.spot_price, float)
+                assert product.spot_price >= 0
+
+            # Monthly price should be a list
+            if hasattr(product, "monthly_price") and product.monthly_price:
+                assert isinstance(product.monthly_price, list)
+                # Each monthly price should have a price property that returns float
+                for monthly in product.monthly_price:
+                    assert isinstance(monthly.price, float)
+                    assert monthly.price >= 0
 
 
 class TestCPUProducts:
@@ -128,34 +136,36 @@ class TestCPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
-        if len(products) > 0:
-            product = products[0]
-            # Verify product structure
-            assert hasattr(product, "id")
-            assert hasattr(product, "name")
-            assert hasattr(product, "cpu_num")
-            assert hasattr(product, "memory_size")
-            assert hasattr(product, "rootfs_size")
-            assert hasattr(product, "local_volume_size")
-            assert hasattr(product, "available_deploy")
-            assert hasattr(product, "price")
+        if not products:
+            pytest.skip("No CPU products available to test product structure")
 
-            # Verify data types
-            assert isinstance(product.id, str)
-            assert isinstance(product.name, str)
-            if product.cpu_num is not None:
-                assert isinstance(product.cpu_num, int)
-            if product.memory_size is not None:
-                assert isinstance(product.memory_size, int)
-            if product.rootfs_size is not None:
-                assert isinstance(product.rootfs_size, int)
-            if product.local_volume_size is not None:
-                assert isinstance(product.local_volume_size, int)
-            if product.available_deploy is not None:
-                assert isinstance(product.available_deploy, bool)
-            # Price is now a float property
-            if product.price is not None:
-                assert isinstance(product.price, float)
+        product = products[0]
+        # Verify product structure
+        assert hasattr(product, "id")
+        assert hasattr(product, "name")
+        assert hasattr(product, "cpu_num")
+        assert hasattr(product, "memory_size")
+        assert hasattr(product, "rootfs_size")
+        assert hasattr(product, "local_volume_size")
+        assert hasattr(product, "available_deploy")
+        assert hasattr(product, "price")
+
+        # Verify data types
+        assert isinstance(product.id, str)
+        assert isinstance(product.name, str)
+        if product.cpu_num is not None:
+            assert isinstance(product.cpu_num, int)
+        if product.memory_size is not None:
+            assert isinstance(product.memory_size, int)
+        if product.rootfs_size is not None:
+            assert isinstance(product.rootfs_size, int)
+        if product.local_volume_size is not None:
+            assert isinstance(product.local_volume_size, int)
+        if product.available_deploy is not None:
+            assert isinstance(product.available_deploy, bool)
+        # Price is now a float property
+        if product.price is not None:
+            assert isinstance(product.price, float)
 
     def test_list_cpu_products_with_cluster_filter(
         self, client: NovitaClient, cluster_id: str
@@ -171,13 +181,15 @@ class TestCPUProducts:
         # Get all products first
         all_products = client.gpu.products.list_cpu()
 
-        if len(all_products) > 0:
-            # Use part of the first product's name for fuzzy search
-            search_term = all_products[0].name[:5]
-            filtered_products = client.gpu.products.list_cpu(product_name=search_term)
+        if not all_products:
+            pytest.skip("No CPU products available to test product name filter")
 
-            assert filtered_products is not None
-            assert isinstance(filtered_products, list)
+        # Use part of the first product's name for fuzzy search
+        search_term = all_products[0].name[:5]
+        filtered_products = client.gpu.products.list_cpu(product_name=search_term)
+
+        assert filtered_products is not None
+        assert isinstance(filtered_products, list)
 
     def test_cpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that CPU products have valid pricing information.
@@ -186,9 +198,11 @@ class TestCPUProducts:
         """
         products = client.gpu.products.list_cpu()
 
-        if len(products) > 0:
-            for product in products:
-                # Price should be a non-negative float (in USD) or None
-                if product.price is not None:
-                    assert isinstance(product.price, float)
-                    assert product.price >= 0
+        if not products:
+            pytest.skip("No CPU products available to test price information")
+
+        for product in products:
+            # Price should be a non-negative float (in USD) or None
+            if product.price is not None:
+                assert isinstance(product.price, float)
+                assert product.price >= 0

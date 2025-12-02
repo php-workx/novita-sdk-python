@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 from novita.generated.models import (
     CreateImagePrewarmResponse,
@@ -11,9 +11,6 @@ from novita.generated.models import (
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 class Images(BaseResource):

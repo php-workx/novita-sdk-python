@@ -73,37 +73,41 @@ class TestEndpoints:
         # First get list of endpoints
         endpoints = client.gpu.endpoints.list()
 
-        if len(endpoints) > 0:
-            endpoint_id = endpoints[0].id
+        if not endpoints:
+            pytest.skip("No endpoints available to test endpoint details")
 
-            # Get detailed information
-            endpoint = client.gpu.endpoints.get(endpoint_id)
+        endpoint_id = endpoints[0].id
 
-            assert endpoint is not None
-            assert hasattr(endpoint, "id")
-            assert hasattr(endpoint, "name")
-            assert hasattr(endpoint, "state")
+        # Get detailed information
+        endpoint = client.gpu.endpoints.get(endpoint_id)
 
-            # Verify data types
-            assert isinstance(endpoint.id, str)
-            if endpoint.name is not None:
-                assert isinstance(endpoint.name, str)
-            assert endpoint.id == endpoint_id
+        assert endpoint is not None
+        assert hasattr(endpoint, "id")
+        assert hasattr(endpoint, "name")
+        assert hasattr(endpoint, "state")
+
+        # Verify data types
+        assert isinstance(endpoint.id, str)
+        if endpoint.name is not None:
+            assert isinstance(endpoint.name, str)
+        assert endpoint.id == endpoint_id
 
     def test_endpoint_structure(self, client: NovitaClient) -> None:
         """Test that endpoints have all expected fields."""
         endpoints = client.gpu.endpoints.list()
 
-        if len(endpoints) > 0:
-            endpoint = endpoints[0]
+        if not endpoints:
+            pytest.skip("No endpoints available to test endpoint structure")
 
-            # Required fields
-            assert hasattr(endpoint, "id")
-            assert hasattr(endpoint, "name")
-            assert hasattr(endpoint, "state")
+        endpoint = endpoints[0]
 
-            # Verify state exists and is not None
-            assert endpoint.state is not None
+        # Required fields
+        assert hasattr(endpoint, "id")
+        assert hasattr(endpoint, "name")
+        assert hasattr(endpoint, "state")
+
+        # Verify state exists and is not None
+        assert endpoint.state is not None
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
