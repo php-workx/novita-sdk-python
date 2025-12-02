@@ -56,6 +56,9 @@ class TestGPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
+        if not products:
+            pytest.skip("No GPU products available for cluster filter test")
+
         # All products should be available in the specified cluster
         for product in products:
             assert cluster_id in product.regions
@@ -83,6 +86,9 @@ class TestGPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
+        if not products:
+            pytest.skip("No GPU products with onDemand billing to test filter")
+
         # All products should support onDemand billing
         for product in products:
             assert "onDemand" in product.billing_methods
@@ -95,12 +101,18 @@ class TestGPUProducts:
         if not all_products:
             pytest.skip("No GPU products available to test product name filter")
 
-        # Use part of the first product's name for fuzzy search
-        search_term = all_products[0].name[:5]
+        # Use part of the first product's name for fuzzy search and ensure it comes back
+        reference_product = all_products[0]
+        search_term = reference_product.name[:5]
         filtered_products = client.gpu.products.list(product_name=search_term)
 
         assert filtered_products is not None
         assert isinstance(filtered_products, list)
+
+        if not filtered_products:
+            pytest.skip("Product name filter returned no results for known name fragment")
+
+        assert any(p.id == reference_product.id for p in filtered_products)
 
     def test_gpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that GPU products have valid pricing information.
@@ -178,7 +190,11 @@ class TestCPUProducts:
     def test_list_cpu_products_with_cluster_filter(
         self, client: NovitaClient, cluster_id: str
     ) -> None:
-        """Test listing CPU products filtered by cluster."""
+        """Test listing CPU products filtered by cluster.
+
+        Note: CPUProduct model doesn't expose regions field, so we can only verify
+        the API accepts the filter parameter and returns valid data.
+        """
         products = client.gpu.products.list_cpu(cluster_id=cluster_id)
 
         assert products is not None
@@ -192,12 +208,18 @@ class TestCPUProducts:
         if not all_products:
             pytest.skip("No CPU products available to test product name filter")
 
-        # Use part of the first product's name for fuzzy search
-        search_term = all_products[0].name[:5]
+        # Use part of the first product's name for fuzzy search and ensure it comes back
+        reference_product = all_products[0]
+        search_term = reference_product.name[:5]
         filtered_products = client.gpu.products.list_cpu(product_name=search_term)
 
         assert filtered_products is not None
         assert isinstance(filtered_products, list)
+
+        if not filtered_products:
+            pytest.skip("CPU product name filter returned no results for known name fragment")
+
+        assert any(p.id == reference_product.id for p in filtered_products)
 
     def test_cpu_product_has_valid_price_info(self, client: NovitaClient) -> None:
         """Test that CPU products have valid pricing information.
