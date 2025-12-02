@@ -29,13 +29,13 @@ class TestNetworkStorage:
 
         storage = storages[0]
 
-        # Required fields
+        # Check field presence
         assert hasattr(storage, "storage_id")
         assert hasattr(storage, "storage_name")
         assert hasattr(storage, "storage_size")
         assert hasattr(storage, "cluster_id")
 
-        # Verify data types
+        # Verify data types (fields may be optional based on API contract)
         if storage.storage_id is not None:
             assert isinstance(storage.storage_id, str)
             assert len(storage.storage_id) > 0

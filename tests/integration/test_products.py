@@ -68,6 +68,14 @@ class TestGPUProducts:
         assert products is not None
         assert isinstance(products, list)
 
+        # TODO: Validate filter is working correctly once GPUProduct model includes gpu_num field
+        # The API accepts gpu_num as a filter parameter but the model doesn't expose this field
+        # in the response, so we can't verify the filter worked. Need to add a field like
+        # 'gpu_count' or 'gpu_num' to GPUProduct model to enable validation.
+        pytest.skip(
+            "Cannot validate gpu_num filter - GPUProduct model lacks gpu_num/gpu_count field"
+        )
+
     def test_list_gpu_products_with_billing_method_filter(self, client: NovitaClient) -> None:
         """Test listing GPU products filtered by billing method."""
         products = client.gpu.products.list(billing_method="onDemand")
