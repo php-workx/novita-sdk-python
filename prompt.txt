@@ -1,0 +1,146 @@
+## 🤖 Coding Agent Prompt: Novita AI Python SDK (Complete Specification)
+
+This project requires creating a modern, high-quality, and fully type-safe Python SDK named **`novita-sdk-python`** from scratch. The implementation must cover all available API endpoints from the public documentation, with a detailed specification provided for the GPU API section. The SDK must adhere to modern best practices and patterns (e.g., OpenAI, Anthropic).
+
+* **Primary Documentation URL:** `https://novita.ai/docs/api-reference/`
+
+---
+
+### 1. ⚙️ Project Setup and Configuration
+
+Create a complete, production-ready Python package structure.
+
+* **Project Name:** `novita-sdk-python`
+* **Source Code Location:** All Python code must reside in the **`src/novita`** directory.
+* **Licensing:** Implement the **MIT License**.
+* **`pyproject.toml` Configuration:**
+    * **Python Target:** Enforce a minimum requirement of **Python 3.11**.
+    * **Dependencies:**
+        * **Core:** `pydantic>=2.0.0`, `httpx`.
+        * **Dev:** `ruff`, `pytest`, `pytest-httpx`, `mypy`.
+    * **Project Metadata:** Include a complete `[project]` table with `name`, `version = "0.1.0"`, `description`, `authors`, `readme`, `license`, and relevant `classifiers`.
+* **Quality Tooling:**
+    * Configure **Ruff** for strict linting and automatic code formatting.
+    * Configure **MyPy** for strict static type checking across the entire codebase.
+
+---
+
+### 2. 🧱 Core Client and API Structure
+
+The SDK must provide a clean, hierarchical, and robust client for interacting with the Novita AI API.
+
+* **Core Clients:**
+    * Define a top-level **synchronous client** (`NovitaClient`) and an **asynchronous client** (`AsyncNovitaClient`) in `src/novita/client.py`.
+* **Initialization and Authentication:**
+    * The client constructor must be `__init__(self, api_key: str | None = None, *, base_url: str | None = None, timeout: float = 60.0)`.
+    * The `api_key` should be read from the `NOVITA_API_KEY` environment variable if not provided directly. Raise an `AuthenticationError` if no key is found.
+    * Automatically add the `Authorization: Bearer <API_KEY>` header to every request.
+* **Error Handling:**
+    * Define a custom exception hierarchy in `src/novita/exceptions.py`. Include a base `NovitaError` and specific subclasses like `APIError`, `AuthenticationError`, `RateLimitError`, and `BadRequestError`. The client must raise these exceptions on failed API calls.
+* **API Hierarchy:**
+    * Implement dedicated resource clients for logical API grouping, accessible as properties on the main client classes.
+
+| API Group | Client Module | Property Name | Status |
+| :--- | :--- | :--- | :--- |
+| **GPU Cloud APIs** | `src/novita/api/gpu.py` | `client.gpu` | **Detailed spec below** |
+| **Model APIs** | `src/novita/api/model.py` | `client.model` | Implement from docs |
+| **Basic/Utility** | `src/novita/api/utility.py` | `client.utility`| Implement from docs |
+
+---
+
+### 3. 🗺️ GPU API Implementation (Detailed Specification)
+
+Implement the GPU Cloud API section according to the following resource-based structure.
+
+* **Base Path:** `https://api.novita.ai/gpu-instance/openapi/v1/`
+* **File Structure:** Create the following file structure for GPU resources.
+
+    src/novita/api/
+    ├── gpu.py              # Main GpuClient and AsyncGpuClient
+    └── resources/
+        └── gpu/
+            ├── __init__.py
+            ├── clusters.py
+            ├── endpoints.py
+            ├── images.py
+            ├── instances.py
+            # ... and so on for every resource ...
+
+* **Endpoint Mapping:** Implement methods for each resource class as defined in the table. Use `list()` for listing resources and `get()` for retrieving a single resource.
+
+| Resource | Class (in `resources/gpu/`) | Property on `gpu` | Python Method | HTTP Method | API Path Segment |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Cluster**| `Clusters` | `clusters` | `list()` | `GET` | `/clusters` |
+| **Instance** | `Instances` | `instances` | `create()` | `POST` | `/gpu/instance/create` |
+| | | | `list()` | `GET` | `/gpu/instances` |
+| | | | `get()` | `GET` | `/gpu/instance` |
+| | | | `edit()` | `POST` | `/gpu/instance/edit` |
+| | | | `start()` | `POST` | `/gpu/instance/start` |
+| | | | `stop()` | `POST` | `/gpu/instance/stop` |
+| | | | `delete()` | `POST` | `/gpu/instance/delete` |
+| | | | `restart()` | `POST` | `/gpu/instance/restart` |
+| | | | `upgrade()` | `POST` | `/gpu/instance/upgrade` |
+| | | | `migrate()` | `POST` | `/gpu/instance/migrate` |
+| | | | `renew()` | `POST` | `/gpu/instance/renewInstance` |
+| | | | `convert_to_monthly()` | `POST` | `/gpu/instance/transToMonthlyInstance` |
+| **Endpoint** | `Endpoints` | `endpoints` | `get_limit_ranges()` | `GET` | `/endpoint/limit` |
+| | | | `create()` | `POST` | `/endpoint/create` |
+| | | | `list()` | `GET` | `/endpoints` |
+| | | | `get()` | `GET` | `/endpoint` |
+| | | | `update()` | `POST` | `/endpoint/update` |
+| | | | `delete()` | `POST` | `/endpoint/delete` |
+| **Job** | `Jobs` | `jobs` | `list()` | `GET` | `/jobs` |
+| | | | `cancel()` | `POST` | `/job/break` |
+| | | | `save_image()` | `POST` | `/job/save/image` |
+| **Image** | `Images` | `images` | `get_prewarm_quota()` | `GET` | `/image/prewarm/quota` |
+| | | | `create_prewarm()` | `POST` | `/image/prewarm` |
+| | | | `list_prewarm()` | `GET` | `/image/prewarm` |
+| | | | `update_prewarm()` | `POST` | `/image/prewarm/edit` |
+| | | | `delete_prewarm()` | `POST` | `/image/prewarm/delete` |
+| **Registry** | `Registries` | `registries` | `list_auths()` | `GET` | `/repository/auths` |
+| | | | `create_auth()` | `POST` | `/repository/auth/save` |
+| | | | `delete_auth()` | `POST` | `/repository/auth/delete` |
+| **Network**| `Networks` | `networks` | `list()` | `GET` | `/networks` |
+| | | | `get()` | `GET` | `/network` |
+| | | | `create()` | `POST` | `/network/create` |
+| | | | `update()` | `POST` | `/network/update` |
+| | | | `delete()` | `POST` | `/network/delete` |
+| **Storage**| `Storages` | `storages` | `list()` | `GET` | `/networkstorages/list` |
+| | | | `create()` | `POST` | `/networkstorage/create` |
+| | | | `update()` | `POST` | `/networkstorage/update` |
+| | | | `delete()` | `POST` | `/networkstorage/delete` |
+| **Template** | `Templates`| `templates`| `list()` | `GET` | `/templates` |
+| | | | `get()` | `GET` | `/template` |
+| | | | `create()` | `POST` | `/template/create` |
+| | | | `delete()` | `POST` | `/template/delete` |
+| **Product**| `Products` | `products` | `list_gpu()` | `GET` | `/products` |
+| | | | `list_cpu()` | `GET` | `/cpu/products` |
+| **Metrics**| `Metrics` | `metrics` | `fetch_instance_metrics()`| `GET` | `/metrics/gpu/instance` |
+
+---
+
+### 4. 🧪 Testing and CI/CD
+
+Ensure the SDK is robust, reliable, and easy to maintain.
+
+* **Testing Strategy:**
+    * Use **`pytest`** and `pytest-httpx` for all tests.
+    * **Do not make real network requests in tests.** Mock all API calls.
+    * For each API method, write a test that asserts the correct HTTP method, URL, headers, and request body are sent.
+    * Test that the client correctly raises custom exceptions based on mocked error responses (e.g., status codes 401, 429).
+* **CI/CD:**
+    * Implement **`.github/workflows/ci.yaml`** for GitHub Actions.
+    * The pipeline must include a **test matrix** for Python **3.11, 3.12, and 3.13**.
+    * Include mandatory jobs for **Linting** (Ruff), **Static Analysis** (MyPy), and **Testing** (Pytest).
+
+---
+
+### 5. 🚀 Developer Experience
+
+* **Devcontainer:** Implement `.devcontainer/devcontainer.json` and a `Dockerfile` for a standardized development environment.
+* **Documentation (`README.md`):** Create a comprehensive README including:
+    * Installation instructions.
+    * Authentication guide (constructor vs. environment variable).
+    * Quick start examples for both sync and async clients.
+    * Examples for at least one GPU API call (e.g., list instances) and one Model API call (e.g., text-to-image).
+    * A brief section on error handling.

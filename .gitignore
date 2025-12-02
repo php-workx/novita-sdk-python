@@ -51,3 +51,6 @@ dmypy.json
 # Environment variables
 .env
 .env.local
+
+docs_fetched
+.claude/settings.local.json

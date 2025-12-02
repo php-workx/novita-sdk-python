@@ -9,7 +9,7 @@ This example demonstrates:
 
 import asyncio
 
-from novita import AsyncNovitaClient, CreateInstanceRequest, InstanceType, NovitaClient
+from novita import AsyncNovitaClient, CreateInstanceRequest, Kind, NovitaClient
 
 
 def sync_context_manager_basic() -> None:
@@ -20,8 +20,8 @@ def sync_context_manager_basic() -> None:
 
     # Client automatically closed when exiting the context
     with NovitaClient() as client:
-        instances = client.gpu.list_instances()
-        print(f"✓ Found {instances.total} instances")
+        instances = client.gpu.instances.list()
+        print(f"✓ Found {len(instances)} instances")
         print("✓ Client will be automatically closed")
 
 
@@ -38,10 +38,14 @@ def sync_context_manager_with_error() -> None:
             # This might raise an error
             request = CreateInstanceRequest(
                 name="test-instance",
-                instance_type=InstanceType.A100_80GB,
+                product_id="prod-1",
+                gpu_num=1,
+                rootfs_size=50,
+                image_url="docker.io/library/ubuntu:latest",
+                kind=Kind.gpu,
             )
-            response = client.gpu.create_instance(request)
-            print(f"✓ Created instance: {response.instance_id}")
+            response = client.gpu.instances.create(request)
+            print(f"✓ Created instance: {response.id}")
 
     except Exception as e:
         print(f"✗ Error occurred: {e}")
@@ -56,8 +60,8 @@ async def async_context_manager_basic() -> None:
 
     # Async client automatically closed when exiting
     async with AsyncNovitaClient() as client:
-        instances = await client.gpu.list_instances()
-        print(f"✓ Found {instances.total} instances")
+        instances = await client.gpu.instances.list()
+        print(f"✓ Found {len(instances)} instances")
         print("✓ Async client will be automatically closed")
 
 
@@ -69,13 +73,13 @@ async def async_context_manager_concurrent() -> None:
 
     async with AsyncNovitaClient() as client:
         # Run multiple operations concurrently
-        instances_task = client.gpu.list_instances()
-        pricing_task = client.gpu.get_pricing()
+        instances_task = client.gpu.instances.list()
+        pricing_task = client.gpu.products.list()
 
-        instances, pricing = await asyncio.gather(instances_task, pricing_task)
+        instances, products = await asyncio.gather(instances_task, pricing_task)
 
-        print(f"✓ Instances: {instances.total}")
-        print(f"✓ GPU types: {len(pricing.pricing)}")
+        print(f"✓ Total instances: {len(instances)}")
+        print(f"✓ Available GPU types: {len(products)}")
         print("✓ All operations completed, client auto-closed")
 
 
@@ -87,8 +91,8 @@ def manual_cleanup_pattern() -> None:
 
     client = NovitaClient()
     try:
-        instances = client.gpu.list_instances()
-        print(f"✓ Found {instances.total} instances")
+        instances = client.gpu.instances.list()
+        print(f"✓ Found {len(instances)} instances")
     finally:
         # Must remember to close manually
         client.close()
@@ -105,11 +109,12 @@ def nested_context_managers() -> None:
 
     # You can create multiple clients if needed
     # (though usually one is sufficient)
-    with NovitaClient(api_key="key1") as client1:
-        with NovitaClient(api_key="key2") as client2:
-            print("✓ Both clients initialized")
-            # Use both clients...
-            print("✓ Both clients will be cleaned up in reverse order")
+    with NovitaClient(api_key="key1") as client1, NovitaClient(api_key="key2") as client2:
+        print("✓ Both clients initialized")
+        # Use both clients...
+        _ = client1.gpu.instances.list()
+        _ = client2.gpu.instances.list()
+        print("✓ Both clients will be cleaned up in reverse order")
 
 
 async def main_async() -> None:

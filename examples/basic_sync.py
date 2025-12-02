@@ -8,7 +8,7 @@ This example demonstrates:
 - Proper cleanup
 """
 
-from novita import CreateInstanceRequest, InstanceType, NovitaClient
+from novita import NovitaClient
 
 
 def main() -> None:
@@ -19,10 +19,18 @@ def main() -> None:
     try:
         # List all instances
         print("\nListing all instances...")
-        instances = client.gpu.list_instances()
-        print(f"✓ Total instances: {instances.total}")
-        for instance in instances.instances:
-            print(f"  - {instance.name} ({instance.status})")
+        instances = client.gpu.instances.list()
+        print(f"✓ Total instances: {len(instances)}")
+        for instance in instances:
+            print(f"  - {instance.name} ({instance.status.value})")
+
+        # Get GPU product pricing
+        print("\nGetting all GPU products...")
+        products = client.gpu.products.list()
+        print(f"✓ Total GPU products: {len(products)}")
+        for product in products:
+            price_str = f"${product.price:.2f}" if product.price is not None else "N/A"
+            print(f"  - {product.name} ({price_str}/hour)")
 
     finally:
         # Always close the client

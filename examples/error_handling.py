@@ -12,10 +12,9 @@ from novita import (
     AuthenticationError,
     BadRequestError,
     CreateInstanceRequest,
-    InstanceType,
+    Kind,
     NotFoundError,
     NovitaClient,
-    RateLimitError,
 )
 
 
@@ -32,12 +31,15 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
     try:
         request = CreateInstanceRequest(
             name=name,
-            instance_type=InstanceType.A100_80GB,
-            disk_size=50,
+            product_id="prod-1",
+            gpu_num=1,
+            rootfs_size=50,
+            image_url="docker.io/library/ubuntu:latest",
+            kind=Kind.gpu,
         )
-        response = client.gpu.create_instance(request)
-        print(f"✓ Successfully created instance: {response.instance_id}")
-        return response.instance_id
+        response = client.gpu.instances.create(request)
+        print(f"✓ Successfully created instance: {response.id}")
+        return response.id
 
     except AuthenticationError as e:
         print(f"✗ Authentication failed: {e.message}")
@@ -51,11 +53,6 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
         print("  → Verify your request parameters")
         return None
 
-    except RateLimitError as e:
-        print(f"✗ Rate limit exceeded: {e.message}")
-        print("  → Wait before retrying or contact support to increase limits")
-        return None
-
     except APIError as e:
         print(f"✗ API error: {e.message}")
         print(f"  Status code: {e.status_code}")
@@ -64,9 +61,7 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
         return None
 
 
-def get_instance_with_retry(
-    client: NovitaClient, instance_id: str, max_retries: int = 3
-) -> None:
+def get_instance_with_retry(client: NovitaClient, instance_id: str, max_retries: int = 3) -> None:
     """Get instance with retry logic for 404 errors.
 
     Args:
@@ -78,14 +73,15 @@ def get_instance_with_retry(
 
     for attempt in range(max_retries):
         try:
-            instance = client.gpu.get_instance(instance_id)
-            print(f"✓ Found instance: {instance.name} ({instance.status})")
+            instance = client.gpu.instances.get(instance_id)
+            status = instance.status.value if hasattr(instance.status, "value") else instance.status
+            print(f"✓ Found instance: {instance.name} ({status})")
             return
 
         except NotFoundError:
             if attempt < max_retries - 1:
                 print(f"⚠ Instance not found (attempt {attempt + 1}/{max_retries})")
-                print(f"  Retrying in 2 seconds...")
+                print("  Retrying in 2 seconds...")
                 time.sleep(2)
             else:
                 print(f"✗ Instance {instance_id} not found after {max_retries} attempts")
@@ -117,7 +113,7 @@ def main() -> None:
         # Example 3: Handle NotFoundError for non-existent instance
         print("\n3. Attempting to get non-existent instance:")
         try:
-            client.gpu.get_instance("nonexistent-id")
+            client.gpu.instances.get("nonexistent-id")
         except NotFoundError as e:
             print(f"✗ Expected error: {e.message}")
             print("  → This is expected behavior for invalid IDs")
