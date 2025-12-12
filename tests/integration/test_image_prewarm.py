@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestImagePrewarm:
     """Test image prewarm-related endpoints."""
 
@@ -59,6 +61,8 @@ class TestImagePrewarm:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestImagePrewarmLifecycle:
     """Test full image prewarm lifecycle (create, update, delete)."""

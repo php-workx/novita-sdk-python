@@ -4,19 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "novita-sdk-python"
-version = "0.1.0"
+version = "0.2.0"
 description = "(Unofficial) Modern Python SDK for the Novita AI API"
 authors = [
     { name = "Ronny Unger", email = "phpworkx@gmail.com" }
 ]
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 requires-python = ">=3.11"
 keywords = ["novita", "ai", "api", "sdk", "machine-learning", "gpu-cloud"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -119,4 +118,9 @@ addopts = [
     "-v",
     "--strict-markers",
     "--tb=short",
+]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "safe: marks tests as safe/non-invasive (read-only operations, no cost)",
+    "invasive: marks tests as invasive (creates/modifies resources, costs money)",
 ]

@@ -98,87 +98,6 @@ Learn proper resource management patterns:
 python examples/context_managers.py
 ```
 
-## Running Examples
-
-### Run a Specific Example
-```bash
-python examples/<example_name>.py
-```
-
-### Run All Examples
-```bash
-for file in examples/*.py; do
-    [ -f "$file" ] && echo "Running $file..." && python "$file" && echo ""
-done
-```
-
-## Example Structure
-
-Each example follows this structure:
-
-```python
-"""Example description.
-
-This example demonstrates:
-- Feature 1
-- Feature 2
-- Feature 3
-"""
-
-from novita import NovitaClient
-
-def main() -> None:
-    """Main example function."""
-    # Example code here
-    pass
-
-if __name__ == "__main__":
-    main()
-```
-
-## Common Patterns
-
-### Pattern 1: Using Context Managers (Recommended)
-```python
-with NovitaClient() as client:
-    # Your operations here
-    instances = client.gpu.list_instances()
-# Client automatically closed
-```
-
-### Pattern 2: Manual Cleanup
-```python
-client = NovitaClient()
-try:
-    instances = client.gpu.list_instances()
-finally:
-    client.close()
-```
-
-### Pattern 3: Async Operations
-```python
-async with AsyncNovitaClient() as client:
-    instances = await client.gpu.list_instances()
-```
-
-## Error Handling
-
-All examples include proper error handling:
-
-```python
-from novita import AuthenticationError, BadRequestError, NovitaClient
-
-try:
-    client = NovitaClient()
-    # Operations...
-except AuthenticationError:
-    print("Invalid API key")
-except BadRequestError as e:
-    print(f"Bad request: {e.message}")
-finally:
-    client.close()
-```
-
 ## Tips
 
 1. **Always use context managers** when possible for automatic cleanup
@@ -186,21 +105,3 @@ finally:
 3. **Use async operations** for better performance with multiple requests
 4. **Check pricing** before creating expensive GPU instances
 5. **Clean up resources** by deleting instances when done
-
-## Need Help?
-
-- **Documentation:** [Novita API Docs](https://novita.ai/docs/api-reference/)
-- **SDK README:** [../README.md](../README.md)
-- **Issues:** [GitHub Issues](https://github.com/novita-ai/novita-sdk-python/issues)
-
-## Contributing
-
-Have a useful example to share? Contributions are welcome!
-
-1. Create your example file following the existing pattern
-2. Add it to this README
-3. Submit a pull request
-
----
-
-**Note:** These examples use the Novita API and will consume credits. Always clean up instances when you're done to avoid unnecessary charges.

@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestImageRegistry:
     """Test image registry authentication-related endpoints."""
 
@@ -50,6 +52,8 @@ class TestImageRegistry:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestImageRegistryLifecycle:
     """Test full image registry auth lifecycle (create, delete)."""

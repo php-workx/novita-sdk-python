@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestEndpoints:
     """Test serverless endpoint-related endpoints."""
 
@@ -36,37 +38,37 @@ class TestEndpoints:
         assert limits is not None
         assert isinstance(limits, dict)
 
-        # Verify required fields
-        assert "min_rootfs_size" in limits
-        assert "max_rootfs_size" in limits
-        assert "free_rootfs_size" in limits
-        assert "min_local_volume_size" in limits
-        assert "max_local_volume_size" in limits
-        assert "free_local_volume_size" in limits
-        assert "min_worker_num" in limits
-        assert "max_worker_num" in limits
-        assert "min_free_timeout" in limits
-        assert "max_free_timeout" in limits
-        assert "min_concurrency_num" in limits
-        assert "max_concurrency_num" in limits
-        assert "min_queue_wait_time" in limits
-        assert "max_queue_wait_time" in limits
-        assert "min_request_num" in limits
-        assert "max_request_num" in limits
-        assert "min_gpu_num" in limits
-        assert "max_gpu_num" in limits
-        assert "cuda_version_list" in limits
+        # Verify required fields (API returns camelCase)
+        assert "minRootfsSize" in limits
+        assert "maxRootfsSize" in limits
+        assert "freeRootfsSize" in limits
+        assert "minLocalVolumeSize" in limits
+        assert "maxLocalVolumeSize" in limits
+        assert "freeLocalVolumeSize" in limits
+        assert "minWorkerNum" in limits
+        assert "maxWorkerNum" in limits
+        assert "minFreeTimeout" in limits
+        assert "maxFreeTimeout" in limits
+        assert "minConcurrencyNum" in limits
+        assert "maxConcurrencyNum" in limits
+        assert "minQueueWaitTime" in limits
+        assert "maxQueueWaitTime" in limits
+        assert "minRequestNum" in limits
+        assert "maxRequestNum" in limits
+        assert "minGPUNum" in limits
+        assert "maxGPUNum" in limits
+        assert "cudaVersionList" in limits
 
         # Verify data types
-        assert isinstance(limits["min_rootfs_size"], int)
-        assert isinstance(limits["max_rootfs_size"], int)
-        assert isinstance(limits["cuda_version_list"], list)
+        assert isinstance(limits["minRootfsSize"], int)
+        assert isinstance(limits["maxRootfsSize"], int)
+        assert isinstance(limits["cudaVersionList"], list)
 
         # Verify logical constraints
-        assert limits["min_rootfs_size"] <= limits["max_rootfs_size"]
-        assert limits["min_local_volume_size"] <= limits["max_local_volume_size"]
-        assert limits["min_worker_num"] <= limits["max_worker_num"]
-        assert limits["min_gpu_num"] <= limits["max_gpu_num"]
+        assert limits["minRootfsSize"] <= limits["maxRootfsSize"]
+        assert limits["minLocalVolumeSize"] <= limits["maxLocalVolumeSize"]
+        assert limits["minWorkerNum"] <= limits["maxWorkerNum"]
+        assert limits["minGPUNum"] <= limits["maxGPUNum"]
 
     def test_get_endpoint_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific endpoint."""
@@ -111,6 +113,8 @@ class TestEndpoints:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestEndpointLifecycle:
     """Test full endpoint lifecycle (create, update, delete)."""

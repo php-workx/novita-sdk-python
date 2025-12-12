@@ -64,15 +64,13 @@ def test_create_instance(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    request = CreateInstanceRequest.model_validate(
-        {
-            "name": "test",
-            "productId": "prod-1",
-            "gpuNum": 1,
-            "rootfsSize": 50,
-            "imageUrl": "repo/demo:latest",
-            "kind": "gpu",
-        }
+    request = CreateInstanceRequest(
+        name="test",
+        product_id="prod-1",
+        gpu_num=1,
+        rootfs_size=50,
+        image_url="repo/demo:latest",
+        kind="gpu",
     )
 
     response = client.gpu.instances.create(request)
@@ -144,12 +142,10 @@ def test_edit_instance(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    request = EditInstanceRequest.model_validate(
-        {
-            "instanceId": "inst-123",
-            "ports": [{"port": 8080, "type": "tcp"}],
-            "expandRootDisk": 100,
-        }
+    request = EditInstanceRequest(
+        instance_id="inst-123",
+        ports=[{"port": 8080, "type": "tcp"}],
+        expand_root_disk=100,
     )
     client.gpu.instances.edit(request)
 
@@ -182,17 +178,15 @@ def test_upgrade_instance(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    request = UpgradeInstanceRequest.model_validate(
-        {
-            "instanceId": "inst-123",
-            "imageUrl": "repo/new:tag",
-            "envs": [{"key": "ENV", "value": "1"}],
-            "command": "bash run.sh",
-            "save": True,
-            "networkVolume": {
-                "volumeMounts": [{"type": "network", "id": "vol-1", "mountPath": "/data"}]
-            },
-        }
+    request = UpgradeInstanceRequest(
+        instance_id="inst-123",
+        image_url="repo/new:tag",
+        envs=[{"key": "ENV", "value": "1"}],
+        command="bash run.sh",
+        save=True,
+        network_volume={
+            "volumeMounts": [{"type": "network", "id": "vol-1", "mountPath": "/data"}]
+        },
     )
     client.gpu.instances.upgrade(request)
 
@@ -255,7 +249,7 @@ def test_save_image(httpx_mock: HTTPXMock) -> None:
 
     client = NovitaClient(api_key="test-key")
     job_id = client.gpu.instances.save_image(
-        SaveImageRequest.model_validate({"instanceId": "inst-123", "image": "repo/image:tag"})
+        SaveImageRequest(instance_id="inst-123", image="repo/image:tag")
     )
 
     assert job_id == "job-1"
@@ -270,14 +264,12 @@ async def test_async_create_instance(httpx_mock: HTTPXMock) -> None:
         json={"id": "inst-async"},
     )
 
-    request = CreateInstanceRequest.model_validate(
-        {
-            "productId": "prod-1",
-            "gpuNum": 1,
-            "rootfsSize": 50,
-            "imageUrl": "repo/demo:latest",
-            "kind": "gpu",
-        }
+    request = CreateInstanceRequest(
+        product_id="prod-1",
+        gpu_num=1,
+        rootfs_size=50,
+        image_url="repo/demo:latest",
+        kind="gpu",
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
@@ -306,8 +298,8 @@ async def test_async_edit_instance(httpx_mock: HTTPXMock) -> None:
         json={},
     )
 
-    request = EditInstanceRequest.model_validate(
-        {"instanceId": "inst-async", "ports": [{"port": 8080, "type": "tcp"}]}
+    request = EditInstanceRequest(
+        instance_id="inst-async", ports=[{"port": 8080, "type": "tcp"}]
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:

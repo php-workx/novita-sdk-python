@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestInstances:
     """Test instance-related endpoints."""
 
@@ -116,6 +118,8 @@ class TestInstances:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestInstanceLifecycle:
     """Test full instance lifecycle (create, update, delete)."""

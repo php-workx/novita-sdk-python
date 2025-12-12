@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestNetworkStorage:
     """Test network storage-related endpoints."""
 
@@ -73,6 +75,8 @@ class TestNetworkStorage:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestNetworkStorageLifecycle:
     """Test full network storage lifecycle (create, update, delete)."""

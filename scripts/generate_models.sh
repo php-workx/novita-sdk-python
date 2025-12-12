@@ -44,11 +44,20 @@ $PYTHON -m datamodel_code_generator \
     --snake-case-field \
     --enum-field-as-literal one \
     --collapse-root-models \
-    --use-title-as-name
+    --use-title-as-name \
+    --allow-population-by-field-name
 
 echo -e "${GREEN}✓ Models generated successfully${NC}\n"
 
-echo -e "${BLUE}Step 2: Adding __init__.py to generated package...${NC}"
+echo -e "${BLUE}Step 2: Applying price conversions...${NC}"
+if $PYTHON scripts/apply_price_conversions.py "$OUTPUT_FILE"; then
+    echo -e "${GREEN}✓ Price conversions applied${NC}\n"
+else
+    echo -e "${YELLOW}⚠ Price conversion failed${NC}\n"
+    exit 1
+fi
+
+echo -e "${BLUE}Step 3: Adding __init__.py to generated package...${NC}"
 cat > src/novita/generated/__init__.py << 'EOF'
 """Auto-generated models from OpenAPI specification.
 
@@ -62,7 +71,7 @@ EOF
 
 echo -e "${GREEN}✓ __init__.py created${NC}\n"
 
-echo -e "${BLUE}Step 3: Formatting generated code with ruff...${NC}"
+echo -e "${BLUE}Step 4: Formatting generated code with ruff...${NC}"
 ruff format "$OUTPUT_FILE" src/novita/generated/__init__.py 2>/dev/null || echo "Ruff format skipped"
 ruff check --fix "$OUTPUT_FILE" src/novita/generated/__init__.py 2>/dev/null || echo "Ruff check skipped"
 

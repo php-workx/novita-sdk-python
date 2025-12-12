@@ -2176,8 +2176,8 @@ components:
             type: string
           description: Supported billing methods
         spotPrice:
-          type: string
-          description: Spot billing instance price
+          type: integer
+          description: Spot billing instance price (in units of 1/100000 USD)
         inventoryState:
           type: string
           description: Stock status
@@ -3129,10 +3129,10 @@ components:
     ListNetworksResponse:
       type: object
       required:
-      - network
+      - networks
       - total
       properties:
-        network:
+        networks:
           type: array
           items:
             $ref: '#/components/schemas/Network'
@@ -3392,7 +3392,7 @@ components:
           type: array
           description: Tools enabled for the template.
           items:
-            type: string
+            $ref: '#/components/schemas/TemplateTool'
         name:
           type: string
           description: Template name.
@@ -3409,6 +3409,8 @@ components:
           description: Template channel.
           enum:
           - private
+          - official
+          - community
         image:
           type: string
           description: Docker image address for instance startup.
@@ -3486,6 +3488,29 @@ components:
           type: string
           description: Environment variable value.
 
+    TemplateTool:
+      type: object
+      required:
+      - name
+      - port
+      - type
+      properties:
+        name:
+          type: string
+          description: Tool name (e.g., "Jupyter").
+        describe:
+          type: string
+          description: Tool description.
+        port:
+          type: integer
+          description: Port number for the tool.
+        type:
+          type: string
+          description: Tool type.
+          enum:
+          - http
+          - tcp
+
     CreateTemplateRequest:
       type: object
       required:
@@ -3525,6 +3550,8 @@ components:
           description: Template channel.
           enum:
           - private
+          - official
+          - community
         image:
           type: string
           description: Docker image address for instance startup.

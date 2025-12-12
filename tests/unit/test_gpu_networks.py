@@ -42,7 +42,7 @@ def test_list_networks(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networks",
-        json={"network": mock_networks, "total": str(len(mock_networks))},
+        json={"networks": mock_networks, "total": str(len(mock_networks))},
     )
 
     client = NovitaClient(api_key="test-key")
@@ -131,7 +131,7 @@ async def test_async_list_networks(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(
         method="GET",
         url="https://api.novita.ai/gpu-instance/openapi/v1/networks",
-        json={"network": [_network_payload()], "total": "1"},
+        json={"networks": [_network_payload()], "total": "1"},
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
