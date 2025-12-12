@@ -98,7 +98,7 @@ jobs:
 
       - name: Run safe integration tests
         # Only run if API key is available (skip on forks without secrets)
-        if: secrets.NOVITA_API_KEY != ''
+        if: ${{ secrets.NOVITA_API_KEY != '' }}
         env:
           NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY }}
         run: pytest tests/integration -m "integration and not invasive" -v --tb=short
