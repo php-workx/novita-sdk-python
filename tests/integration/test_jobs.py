@@ -19,7 +19,6 @@ class TestJobs:
         """Test listing all jobs."""
         jobs = client.gpu.jobs.list()
 
-        assert jobs is not None
         assert isinstance(jobs, list)
 
     def test_job_structure(self, client: NovitaClient) -> None:

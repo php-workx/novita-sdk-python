@@ -19,7 +19,6 @@ class TestEndpoints:
         """Test listing all serverless endpoints."""
         endpoints = client.gpu.endpoints.list()
 
-        assert endpoints is not None
         assert isinstance(endpoints, list)
 
     def test_list_endpoints_returns_list(self, client: NovitaClient) -> None:
@@ -35,40 +34,47 @@ class TestEndpoints:
         """Test getting endpoint parameter limits."""
         limits = client.gpu.endpoints.get_limit_ranges()
 
-        assert limits is not None
         assert isinstance(limits, dict)
 
         # Verify required fields (API returns camelCase)
-        assert "minRootfsSize" in limits
-        assert "maxRootfsSize" in limits
-        assert "freeRootfsSize" in limits
-        assert "minLocalVolumeSize" in limits
-        assert "maxLocalVolumeSize" in limits
-        assert "freeLocalVolumeSize" in limits
-        assert "minWorkerNum" in limits
-        assert "maxWorkerNum" in limits
-        assert "minFreeTimeout" in limits
-        assert "maxFreeTimeout" in limits
-        assert "minConcurrencyNum" in limits
-        assert "maxConcurrencyNum" in limits
-        assert "minQueueWaitTime" in limits
-        assert "maxQueueWaitTime" in limits
-        assert "minRequestNum" in limits
-        assert "maxRequestNum" in limits
-        assert "minGPUNum" in limits
-        assert "maxGPUNum" in limits
-        assert "cudaVersionList" in limits
+        required_keys = [
+            "minRootfsSize",
+            "maxRootfsSize",
+            "freeRootfsSize",
+            "minLocalVolumeSize",
+            "maxLocalVolumeSize",
+            "freeLocalVolumeSize",
+            "minWorkerNum",
+            "maxWorkerNum",
+            "minFreeTimeout",
+            "maxFreeTimeout",
+            "minConcurrencyNum",
+            "maxConcurrencyNum",
+            "minQueueWaitTime",
+            "maxQueueWaitTime",
+            "minRequestNum",
+            "maxRequestNum",
+            "minGPUNum",
+            "maxGPUNum",
+            "cudaVersionList",
+        ]
+        for key in required_keys:
+            assert key in limits, f"Missing required key: {key}"
 
-        # Verify data types
+        # Verify data types for sample fields
         assert isinstance(limits["minRootfsSize"], int)
         assert isinstance(limits["maxRootfsSize"], int)
         assert isinstance(limits["cudaVersionList"], list)
 
-        # Verify logical constraints
-        assert limits["minRootfsSize"] <= limits["maxRootfsSize"]
-        assert limits["minLocalVolumeSize"] <= limits["maxLocalVolumeSize"]
-        assert limits["minWorkerNum"] <= limits["maxWorkerNum"]
-        assert limits["minGPUNum"] <= limits["maxGPUNum"]
+        # Verify logical constraints for min/max pairs
+        min_max_pairs = [
+            ("minRootfsSize", "maxRootfsSize"),
+            ("minLocalVolumeSize", "maxLocalVolumeSize"),
+            ("minWorkerNum", "maxWorkerNum"),
+            ("minGPUNum", "maxGPUNum"),
+        ]
+        for min_key, max_key in min_max_pairs:
+            assert limits[min_key] <= limits[max_key], f"{min_key} should be <= {max_key}"
 
     def test_get_endpoint_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific endpoint."""
@@ -83,7 +89,6 @@ class TestEndpoints:
         # Get detailed information
         endpoint = client.gpu.endpoints.get(endpoint_id)
 
-        assert endpoint is not None
         assert hasattr(endpoint, "id")
         assert hasattr(endpoint, "name")
         assert hasattr(endpoint, "state")
@@ -109,7 +114,6 @@ class TestEndpoints:
         assert hasattr(endpoint, "state")
 
         # Verify state exists and is not None
-        assert endpoint.state is not None
 
 
 # Placeholder for full lifecycle tests (to be implemented later)

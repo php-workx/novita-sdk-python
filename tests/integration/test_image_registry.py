@@ -17,18 +17,16 @@ class TestImageRegistry:
 
     def test_list_repository_auths(self, client: NovitaClient) -> None:
         """Test listing all container registry authentications."""
-        response = client.gpu.registries.list_auths()
+        auths = client.gpu.registries.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert isinstance(response.data, list)
+        assert isinstance(auths, list)
 
     def test_repository_auth_structure(self, client: NovitaClient) -> None:
         """Test that repository auths have all expected fields."""
-        auths = client.gpu.registries.list_auths()
+        auths = client.gpu.registries.list()
 
-        if len(auths.data) > 0:
-            auth = auths.data[0]
+        if len(auths) > 0:
+            auth = auths[0]
 
             # Required fields
             assert hasattr(auth, "id")
@@ -43,10 +41,10 @@ class TestImageRegistry:
 
     def test_repository_auths_have_unique_ids(self, client: NovitaClient) -> None:
         """Test that all repository auths have unique IDs."""
-        auths = client.gpu.registries.list_auths()
+        auths = client.gpu.registries.list()
 
-        if len(auths.data) > 1:
-            ids = [auth.id for auth in auths.data]
+        if len(auths) > 1:
+            ids = [auth.id for auth in auths]
             # Check for uniqueness
             assert len(ids) == len(set(ids))
 

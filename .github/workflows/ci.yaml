@@ -80,8 +80,8 @@ jobs:
   integration-test:
     name: Integration Tests (Safe)
     runs-on: ubuntu-latest
-    # Only run on PRs and main branch
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    # Only run on PRs and main branch, and only if API key is available
+    if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') && secrets.NOVITA_API_KEY != ''
 
     steps:
       - uses: actions/checkout@v4

@@ -8,12 +8,19 @@ This example demonstrates:
 """
 
 import asyncio
+import os
 
 from novita import AsyncNovitaClient
 
 
 async def main() -> None:
     """Run asynchronous operations."""
+    # Check for API key
+    if not os.environ.get("NOVITA_API_KEY"):
+        print("Error: NOVITA_API_KEY environment variable is not set")
+        print("Please set it with: export NOVITA_API_KEY='your-api-key-here'")
+        return
+
     # Use async context manager for automatic cleanup
     async with AsyncNovitaClient() as client:
         # List all instances concurrently with getting pricing

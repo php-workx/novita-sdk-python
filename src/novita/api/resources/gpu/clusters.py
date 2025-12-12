@@ -1,14 +1,11 @@
 """GPU clusters management resource."""
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from novita.generated.models import Cluster
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 def _parse_clusters(payload: Any) -> list[Cluster]:

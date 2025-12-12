@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import builtins
-from typing import TYPE_CHECKING
 
 from novita.generated.models import (
     CPUProduct,
@@ -13,9 +12,6 @@ from novita.generated.models import (
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 class Products(BaseResource):

@@ -19,7 +19,6 @@ class TestNetworks:
         """Test listing all VPC networks."""
         networks = client.gpu.networks.list()
 
-        assert networks is not None
         assert isinstance(networks, list)
 
     def test_network_structure(self, client: NovitaClient) -> None:
@@ -53,7 +52,6 @@ class TestNetworks:
 
             # Get detailed information
             network = client.gpu.networks.get(network_id=network_id)
-
             assert network is not None
 
     def test_networks_have_unique_ids(self, client: NovitaClient) -> None:

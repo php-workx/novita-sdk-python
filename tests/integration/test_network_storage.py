@@ -19,7 +19,6 @@ class TestNetworkStorage:
         """Test listing all network storage volumes."""
         storages = client.gpu.storages.list()
 
-        assert storages is not None
         assert isinstance(storages, list)
 
     def test_network_storage_structure(self, client: NovitaClient) -> None:

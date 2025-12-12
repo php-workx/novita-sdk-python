@@ -19,7 +19,6 @@ class TestTemplates:
         """Test listing all templates."""
         templates = client.gpu.templates.list()
 
-        assert templates is not None
         assert isinstance(templates, list)
 
     def test_template_structure(self, client: NovitaClient) -> None:

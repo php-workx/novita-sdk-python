@@ -19,7 +19,6 @@ class TestGPUProducts:
         """Test listing all GPU products."""
         products = client.gpu.products.list()
 
-        assert products is not None
         assert isinstance(products, list)
 
         if not products:
@@ -55,7 +54,6 @@ class TestGPUProducts:
         """Test listing GPU products filtered by cluster."""
         products = client.gpu.products.list(cluster_id=cluster_id)
 
-        assert products is not None
         assert isinstance(products, list)
 
         if not products:
@@ -71,7 +69,6 @@ class TestGPUProducts:
         gpu_num = 1
         products = client.gpu.products.list(gpu_num=gpu_num)
 
-        assert products is not None
         assert isinstance(products, list)
 
         # TODO: Validate filter is working correctly once GPUProduct model includes gpu_num field
@@ -86,7 +83,6 @@ class TestGPUProducts:
         """Test listing GPU products filtered by billing method."""
         products = client.gpu.products.list(billing_method="onDemand")
 
-        assert products is not None
         assert isinstance(products, list)
 
         if not products:
@@ -109,7 +105,6 @@ class TestGPUProducts:
         search_term = reference_product.name[:5]
         filtered_products = client.gpu.products.list(product_name=search_term)
 
-        assert filtered_products is not None
         assert isinstance(filtered_products, list)
 
         if not filtered_products:
@@ -158,7 +153,6 @@ class TestCPUProducts:
         """
         products = client.gpu.products.list_cpu()
 
-        assert products is not None
         assert isinstance(products, list)
 
         if not products:
@@ -202,7 +196,6 @@ class TestCPUProducts:
         """
         products = client.gpu.products.list_cpu(cluster_id=cluster_id)
 
-        assert products is not None
         assert isinstance(products, list)
 
     def test_list_cpu_products_with_product_name_filter(self, client: NovitaClient) -> None:
@@ -218,7 +211,6 @@ class TestCPUProducts:
         search_term = reference_product.name[:5]
         filtered_products = client.gpu.products.list_cpu(product_name=search_term)
 
-        assert filtered_products is not None
         assert isinstance(filtered_products, list)
 
         if not filtered_products:

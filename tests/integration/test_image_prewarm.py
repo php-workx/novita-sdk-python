@@ -19,7 +19,6 @@ class TestImagePrewarm:
         """Test listing all image prewarm tasks."""
         tasks = client.gpu.images.list()
 
-        assert tasks is not None
         assert isinstance(tasks, list)
 
     def test_get_image_prewarm_quota(self, client: NovitaClient) -> None:

@@ -19,7 +19,6 @@ class TestClusters:
         """Test listing all clusters."""
         clusters = client.gpu.clusters.list()
 
-        assert clusters is not None
         assert isinstance(clusters, list)
 
         if len(clusters) > 0:

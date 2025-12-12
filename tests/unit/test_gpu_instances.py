@@ -13,7 +13,9 @@ from novita import (
     EditInstanceRequest,
     InstanceInfo,
     NovitaClient,
+    Port,
     SaveImageRequest,
+    Type,
     UpgradeInstanceRequest,
 )
 
@@ -144,7 +146,7 @@ def test_edit_instance(httpx_mock: HTTPXMock) -> None:
     client = NovitaClient(api_key="test-key")
     request = EditInstanceRequest(
         instance_id="inst-123",
-        ports=[{"port": 8080, "type": "tcp"}],
+        ports=[Port(port=8080, type=Type.tcp)],
         expand_root_disk=100,
     )
     client.gpu.instances.edit(request)
@@ -184,7 +186,9 @@ def test_upgrade_instance(httpx_mock: HTTPXMock) -> None:
         envs=[{"key": "ENV", "value": "1"}],
         command="bash run.sh",
         save=True,
-        network_volume={"volumeMounts": [{"type": "network", "id": "vol-1", "mountPath": "/data"}]},
+        network_volume={
+            "volume_mounts": [{"type": "network", "id": "vol-1", "mount_path": "/data"}]
+        },
     )
     client.gpu.instances.upgrade(request)
 
@@ -296,7 +300,7 @@ async def test_async_edit_instance(httpx_mock: HTTPXMock) -> None:
         json={},
     )
 
-    request = EditInstanceRequest(instance_id="inst-async", ports=[{"port": 8080, "type": "tcp"}])
+    request = EditInstanceRequest(instance_id="inst-async", ports=[Port(port=8080, type=Type.tcp)])
 
     async with AsyncNovitaClient(api_key="test-key") as client:
         await client.gpu.instances.edit(request)

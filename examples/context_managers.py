@@ -8,6 +8,7 @@ This example demonstrates:
 """
 
 import asyncio
+import os
 
 from novita import AsyncNovitaClient, CreateInstanceRequest, Kind, NovitaClient
 
@@ -127,6 +128,12 @@ async def main_async() -> None:
 
 def main() -> None:
     """Run all context manager examples."""
+    # Check for API key
+    if not os.environ.get("NOVITA_API_KEY"):
+        print("Error: NOVITA_API_KEY environment variable is not set")
+        print("Please set it with: export NOVITA_API_KEY='your-api-key-here'")
+        return
+
     # Synchronous examples
     sync_context_manager_basic()
     sync_context_manager_with_error()

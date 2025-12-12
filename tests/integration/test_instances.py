@@ -19,19 +19,16 @@ class TestInstances:
         """Test listing all instances."""
         instances = client.gpu.instances.list(page_size=10, page_num=0)
 
-        assert instances is not None
         assert isinstance(instances, list)
 
     def test_list_instances_with_pagination(self, client: NovitaClient) -> None:
         """Test listing instances with different pagination parameters."""
         # Get first page
         page1 = client.gpu.instances.list(page_size=5, page_num=0)
-        assert page1 is not None
         assert len(page1) <= 5
 
         # Get second page
         page2 = client.gpu.instances.list(page_size=5, page_num=1)
-        assert page2 is not None
         assert len(page2) <= 5
 
     def test_list_instances_with_name_filter(self, client: NovitaClient) -> None:
@@ -44,13 +41,12 @@ class TestInstances:
             if hasattr(first_instance, "name") and first_instance.name:
                 search_term = first_instance.name[:5]
                 filtered = client.gpu.instances.list(page_size=10, page_num=0, name=search_term)
-                assert filtered is not None
+                assert isinstance(filtered, list)
 
     def test_list_instances_with_status_filter(self, client: NovitaClient) -> None:
         """Test listing instances filtered by status."""
         # Test with a common status
         instances = client.gpu.instances.list(page_size=10, page_num=0, status="running")
-        assert instances is not None
         # All returned instances should have running status
         for instance in instances:
             assert str(instance.status) == "running"
@@ -58,7 +54,7 @@ class TestInstances:
     def test_list_instances_with_product_name_filter(self, client: NovitaClient) -> None:
         """Test listing instances filtered by product name."""
         instances = client.gpu.instances.list(page_size=10, page_num=0, product_name="RTX")
-        assert instances is not None
+        assert isinstance(instances, list)
 
     def test_get_instance_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific instance."""
@@ -70,7 +66,6 @@ class TestInstances:
             # Get detailed information
             instance = client.gpu.instances.get(instance_id=instance_id)
 
-            assert instance is not None
             assert hasattr(instance, "id")
             assert hasattr(instance, "name")
             assert hasattr(instance, "status")

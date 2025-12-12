@@ -30,7 +30,7 @@ jobs:
 
       - name: Verify version matches
         run: |
-          VERSION_IN_FILE=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
+          VERSION_IN_FILE=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
           if [ "$VERSION_IN_FILE" != "${{ github.event.inputs.version }}" ]; then
             echo "Error: Version in pyproject.toml ($VERSION_IN_FILE) does not match input version (${{ github.event.inputs.version }})"
             exit 1
@@ -115,12 +115,10 @@ jobs:
           git push origin "v${{ github.event.inputs.version }}"
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.event.inputs.version }}
-          release_name: Release v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
           body: |
             ## What's Changed
 

@@ -465,8 +465,13 @@ class ListInstancesResponse(BaseModel):
 
 
 class SubscriptionPrice(BaseModel):
+    """Subscription pricing information.
+
+    Note: Prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD. For example, an API value of 350000 represents $3.50.
+    """
+
     model_config = ConfigDict(populate_by_name=True)
-    "Subscription pricing information.\n\n    Note: Prices are automatically converted from the API's raw format (1/100000 USD)\n    to standard USD. For example, an API value of 350000 represents $3.50.\n    "
     price_raw: Annotated[
         int, Field(alias="price", description="Unit price for the subscription instance")
     ]
@@ -495,8 +500,13 @@ class InventoryState(StrEnum):
 
 
 class GPUProduct(BaseModel):
+    """GPU product information.
+
+    Note: All prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD per hour. For example, an API value of 35000 represents $0.35/hour.
+    """
+
     model_config = ConfigDict(populate_by_name=True)
-    "GPU product information.\n\n    Note: All prices are automatically converted from the API's raw format (1/100000 USD)\n    to standard USD per hour. For example, an API value of 35000 represents $0.35/hour.\n    "
     id: Annotated[str, Field(description="Product ID")]
     name: Annotated[str, Field(description="Product name")]
     cpu_per_gpu: Annotated[int, Field(alias="cpuPerGpu", description="Number of CPU cores per GPU")]
@@ -571,8 +581,13 @@ class ListGPUProductsResponse(BaseModel):
 
 
 class CPUProduct(BaseModel):
+    """CPU product information.
+
+    Note: Prices are automatically converted from the API's raw format (1/100000 USD)
+    to standard USD per hour.
+    """
+
     model_config = ConfigDict(populate_by_name=True)
-    "CPU product information.\n\n    Note: Prices are automatically converted from the API's raw format (1/100000 USD)\n    to standard USD per hour.\n    "
     id: Annotated[str, Field(description="Unique product identifier")]
     name: Annotated[str, Field(description="Product display name")]
     cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = None

@@ -22,6 +22,39 @@ class PriceConversionTransformer(ast.NodeTransformer):
     def __init__(self) -> None:
         self.modified_imports = False
 
+    def _add_alias_to_field(self, ann_assign: ast.AnnAssign, alias_value: str) -> None:
+        """Add alias parameter to Field() call in Annotated type annotation.
+
+        Args:
+            ann_assign: The annotated assignment node containing the field
+            alias_value: The alias value to add (e.g., "price", "spotPrice")
+        """
+        # The annotation should be Annotated[type, Field(...)]
+        # Navigate: AnnAssign.annotation -> Subscript (Annotated[...])
+        if not isinstance(ann_assign.annotation, ast.Subscript):
+            return
+
+        subscript = ann_assign.annotation
+        # subscript.slice should be a Tuple containing the type and Field()
+        if not isinstance(subscript.slice, ast.Tuple):
+            return
+
+        # Find Field() call in the tuple elements
+        for element in subscript.slice.elts:
+            if (
+                isinstance(element, ast.Call)
+                and isinstance(element.func, ast.Name)
+                and element.func.id == "Field"
+            ):
+                # Check if alias already exists
+                has_alias = any(kw.arg == "alias" for kw in element.keywords)
+                if not has_alias:
+                    # Add alias as keyword argument
+                    element.keywords.insert(
+                        0, ast.keyword(arg="alias", value=ast.Constant(value=alias_value))
+                    )
+                break
+
     def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.ImportFrom:
         """Add 'computed_field' to pydantic imports."""
         if node.module == "pydantic" and not self.modified_imports:
@@ -69,7 +102,8 @@ class PriceConversionTransformer(ast.NodeTransformer):
                 if item.target.id == "price":
                     # Transform to price_raw with alias
                     item.target.id = "price_raw"
-                    # Update the annotation to add alias in Field
+                    # Add alias="price" to Field() call
+                    self._add_alias_to_field(item, "price")
                     new_body.append(item)
                 else:
                     new_body.append(item)
@@ -89,18 +123,8 @@ class PriceConversionTransformer(ast.NodeTransformer):
         )
         new_body.append(price_property)
 
-        # Insert docstring at the beginning (after model_config if present)
-        insert_pos = 0
-        for i, item in enumerate(new_body):
-            if (
-                isinstance(item, ast.Assign)
-                and isinstance(item.targets[0], ast.Name)
-                and item.targets[0].id == "model_config"
-            ):
-                insert_pos = i + 1
-                break
-
-        new_body.insert(insert_pos, docstring)
+        # Insert docstring at the beginning of the class body (must be first for __doc__)
+        new_body.insert(0, docstring)
         node.body = new_body
 
         return node
@@ -124,9 +148,13 @@ class PriceConversionTransformer(ast.NodeTransformer):
             if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                 if item.target.id == "price":
                     item.target.id = "price_raw"
+                    # Add alias="price" to Field() call
+                    self._add_alias_to_field(item, "price")
                     new_body.append(item)
                 elif item.target.id == "spot_price":
                     item.target.id = "spot_price_raw"
+                    # Add alias="spotPrice" to Field() call
+                    self._add_alias_to_field(item, "spotPrice")
                     new_body.append(item)
                 else:
                     new_body.append(item)
@@ -158,18 +186,8 @@ class PriceConversionTransformer(ast.NodeTransformer):
         )
         new_body.append(spot_price_property)
 
-        # Insert docstring
-        insert_pos = 0
-        for i, item in enumerate(new_body):
-            if (
-                isinstance(item, ast.Assign)
-                and isinstance(item.targets[0], ast.Name)
-                and item.targets[0].id == "model_config"
-            ):
-                insert_pos = i + 1
-                break
-
-        new_body.insert(insert_pos, docstring)
+        # Insert docstring at the beginning of the class body (must be first for __doc__)
+        new_body.insert(0, docstring)
         node.body = new_body
 
         return node
@@ -193,6 +211,8 @@ class PriceConversionTransformer(ast.NodeTransformer):
             if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                 if item.target.id == "price":
                     item.target.id = "price_raw"
+                    # Add alias="price" to Field() call
+                    self._add_alias_to_field(item, "price")
                     new_body.append(item)
                 else:
                     new_body.append(item)
@@ -202,7 +222,6 @@ class PriceConversionTransformer(ast.NodeTransformer):
         # Add computed property
         price_property = self._create_price_property(
             property_name="price",
-            raw_field="price_raw",
             return_type="float | None",
             docstring="""Get price in USD per hour.
 
@@ -213,18 +232,8 @@ class PriceConversionTransformer(ast.NodeTransformer):
         )
         new_body.append(price_property)
 
-        # Insert docstring
-        insert_pos = 0
-        for i, item in enumerate(new_body):
-            if (
-                isinstance(item, ast.Assign)
-                and isinstance(item.targets[0], ast.Name)
-                and item.targets[0].id == "model_config"
-            ):
-                insert_pos = i + 1
-                break
-
-        new_body.insert(insert_pos, docstring)
+        # Insert docstring at the beginning of the class body (must be first for __doc__)
+        new_body.insert(0, docstring)
         node.body = new_body
 
         return node
@@ -264,27 +273,6 @@ class PriceConversionTransformer(ast.NodeTransformer):
         return func
 
 
-def update_field_descriptions(source: str) -> str:
-    """Update Field descriptions to mention raw values and add aliases.
-
-    This uses simple regex-based replacements for field definitions.
-    """
-    import re
-
-    # Add alias="price" to price_raw fields that don't already have an alias
-    # Match price_raw field, look ahead to Field( that doesn't contain alias=
-    source = re.sub(
-        r"(price_raw: Annotated\[.*?Field\()(?!.*?alias=)", r'\1alias="price", ', source
-    )
-
-    # Add alias="spotPrice" to spot_price_raw fields that don't already have an alias
-    source = re.sub(
-        r"(spot_price_raw: Annotated\[.*?Field\()(?!.*?alias=)", r'\1alias="spotPrice", ', source
-    )
-
-    return source
-
-
 def main() -> int:
     """Main entry point."""
     if len(sys.argv) != 2:
@@ -297,7 +285,7 @@ def main() -> int:
         return 1
 
     # Read the original source
-    source = models_path.read_text()
+    source = models_path.read_text(encoding="utf-8")
 
     # Parse and transform AST
     tree = ast.parse(source)
@@ -306,15 +294,10 @@ def main() -> int:
     ast.fix_missing_locations(transformed_tree)
 
     # Convert back to source code
-    import ast as ast_module
-
-    result = ast_module.unparse(transformed_tree)
-
-    # Apply string-based transformations for field descriptions and aliases
-    result = update_field_descriptions(result)
+    result = ast.unparse(transformed_tree)
 
     # Write back
-    models_path.write_text(result)
+    models_path.write_text(result, encoding="utf-8")
 
     print(f"✓ Applied price conversions to {models_path}")
     return 0

@@ -108,7 +108,7 @@ publish-pypi:  ## Publish to PyPI (interactive, requires PyPI credentials)
 	@read -p "Version to publish (from pyproject.toml): " version; \
 	echo ""; \
 	echo "Verifying version matches..."; \
-	VERSION_IN_FILE=$$(grep '^version = ' pyproject.toml | cut -d'"' -f2); \
+	VERSION_IN_FILE=$$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"); \
 	if [ "$$VERSION_IN_FILE" != "$$version" ]; then \
 		echo "❌ Error: Version in pyproject.toml ($$VERSION_IN_FILE) does not match ($$version)"; \
 		exit 1; \

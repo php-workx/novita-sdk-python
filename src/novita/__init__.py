@@ -20,7 +20,9 @@ from novita.generated.models import (
     Kind,
     ListGPUProductsResponse,
     ListInstancesResponse,
+    Port,
     SaveImageRequest,
+    Type,
     UpgradeInstanceRequest,
 )
 
@@ -50,4 +52,6 @@ __all__ = [
     "ListGPUProductsResponse",
     "Kind",
     "BillingMode",
+    "Port",
+    "Type",
 ]

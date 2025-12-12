@@ -31,19 +31,6 @@ class Registries(BaseResource):
         parsed = ListRepositoryAuthsResponse.model_validate(response.json())
         return parsed.data
 
-    def list_auths(self) -> ListRepositoryAuthsResponse:
-        """List all repository authentications (returns full response).
-
-        Returns:
-            ListRepositoryAuthsResponse with data field containing list of auths
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            APIError: If the API returns an error
-        """
-        response = self._client.get(f"{BASE_PATH}/repository/auths")
-        return ListRepositoryAuthsResponse.model_validate(response.json())
-
     def create(
         self,
         name: str,
@@ -109,19 +96,6 @@ class AsyncRegistries(AsyncBaseResource):
         response = await self._client.get(f"{BASE_PATH}/repository/auths")
         parsed = ListRepositoryAuthsResponse.model_validate(response.json())
         return parsed.data
-
-    async def list_auths(self) -> ListRepositoryAuthsResponse:
-        """List all repository authentications (returns full response).
-
-        Returns:
-            ListRepositoryAuthsResponse with data field containing list of auths
-
-        Raises:
-            AuthenticationError: If API key is invalid
-            APIError: If the API returns an error
-        """
-        response = await self._client.get(f"{BASE_PATH}/repository/auths")
-        return ListRepositoryAuthsResponse.model_validate(response.json())
 
     async def create(
         self,
