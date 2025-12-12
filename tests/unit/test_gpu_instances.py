@@ -267,6 +267,7 @@ async def test_async_create_instance(httpx_mock: HTTPXMock) -> None:
     )
 
     request = CreateInstanceRequest(
+        name="test",
         product_id="prod-1",
         gpu_num=1,
         rootfs_size=50,

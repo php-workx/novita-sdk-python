@@ -479,13 +479,13 @@ class SubscriptionPrice(BaseModel):
 
     @computed_field()
     @property
-    def price(self) -> float:
+    def price(self) -> float | None:
         """Get subscription price in USD.
 
         Returns:
-            Price in USD (converted from raw API value in 1/100000 USD units)
+            Price in USD (converted from raw API value in 1/100000 USD units), or None if not available
         """
-        return self.price_raw / 100000
+        return None if self.price_raw is None else self.price_raw / 100000
 
 
 class InventoryState(StrEnum):
@@ -556,13 +556,13 @@ class GPUProduct(BaseModel):
 
     @computed_field()
     @property
-    def price(self) -> float:
+    def price(self) -> float | None:
         """Get on-demand price in USD per hour.
 
         Returns:
-            Price in USD per hour (converted from raw API value in 1/100000 USD units)
+            Price in USD per hour (converted from raw API value in 1/100000 USD units), or None if not available
         """
-        return self.price_raw / 100000
+        return None if self.price_raw is None else self.price_raw / 100000
 
     @computed_field()
     @property

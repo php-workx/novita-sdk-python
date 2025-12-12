@@ -96,6 +96,7 @@ build:  ## Build distribution packages
 	@echo "✅ Build complete! Distributions in dist/"
 	@ls -lh dist/
 
+publish-pypi: SHELL := /bin/bash
 publish-pypi:  ## Publish to PyPI (interactive, requires PyPI credentials)
 	@echo "🚀 Publishing to PyPI"
 	@echo ""

@@ -142,13 +142,15 @@ This conversion is applied to:
 - `SubscriptionPrice.price` - Monthly subscription pricing
 - `CPUProduct.price` - CPU instance pricing
 
-The raw API values are still available if needed via `_raw` fields:
+The raw API values are still available if needed via `*_raw` fields (`price_raw`, `spot_price_raw`, etc.):
 ```python
 products = client.gpu.products.list()
 product = products[0]
 
 print(f"Converted: ${product.price}/hour")  # e.g., $0.67/hour
 print(f"Raw API value: {product.price_raw}")  # e.g., 67000
+print(f"Spot (converted): ${product.spot_price}/hour")
+print(f"Spot (raw): {product.spot_price_raw}")
 ```
 
 ## API Resources

@@ -22,22 +22,25 @@ class PriceConversionTransformer(ast.NodeTransformer):
     def __init__(self) -> None:
         self.modified_imports = False
 
-    def _add_alias_to_field(self, ann_assign: ast.AnnAssign, alias_value: str) -> None:
+    def _add_alias_to_field(self, ann_assign: ast.AnnAssign, alias_value: str) -> bool:
         """Add alias parameter to Field() call in Annotated type annotation.
 
         Args:
             ann_assign: The annotated assignment node containing the field
             alias_value: The alias value to add (e.g., "price", "spotPrice")
+
+        Returns:
+            True if alias was added or already present, False if Field() not found
         """
         # The annotation should be Annotated[type, Field(...)]
         # Navigate: AnnAssign.annotation -> Subscript (Annotated[...])
         if not isinstance(ann_assign.annotation, ast.Subscript):
-            return
+            return False
 
         subscript = ann_assign.annotation
         # subscript.slice should be a Tuple containing the type and Field()
         if not isinstance(subscript.slice, ast.Tuple):
-            return
+            return False
 
         # Find Field() call in the tuple elements
         for element in subscript.slice.elts:
@@ -53,7 +56,10 @@ class PriceConversionTransformer(ast.NodeTransformer):
                     element.keywords.insert(
                         0, ast.keyword(arg="alias", value=ast.Constant(value=alias_value))
                     )
-                break
+                return True  # Successfully added or already present
+
+        # No Field() call found
+        return False
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.ImportFrom:
         """Add 'computed_field' to pydantic imports."""
@@ -103,7 +109,11 @@ class PriceConversionTransformer(ast.NodeTransformer):
                     # Transform to price_raw with alias
                     item.target.id = "price_raw"
                     # Add alias="price" to Field() call
-                    self._add_alias_to_field(item, "price")
+                    if not self._add_alias_to_field(item, "price"):
+                        raise ValueError(
+                            "Failed to add alias 'price' to field 'price_raw' in SubscriptionPrice class. "
+                            "Field() call not found in annotation."
+                        )
                     new_body.append(item)
                 else:
                     new_body.append(item)
@@ -113,13 +123,13 @@ class PriceConversionTransformer(ast.NodeTransformer):
         # Add computed_field property
         price_property = self._create_price_property(
             property_name="price",
-            return_type="float",
+            return_type="float | None",
             docstring="""Get subscription price in USD.
 
         Returns:
-            Price in USD (converted from raw API value in 1/100000 USD units)
+            Price in USD (converted from raw API value in 1/100000 USD units), or None if not available
         """,
-            conversion="self.price_raw / 100000",
+            conversion="None if self.price_raw is None else self.price_raw / 100000",
         )
         new_body.append(price_property)
 
@@ -149,12 +159,20 @@ class PriceConversionTransformer(ast.NodeTransformer):
                 if item.target.id == "price":
                     item.target.id = "price_raw"
                     # Add alias="price" to Field() call
-                    self._add_alias_to_field(item, "price")
+                    if not self._add_alias_to_field(item, "price"):
+                        raise ValueError(
+                            "Failed to add alias 'price' to field 'price_raw' in GPUProduct class. "
+                            "Field() call not found in annotation."
+                        )
                     new_body.append(item)
                 elif item.target.id == "spot_price":
                     item.target.id = "spot_price_raw"
                     # Add alias="spotPrice" to Field() call
-                    self._add_alias_to_field(item, "spotPrice")
+                    if not self._add_alias_to_field(item, "spotPrice"):
+                        raise ValueError(
+                            "Failed to add alias 'spotPrice' to field 'spot_price_raw' in GPUProduct class. "
+                            "Field() call not found in annotation."
+                        )
                     new_body.append(item)
                 else:
                     new_body.append(item)
@@ -164,13 +182,13 @@ class PriceConversionTransformer(ast.NodeTransformer):
         # Add computed properties
         price_property = self._create_price_property(
             property_name="price",
-            return_type="float",
+            return_type="float | None",
             docstring="""Get on-demand price in USD per hour.
 
         Returns:
-            Price in USD per hour (converted from raw API value in 1/100000 USD units)
+            Price in USD per hour (converted from raw API value in 1/100000 USD units), or None if not available
         """,
-            conversion="self.price_raw / 100000",
+            conversion="None if self.price_raw is None else self.price_raw / 100000",
         )
         new_body.append(price_property)
 
@@ -212,7 +230,11 @@ class PriceConversionTransformer(ast.NodeTransformer):
                 if item.target.id == "price":
                     item.target.id = "price_raw"
                     # Add alias="price" to Field() call
-                    self._add_alias_to_field(item, "price")
+                    if not self._add_alias_to_field(item, "price"):
+                        raise ValueError(
+                            "Failed to add alias 'price' to field 'price_raw' in CPUProduct class. "
+                            "Field() call not found in annotation."
+                        )
                     new_body.append(item)
                 else:
                     new_body.append(item)

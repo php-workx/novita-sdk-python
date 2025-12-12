@@ -118,8 +118,15 @@ def main() -> None:
         for _ in range(30):  # ~60 second timeout (30 * 2s)
             instance = client.gpu.instances.get(instance_id)
             if instance.status.value == "exited":
+                print("✓ Instance stopped successfully")
                 break
             time.sleep(2)
+        else:
+            # Timeout reached without instance stopping
+            print("⚠ Warning: Instance did not stop within 60 seconds")
+            print(f"  Instance ID: {instance_id}")
+            print(f"  Current status: {instance.status.value}")
+            print("  Proceeding with deletion anyway...")
 
         print("\n" + "=" * 60)
         print("STEP 6: Deleting instance")

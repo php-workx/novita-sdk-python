@@ -4,12 +4,55 @@ Script to fetch all API documentation pages listed in api.txt
 and save them for analysis.
 """
 
+import contextlib
 import json
 import re
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
+
+
+def sanitize_filename(url: str, max_length: int = 200) -> str:
+    """Sanitize a URL to create a safe filename.
+
+    Args:
+        url: The URL to sanitize
+        max_length: Maximum length for the filename (default: 200)
+
+    Returns:
+        A safe filename containing only [A-Za-z0-9._-] characters
+    """
+    # Extract the last path component
+    path = url.split("/")[-1]
+
+    # Remove URL query parameters and fragments
+    path = path.split("?")[0].split("#")[0]
+
+    # Percent-decode the URL (e.g., %20 -> space)
+    with contextlib.suppress(Exception):
+        path = urllib.parse.unquote(path)
+
+    # Replace characters not in [A-Za-z0-9._-] with underscore
+    sanitized = re.sub(r"[^A-Za-z0-9._-]", "_", path)
+
+    # Remove consecutive underscores
+    sanitized = re.sub(r"_+", "_", sanitized)
+
+    # Remove leading/trailing underscores and dots
+    sanitized = sanitized.strip("_.")
+
+    # Enforce max length
+    if len(sanitized) > max_length:
+        sanitized = sanitized[:max_length].rstrip("_.")
+
+    # Provide fallback if empty
+    if not sanitized:
+        sanitized = "unknown_endpoint"
+
+    return sanitized
+
 
 # Parse api.txt to extract all documentation URLs
 api_txt_path = Path("./openapi/api.txt")
@@ -18,7 +61,7 @@ output_dir.mkdir(exist_ok=True)
 
 # Read api.txt and extract URLs
 urls = []
-with open(api_txt_path) as f:
+with open(api_txt_path, encoding="utf-8") as f:
     content = f.read()
     # Extract all URLs from the markdown table
     url_pattern = r"https://novita\.ai/docs/api-reference/[^\s|)]+"
@@ -29,7 +72,7 @@ print(f"Found {len(urls)} documentation URLs")
 # Fetch each URL
 results = []
 for i, url in enumerate(urls, 1):
-    endpoint_name = url.split("/")[-1]
+    endpoint_name = sanitize_filename(url)
     print(f"[{i}/{len(urls)}] Fetching {endpoint_name}...")
 
     try:
@@ -80,7 +123,7 @@ for i, url in enumerate(urls, 1):
 
 # Save results summary
 summary_file = output_dir / "fetch_summary.json"
-with open(summary_file, "w") as f:
+with open(summary_file, "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2)
 
 # Print summary
