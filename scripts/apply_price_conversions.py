@@ -14,7 +14,6 @@ The transformations applied:
 import ast
 import sys
 from pathlib import Path
-from typing import Any
 
 
 class PriceConversionTransformer(ast.NodeTransformer):
@@ -80,24 +79,26 @@ class PriceConversionTransformer(ast.NodeTransformer):
         # Add computed_field property
         price_property = self._create_price_property(
             property_name="price",
-            raw_field="price_raw",
             return_type="float",
             docstring="""Get subscription price in USD.
 
         Returns:
             Price in USD (converted from raw API value in 1/100000 USD units)
         """,
-            conversion="self.price_raw / 100000"
+            conversion="self.price_raw / 100000",
         )
         new_body.append(price_property)
 
         # Insert docstring at the beginning (after model_config if present)
         insert_pos = 0
         for i, item in enumerate(new_body):
-            if isinstance(item, ast.Assign) and isinstance(item.targets[0], ast.Name):
-                if item.targets[0].id == "model_config":
-                    insert_pos = i + 1
-                    break
+            if (
+                isinstance(item, ast.Assign)
+                and isinstance(item.targets[0], ast.Name)
+                and item.targets[0].id == "model_config"
+            ):
+                insert_pos = i + 1
+                break
 
         new_body.insert(insert_pos, docstring)
         node.body = new_body
@@ -135,37 +136,38 @@ class PriceConversionTransformer(ast.NodeTransformer):
         # Add computed properties
         price_property = self._create_price_property(
             property_name="price",
-            raw_field="price_raw",
             return_type="float",
             docstring="""Get on-demand price in USD per hour.
 
         Returns:
             Price in USD per hour (converted from raw API value in 1/100000 USD units)
         """,
-            conversion="self.price_raw / 100000"
+            conversion="self.price_raw / 100000",
         )
         new_body.append(price_property)
 
         spot_price_property = self._create_price_property(
             property_name="spot_price",
-            raw_field="spot_price_raw",
             return_type="float | None",
             docstring="""Get spot price in USD per hour.
 
         Returns:
             Spot price in USD per hour, or None if spot pricing is not available
         """,
-            conversion="self.spot_price_raw / 100000 if self.spot_price_raw is not None else None"
+            conversion="self.spot_price_raw / 100000 if self.spot_price_raw is not None else None",
         )
         new_body.append(spot_price_property)
 
         # Insert docstring
         insert_pos = 0
         for i, item in enumerate(new_body):
-            if isinstance(item, ast.Assign) and isinstance(item.targets[0], ast.Name):
-                if item.targets[0].id == "model_config":
-                    insert_pos = i + 1
-                    break
+            if (
+                isinstance(item, ast.Assign)
+                and isinstance(item.targets[0], ast.Name)
+                and item.targets[0].id == "model_config"
+            ):
+                insert_pos = i + 1
+                break
 
         new_body.insert(insert_pos, docstring)
         node.body = new_body
@@ -207,17 +209,20 @@ class PriceConversionTransformer(ast.NodeTransformer):
         Returns:
             Price in USD per hour, or None if pricing is not available
         """,
-            conversion="self.price_raw / 100000 if self.price_raw is not None else None"
+            conversion="self.price_raw / 100000 if self.price_raw is not None else None",
         )
         new_body.append(price_property)
 
         # Insert docstring
         insert_pos = 0
         for i, item in enumerate(new_body):
-            if isinstance(item, ast.Assign) and isinstance(item.targets[0], ast.Name):
-                if item.targets[0].id == "model_config":
-                    insert_pos = i + 1
-                    break
+            if (
+                isinstance(item, ast.Assign)
+                and isinstance(item.targets[0], ast.Name)
+                and item.targets[0].id == "model_config"
+            ):
+                insert_pos = i + 1
+                break
 
         new_body.insert(insert_pos, docstring)
         node.body = new_body
@@ -225,12 +230,7 @@ class PriceConversionTransformer(ast.NodeTransformer):
         return node
 
     def _create_price_property(
-        self,
-        property_name: str,
-        raw_field: str,
-        return_type: str,
-        docstring: str,
-        conversion: str
+        self, property_name: str, return_type: str, docstring: str, conversion: str
     ) -> ast.FunctionDef:
         """Create a @computed_field @property method for price conversion."""
         # Parse the conversion expression
@@ -274,16 +274,12 @@ def update_field_descriptions(source: str) -> str:
     # Add alias="price" to price_raw fields that don't already have an alias
     # Match price_raw field, look ahead to Field( that doesn't contain alias=
     source = re.sub(
-        r'(price_raw: Annotated\[.*?Field\()(?!.*?alias=)',
-        r'\1alias="price", ',
-        source
+        r"(price_raw: Annotated\[.*?Field\()(?!.*?alias=)", r'\1alias="price", ', source
     )
 
     # Add alias="spotPrice" to spot_price_raw fields that don't already have an alias
     source = re.sub(
-        r'(spot_price_raw: Annotated\[.*?Field\()(?!.*?alias=)',
-        r'\1alias="spotPrice", ',
-        source
+        r"(spot_price_raw: Annotated\[.*?Field\()(?!.*?alias=)", r'\1alias="spotPrice", ', source
     )
 
     return source
@@ -311,6 +307,7 @@ def main() -> int:
 
     # Convert back to source code
     import ast as ast_module
+
     result = ast_module.unparse(transformed_tree)
 
     # Apply string-based transformations for field descriptions and aliases

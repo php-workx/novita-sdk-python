@@ -95,9 +95,9 @@ class CreateInstanceRequest(BaseModel):
     envs: Annotated[
         list[Env] | None, Field(description="Environment variables", max_length=100)
     ] = None
-    tools: Annotated[
-        list[Tool] | None, Field(description="Tool configuration (e.g., Jupyter)")
-    ] = None
+    tools: Annotated[list[Tool] | None, Field(description="Tool configuration (e.g., Jupyter)")] = (
+        None
+    )
     command: Annotated[
         str | None, Field(description="Startup command", max_length=2047, min_length=0)
     ] = None
@@ -369,9 +369,9 @@ class InstanceInfo(BaseModel):
     id: Annotated[str, Field(description="Instance ID.")]
     name: Annotated[str, Field(description="Instance name.")]
     cluster_id: Annotated[str, Field(alias="clusterId", description="Cluster ID.")]
-    cluster_name: Annotated[
-        str | None, Field(alias="clusterName", description="Cluster name.")
-    ] = None
+    cluster_name: Annotated[str | None, Field(alias="clusterName", description="Cluster name.")] = (
+        None
+    )
     status: Annotated[Status, Field(description="Instance status.")]
     image_url: Annotated[str, Field(alias="imageUrl", description="Container image URL.")]
     image_auth_id: Annotated[
@@ -575,9 +575,7 @@ class CPUProduct(BaseModel):
     "CPU product information.\n\n    Note: Prices are automatically converted from the API's raw format (1/100000 USD)\n    to standard USD per hour.\n    "
     id: Annotated[str, Field(description="Unique product identifier")]
     name: Annotated[str, Field(description="Product display name")]
-    cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = (
-        None
-    )
+    cpu_num: Annotated[int | None, Field(alias="cpuNum", description="Number of CPU cores")] = None
     memory_size: Annotated[
         int | None, Field(alias="memorySize", description="RAM allocation in GB")
     ] = None
@@ -594,9 +592,7 @@ class CPUProduct(BaseModel):
             description="Whether this product can be used to create an instance",
         ),
     ] = None
-    price_raw: Annotated[int | None, Field(alias="price", description="Product unit cost")] = (
-        None
-    )
+    price_raw: Annotated[int | None, Field(alias="price", description="Product unit cost")] = None
 
     @computed_field()
     @property
@@ -639,12 +635,8 @@ class WorkerConfig(BaseModel):
     """
 
     model_config = ConfigDict(populate_by_name=True)
-    min_num: Annotated[int | None, Field(alias="minNum", description="Minimum worker count")] = (
-        None
-    )
-    max_num: Annotated[int | None, Field(alias="maxNum", description="Maximum worker count")] = (
-        None
-    )
+    min_num: Annotated[int | None, Field(alias="minNum", description="Minimum worker count")] = None
+    max_num: Annotated[int | None, Field(alias="maxNum", description="Maximum worker count")] = None
     free_timeout: Annotated[
         int | None, Field(alias="freeTimeout", description="Idle timeout in seconds")
     ] = None
@@ -654,9 +646,9 @@ class WorkerConfig(BaseModel):
     gpu_num: Annotated[
         int | None, Field(alias="gpuNum", description="GPUs allocated per worker")
     ] = None
-    cuda_version: Annotated[
-        str | None, Field(alias="cudaVersion", description="CUDA version")
-    ] = None
+    cuda_version: Annotated[str | None, Field(alias="cudaVersion", description="CUDA version")] = (
+        None
+    )
 
 
 class Type2(StrEnum):
@@ -674,9 +666,9 @@ class Policy(BaseModel):
     """
 
     model_config = ConfigDict(populate_by_name=True)
-    type: Annotated[
-        Type2 | None, Field(description="Scaling strategy (queue or concurrency)")
-    ] = None
+    type: Annotated[Type2 | None, Field(description="Scaling strategy (queue or concurrency)")] = (
+        None
+    )
     value: Annotated[
         int | None,
         Field(description="Threshold value (seconds for queue, request count for concurrency)"),
@@ -690,9 +682,9 @@ class Image(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
     image: Annotated[str | None, Field(description="Container image URL")] = None
-    auth_id: Annotated[
-        str | None, Field(alias="authId", description="Registry credentials ID")
-    ] = None
+    auth_id: Annotated[str | None, Field(alias="authId", description="Registry credentials ID")] = (
+        None
+    )
     command: Annotated[str | None, Field(description="Startup command")] = None
 
 
@@ -708,12 +700,8 @@ class Type3(StrEnum):
 class VolumeMount2(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: Annotated[Type3 | None, Field(description="Storage type (local or network)")] = None
-    id: Annotated[str | None, Field(description="Storage identifier (for network storage)")] = (
-        None
-    )
-    size: Annotated[int | None, Field(description="Storage size in GB (for local storage)")] = (
-        None
-    )
+    id: Annotated[str | None, Field(description="Storage identifier (for network storage)")] = None
+    size: Annotated[int | None, Field(description="Storage size in GB (for local storage)")] = None
     mount_path: Annotated[str | None, Field(alias="mountPath", description="Mount path")] = None
 
 
@@ -1460,16 +1448,14 @@ class Template(BaseModel):
     create_time: Annotated[
         AwareDatetime | None, Field(alias="createTime", description="Template creation time.")
     ] = None
-    user: Annotated[
-        str | None, Field(description="ID of the user who created the template.")
-    ] = None
+    user: Annotated[str | None, Field(description="ID of the user who created the template.")] = (
+        None
+    )
     tools: Annotated[
         list[TemplateTool] | None, Field(description="Tools enabled for the template.")
     ] = None
     name: Annotated[str, Field(description="Template name.")]
-    readme: Annotated[str | None, Field(description="Template README content (Markdown).")] = (
-        None
-    )
+    readme: Annotated[str | None, Field(description="Template README content (Markdown).")] = None
     type: Annotated[Literal["instance"], Field(description="Template type.")]
     channel: Annotated[Channel, Field(description="Template channel.")]
     image: Annotated[str, Field(description="Docker image address for instance startup.")]
@@ -1487,9 +1473,7 @@ class Template(BaseModel):
         int, Field(alias="rootfsSize", description="Root filesystem storage size (GB).")
     ]
     volumes: Annotated[list[TemplateVolume] | None, Field(description="Volume settings.")] = None
-    ports: Annotated[list[TemplatePort] | None, Field(description="Exposed port settings.")] = (
-        None
-    )
+    ports: Annotated[list[TemplatePort] | None, Field(description="Exposed port settings.")] = None
     envs: Annotated[
         list[TemplateEnvironmentVariable] | None,
         Field(description="Environment variables injected into the instance."),

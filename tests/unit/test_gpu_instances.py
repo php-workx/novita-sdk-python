@@ -184,9 +184,7 @@ def test_upgrade_instance(httpx_mock: HTTPXMock) -> None:
         envs=[{"key": "ENV", "value": "1"}],
         command="bash run.sh",
         save=True,
-        network_volume={
-            "volumeMounts": [{"type": "network", "id": "vol-1", "mountPath": "/data"}]
-        },
+        network_volume={"volumeMounts": [{"type": "network", "id": "vol-1", "mountPath": "/data"}]},
     )
     client.gpu.instances.upgrade(request)
 
@@ -298,9 +296,7 @@ async def test_async_edit_instance(httpx_mock: HTTPXMock) -> None:
         json={},
     )
 
-    request = EditInstanceRequest(
-        instance_id="inst-async", ports=[{"port": 8080, "type": "tcp"}]
-    )
+    request = EditInstanceRequest(instance_id="inst-async", ports=[{"port": 8080, "type": "tcp"}])
 
     async with AsyncNovitaClient(api_key="test-key") as client:
         await client.gpu.instances.edit(request)

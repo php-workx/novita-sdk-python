@@ -38,7 +38,9 @@ def main() -> None:
 
         # Prefer spot pricing if available
         spot_products = [
-            p for p in available_products if "spot" in [m.lower() for m in (p.billing_methods or [])]
+            p
+            for p in available_products
+            if "spot" in [m.lower() for m in (p.billing_methods or [])]
         ]
         product = spot_products[0] if spot_products else available_products[0]
 

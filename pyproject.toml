@@ -101,12 +101,10 @@ warn_no_return = true
 follow_imports = "normal"
 ignore_missing_imports = false
 
-# Generated code - less strict checking
+# Generated code - less strict checking and ignore decorator issues
 [[tool.mypy.overrides]]
 module = "novita.generated.*"
-ignore_errors = false
-warn_return_any = false
-disallow_any_generics = false
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -167,6 +167,36 @@ The SDK provides complete coverage of the Novita GPU Cloud API:
 - **Images** - Image prewarm task management
 - **Clusters** - Available GPU cluster information
 
+## Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality. The hooks automatically run on every commit and check:
+
+- **Linting** - Ruff checks for code issues
+- **Formatting** - Ruff formats code consistently
+- **Type checking** - MyPy validates type hints
+- **Unit tests** - Fast test suite ensures no regressions
+- **File checks** - Trailing whitespace, end-of-file, YAML/TOML validation
+
+Install the hooks:
+
+```bash
+make pre-commit-install
+```
+
+Run manually on all files:
+
+```bash
+make pre-commit-run
+```
+
+Skip hooks for a specific commit (use sparingly):
+
+```bash
+git commit --no-verify
+```
+
 ## Requirements
 
 - Python 3.11 or higher

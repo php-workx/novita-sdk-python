@@ -1,4 +1,4 @@
-.PHONY: help install generate test test-integration test-all test-cov lint lint-fix format typecheck ci clean clean-generated spec-validate build publish-pypi publish-test
+.PHONY: help install generate test test-integration test-all test-cov lint lint-fix format typecheck pre-commit-test pre-commit-install pre-commit-run ci clean clean-generated spec-validate build publish-pypi publish-test
 
 help:  ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -38,6 +38,23 @@ format:  ## Format code
 
 typecheck:  ## Run type checking
 	mypy src/
+
+pre-commit-test:  ## Run unit tests (fast, for pre-commit hook)
+	@pytest tests/unit/ -q --tb=line
+
+pre-commit-install:  ## Install pre-commit hooks
+	@echo "Installing pre-commit hooks..."
+	@uv pip install pre-commit
+	@pre-commit install
+	@echo ""
+	@echo "✅ Pre-commit hooks installed!"
+	@echo ""
+	@echo "Hooks will run automatically on git commit."
+	@echo "To run manually: make pre-commit-run"
+	@echo "To skip hooks: git commit --no-verify"
+
+pre-commit-run:  ## Run pre-commit hooks on all files
+	@pre-commit run --all-files
 
 ci:  ## Run all CI checks (lint, format check, typecheck, test)
 	@echo "Running linter..."
