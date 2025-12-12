@@ -8,7 +8,7 @@ Before running the examples, make sure you have:
 
 1. **Installed the SDK:**
    ```bash
-   pip install novita-sdk-python
+   pip install novita-sdk
    ```
 
 2. **Set your API key:**

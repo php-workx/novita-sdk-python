@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "novita-sdk-python"
+name = "novita-sdk"
 version = "0.2.0"
 description = "(Unofficial) Modern Python SDK for the Novita AI API"
 authors = [

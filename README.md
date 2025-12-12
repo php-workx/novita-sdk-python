@@ -16,7 +16,7 @@
 ## Installation
 
 ```bash
-pip install novita-sdk-python
+pip install novita-sdk
 ```
 
 ## Quick Start
