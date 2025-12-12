@@ -49,7 +49,7 @@ request = CreateInstanceRequest(
     product_id="prod-123",  # fetch via client.gpu.products.list()
     gpu_num=1,
     rootfs_size=50,
-    image_url="docker.io/library/ubuntu:latest",
+    image_url="ubuntu:22.04",
     kind=Kind.gpu,
 )
 response = client.gpu.instances.create(request)
@@ -60,8 +60,6 @@ for instance in instances:
     print(f"{instance.name}: {instance.status.value}")
 
 client.close()
-```
-
 ```
 
 ### Asynchronous Client
@@ -77,7 +75,7 @@ async def main():
             product_id="prod-123",
             gpu_num=1,
             rootfs_size=50,
-            image_url="docker.io/library/ubuntu:latest",
+            image_url="ubuntu:22.04",
             kind=Kind.gpu,
         )
         response = await client.gpu.instances.create(request)
@@ -111,12 +109,12 @@ Both clients support context managers for automatic cleanup:
 ```python
 # Synchronous
 with NovitaClient() as client:
-    instances = client.gpu.list_instances()
+    instances = client.gpu.instances.list()
     # Client automatically closed
 
 # Asynchronous
 async with AsyncNovitaClient() as client:
-    instances = await client.gpu.list_instances()
+    instances = await client.gpu.instances.list()
     # Client automatically closed
 ```
 
@@ -130,58 +128,80 @@ client = NovitaClient(
 )
 ```
 
+### Price Conversion
+
+**Important**: The Novita API returns prices in an unusual format (units of 1/100,000 USD). This SDK automatically converts all prices to standard USD for your convenience.
+
+For example:
+- API returns `67000` → SDK provides `$0.67/hour`
+- API returns `35000` → SDK provides `$0.35/hour`
+
+This conversion is applied to:
+- `GPUProduct.price` - On-demand pricing
+- `GPUProduct.spot_price` - Spot instance pricing
+- `SubscriptionPrice.price` - Monthly subscription pricing
+- `CPUProduct.price` - CPU instance pricing
+
+The raw API values are still available if needed via `*_raw` fields (`price_raw`, `spot_price_raw`, etc.):
+```python
+products = client.gpu.products.list()
+product = products[0]
+
+print(f"Converted: ${product.price}/hour")  # e.g., $0.67/hour
+print(f"Raw API value: {product.price_raw}")  # e.g., 67000
+print(f"Spot (converted): ${product.spot_price}/hour")
+print(f"Spot (raw): {product.spot_price_raw}")
+```
+
+## API Resources
+
+The SDK provides complete coverage of the Novita GPU Cloud API:
+
+- **Instances** - GPU instance lifecycle management
+- **Products** - GPU and CPU product listings with filtering
+- **Endpoints** - API endpoint management
+- **Networks** - VPC network configuration
+- **Templates** - Instance template management
+- **Jobs** - Job execution and control
+- **Metrics** - Instance performance metrics
+- **Storages** - Network storage management
+- **Image Registry** - Container registry authentication
+- **Images** - Image prewarm task management
+- **Clusters** - Available GPU cluster information
+
 ## Development
 
-### Setup
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality. The hooks automatically run on every commit and check:
+
+- **Linting** - Ruff checks for code issues
+- **Formatting** - Ruff formats code consistently
+- **Type checking** - MyPy validates type hints
+- **Unit tests** - Fast test suite ensures no regressions
+- **File checks** - Trailing whitespace, end-of-file, YAML/TOML validation
+
+Install the hooks:
 
 ```bash
-# Clone the repository
-git clone https://github.com/novita-ai/novita-sdk-python.git
-cd novita-sdk-python
-
-# Install with dev dependencies
-pip install -e ".[dev]"
+make pre-commit-install
 ```
 
-### Running Tests
+Run manually on all files:
 
 ```bash
-# Run all tests
-pytest tests/
-
-# Run with coverage
-pytest tests/ --cov=novita --cov-report=term-missing
-
-# Run specific test file
-pytest tests/test_gpu_api.py -v
+make pre-commit-run
 ```
 
-### Code Quality
+Skip hooks for a specific commit (use sparingly):
 
 ```bash
-# Linting
-ruff check src/ tests/
-
-# Formatting
-ruff format src/ tests/
-
-# Type checking
-mypy src/
+git commit --no-verify
 ```
 
 ## Requirements
 
 - Python 3.11 or higher
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 

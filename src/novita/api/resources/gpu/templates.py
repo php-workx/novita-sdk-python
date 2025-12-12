@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from novita.generated.models import (
     CreateTemplateResponse,
@@ -12,9 +12,6 @@ from novita.generated.models import (
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
-
-if TYPE_CHECKING:
-    pass
 
 
 class Templates(BaseResource):

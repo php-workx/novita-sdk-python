@@ -7,6 +7,8 @@ This example demonstrates:
 - Best practices for error handling
 """
 
+import os
+
 from novita import (
     APIError,
     AuthenticationError,
@@ -42,19 +44,19 @@ def create_instance_with_error_handling(client: NovitaClient, name: str) -> str 
         return response.id
 
     except AuthenticationError as e:
-        print(f"✗ Authentication failed: {e.message}")
+        print(f"✗ Authentication failed: {e}")
         print("  → Check your API key (NOVITA_API_KEY environment variable)")
         return None
 
     except BadRequestError as e:
-        print(f"✗ Bad request: {e.message}")
+        print(f"✗ Bad request: {e}")
         if e.details:
             print(f"  Details: {e.details}")
         print("  → Verify your request parameters")
         return None
 
     except APIError as e:
-        print(f"✗ API error: {e.message}")
+        print(f"✗ API error: {e}")
         print(f"  Status code: {e.status_code}")
         if e.response_body:
             print(f"  Response: {e.response_body}")
@@ -90,6 +92,12 @@ def get_instance_with_retry(client: NovitaClient, instance_id: str, max_retries:
 
 def main() -> None:
     """Demonstrate error handling patterns."""
+    # Check for API key
+    if not os.environ.get("NOVITA_API_KEY"):
+        print("Error: NOVITA_API_KEY environment variable is not set")
+        print("Please set it with: export NOVITA_API_KEY='your-api-key-here'")
+        return
+
     print("=" * 60)
     print("Error Handling Examples")
     print("=" * 60)
@@ -99,7 +107,7 @@ def main() -> None:
     try:
         client = NovitaClient()  # May raise AuthenticationError
     except AuthenticationError as e:
-        print(f"✗ Failed to initialize client: {e.message}")
+        print(f"✗ Failed to initialize client: {e}")
         print("  → Set NOVITA_API_KEY environment variable")
         return
 
@@ -115,7 +123,7 @@ def main() -> None:
         try:
             client.gpu.instances.get("nonexistent-id")
         except NotFoundError as e:
-            print(f"✗ Expected error: {e.message}")
+            print(f"✗ Expected error: {e}")
             print("  → This is expected behavior for invalid IDs")
 
     # Always close the client

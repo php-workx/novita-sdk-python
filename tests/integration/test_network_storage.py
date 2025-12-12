@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestNetworkStorage:
     """Test network storage-related endpoints."""
 
@@ -17,7 +19,6 @@ class TestNetworkStorage:
         """Test listing all network storage volumes."""
         storages = client.gpu.storages.list()
 
-        assert storages is not None
         assert isinstance(storages, list)
 
     def test_network_storage_structure(self, client: NovitaClient) -> None:
@@ -73,6 +74,8 @@ class TestNetworkStorage:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestNetworkStorageLifecycle:
     """Test full network storage lifecycle (create, update, delete)."""

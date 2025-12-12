@@ -1,0 +1,54 @@
+# Pre-commit hooks for code quality checks
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+# Update: pre-commit autoupdate
+
+repos:
+  # Ruff - Fast Python linter and formatter (replaces black, isort, flake8, etc.)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # MyPy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        files: ^src/
+        exclude: ^src/novita/generated/
+        args: [--config-file=pyproject.toml]
+        additional_dependencies:
+          - pydantic>=2.0.0
+          - httpx>=0.27.0
+          - types-requests
+
+  # Basic file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: mixed-line-ending
+
+  # Local hooks for running tests
+  - repo: local
+    hooks:
+      - id: pytest-unit
+        name: pytest unit tests
+        entry: make
+        args: [pre-commit-test]
+        language: system
+        pass_filenames: false
+        always_run: true

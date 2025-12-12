@@ -6,5 +6,3 @@ Run `./scripts/generate_models.sh` to regenerate.
 """
 
 from .models import *
-
-__all__ = []

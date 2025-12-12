@@ -15,7 +15,7 @@
       "settings": {
         "terminal.integrated.shell.linux": "/bin/bash",
         "python.pythonPath": ".venv/bin/python",
-        "python.defaultInterpreterPath": ".venv/bin/python",      
+        "python.defaultInterpreterPath": ".venv/bin/python",
         "python.linting.enabled": true,
         "python.formatting.provider": "none",
         "[python]": {

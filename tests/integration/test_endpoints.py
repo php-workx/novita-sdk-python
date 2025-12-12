@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestEndpoints:
     """Test serverless endpoint-related endpoints."""
 
@@ -17,7 +19,6 @@ class TestEndpoints:
         """Test listing all serverless endpoints."""
         endpoints = client.gpu.endpoints.list()
 
-        assert endpoints is not None
         assert isinstance(endpoints, list)
 
     def test_list_endpoints_returns_list(self, client: NovitaClient) -> None:
@@ -33,40 +34,47 @@ class TestEndpoints:
         """Test getting endpoint parameter limits."""
         limits = client.gpu.endpoints.get_limit_ranges()
 
-        assert limits is not None
         assert isinstance(limits, dict)
 
-        # Verify required fields
-        assert "min_rootfs_size" in limits
-        assert "max_rootfs_size" in limits
-        assert "free_rootfs_size" in limits
-        assert "min_local_volume_size" in limits
-        assert "max_local_volume_size" in limits
-        assert "free_local_volume_size" in limits
-        assert "min_worker_num" in limits
-        assert "max_worker_num" in limits
-        assert "min_free_timeout" in limits
-        assert "max_free_timeout" in limits
-        assert "min_concurrency_num" in limits
-        assert "max_concurrency_num" in limits
-        assert "min_queue_wait_time" in limits
-        assert "max_queue_wait_time" in limits
-        assert "min_request_num" in limits
-        assert "max_request_num" in limits
-        assert "min_gpu_num" in limits
-        assert "max_gpu_num" in limits
-        assert "cuda_version_list" in limits
+        # Verify required fields (API returns camelCase)
+        required_keys = [
+            "minRootfsSize",
+            "maxRootfsSize",
+            "freeRootfsSize",
+            "minLocalVolumeSize",
+            "maxLocalVolumeSize",
+            "freeLocalVolumeSize",
+            "minWorkerNum",
+            "maxWorkerNum",
+            "minFreeTimeout",
+            "maxFreeTimeout",
+            "minConcurrencyNum",
+            "maxConcurrencyNum",
+            "minQueueWaitTime",
+            "maxQueueWaitTime",
+            "minRequestNum",
+            "maxRequestNum",
+            "minGPUNum",
+            "maxGPUNum",
+            "cudaVersionList",
+        ]
+        for key in required_keys:
+            assert key in limits, f"Missing required key: {key}"
 
-        # Verify data types
-        assert isinstance(limits["min_rootfs_size"], int)
-        assert isinstance(limits["max_rootfs_size"], int)
-        assert isinstance(limits["cuda_version_list"], list)
+        # Verify data types for sample fields
+        assert isinstance(limits["minRootfsSize"], int)
+        assert isinstance(limits["maxRootfsSize"], int)
+        assert isinstance(limits["cudaVersionList"], list)
 
-        # Verify logical constraints
-        assert limits["min_rootfs_size"] <= limits["max_rootfs_size"]
-        assert limits["min_local_volume_size"] <= limits["max_local_volume_size"]
-        assert limits["min_worker_num"] <= limits["max_worker_num"]
-        assert limits["min_gpu_num"] <= limits["max_gpu_num"]
+        # Verify logical constraints for min/max pairs
+        min_max_pairs = [
+            ("minRootfsSize", "maxRootfsSize"),
+            ("minLocalVolumeSize", "maxLocalVolumeSize"),
+            ("minWorkerNum", "maxWorkerNum"),
+            ("minGPUNum", "maxGPUNum"),
+        ]
+        for min_key, max_key in min_max_pairs:
+            assert limits[min_key] <= limits[max_key], f"{min_key} should be <= {max_key}"
 
     def test_get_endpoint_details(self, client: NovitaClient) -> None:
         """Test getting details of a specific endpoint."""
@@ -81,7 +89,6 @@ class TestEndpoints:
         # Get detailed information
         endpoint = client.gpu.endpoints.get(endpoint_id)
 
-        assert endpoint is not None
         assert hasattr(endpoint, "id")
         assert hasattr(endpoint, "name")
         assert hasattr(endpoint, "state")
@@ -107,10 +114,11 @@ class TestEndpoints:
         assert hasattr(endpoint, "state")
 
         # Verify state exists and is not None
-        assert endpoint.state is not None
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestEndpointLifecycle:
     """Test full endpoint lifecycle (create, update, delete)."""

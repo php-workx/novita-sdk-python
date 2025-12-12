@@ -46,7 +46,7 @@ class Networks(BaseResource):
         """
         response = self._client.get(f"{BASE_PATH}/networks")
         parsed = ListNetworksResponse.model_validate(response.json())
-        return parsed.network
+        return parsed.networks
 
     def get(self, network_id: str) -> Network:
         """Get details of a specific network.
@@ -131,7 +131,7 @@ class AsyncNetworks(AsyncBaseResource):
         """
         response = await self._client.get(f"{BASE_PATH}/networks")
         parsed = ListNetworksResponse.model_validate(response.json())
-        return parsed.network
+        return parsed.networks
 
     async def get(self, network_id: str) -> Network:
         """Get details of a specific network.

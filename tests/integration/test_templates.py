@@ -10,16 +10,16 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestTemplates:
     """Test template-related endpoints."""
 
     def test_list_templates(self, client: NovitaClient) -> None:
         """Test listing all templates."""
-        response = client.gpu.templates.list()
+        templates = client.gpu.templates.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert isinstance(response.data, list)
+        assert isinstance(templates, list)
 
     def test_template_structure(self, client: NovitaClient) -> None:
         """Test that templates have all expected fields."""
@@ -64,6 +64,8 @@ class TestTemplates:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestTemplateLifecycle:
     """Test full template lifecycle (create, delete)."""

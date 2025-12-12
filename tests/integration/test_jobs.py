@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
+
 if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestJobs:
     """Test job-related endpoints."""
 
@@ -15,7 +19,6 @@ class TestJobs:
         """Test listing all jobs."""
         jobs = client.gpu.jobs.list()
 
-        assert jobs is not None
         assert isinstance(jobs, list)
 
     def test_job_structure(self, client: NovitaClient) -> None:

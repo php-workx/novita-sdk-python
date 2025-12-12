@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestImagePrewarm:
     """Test image prewarm-related endpoints."""
 
@@ -17,7 +19,6 @@ class TestImagePrewarm:
         """Test listing all image prewarm tasks."""
         tasks = client.gpu.images.list()
 
-        assert tasks is not None
         assert isinstance(tasks, list)
 
     def test_get_image_prewarm_quota(self, client: NovitaClient) -> None:
@@ -59,6 +60,8 @@ class TestImagePrewarm:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestImagePrewarmLifecycle:
     """Test full image prewarm lifecycle (create, update, delete)."""

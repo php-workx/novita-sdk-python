@@ -10,16 +10,16 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestNetworks:
     """Test VPC network-related endpoints."""
 
     def test_list_networks(self, client: NovitaClient) -> None:
         """Test listing all VPC networks."""
-        response = client.gpu.networks.list()
+        networks = client.gpu.networks.list()
 
-        assert response is not None
-        assert hasattr(response, "data")
-        assert isinstance(response.data, list)
+        assert isinstance(networks, list)
 
     def test_network_structure(self, client: NovitaClient) -> None:
         """Test that networks have all expected fields."""
@@ -52,7 +52,6 @@ class TestNetworks:
 
             # Get detailed information
             network = client.gpu.networks.get(network_id=network_id)
-
             assert network is not None
 
     def test_networks_have_unique_ids(self, client: NovitaClient) -> None:
@@ -66,6 +65,8 @@ class TestNetworks:
 
 
 # Placeholder for full lifecycle tests (to be implemented later)
+@pytest.mark.integration
+@pytest.mark.invasive
 @pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestNetworkLifecycle:
     """Test full network lifecycle (create, update, delete)."""

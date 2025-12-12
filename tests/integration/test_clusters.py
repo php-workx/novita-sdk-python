@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
+
 if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+@pytest.mark.integration
+@pytest.mark.safe
 class TestClusters:
     """Test cluster-related endpoints."""
 
@@ -15,7 +19,6 @@ class TestClusters:
         """Test listing all clusters."""
         clusters = client.gpu.clusters.list()
 
-        assert clusters is not None
         assert isinstance(clusters, list)
 
         if len(clusters) > 0:

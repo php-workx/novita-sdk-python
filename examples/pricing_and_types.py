@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from novita import NovitaClient
 
 
@@ -64,6 +66,12 @@ def estimate_costs(instance_type: str, price_per_hour: float) -> None:
 
 
 def main() -> None:
+    # Check for API key
+    if not os.environ.get("NOVITA_API_KEY"):
+        print("Error: NOVITA_API_KEY environment variable is not set")
+        print("Please set it with: export NOVITA_API_KEY='your-api-key-here'")
+        return
+
     with NovitaClient() as client:
         display_pricing(client)
 
