@@ -151,6 +151,6 @@ publish-test:  ## Publish to TestPyPI for testing
 	@echo "✅ Published to TestPyPI!"
 	@echo ""
 	@echo "Test installation with:"
-	@echo "  pip install --index-url https://test.pypi.org/simple/ novita-sdk-python"
+	@echo "  pip install --index-url https://test.pypi.org/simple/ novita-sdk"
 
 .DEFAULT_GOAL := help
