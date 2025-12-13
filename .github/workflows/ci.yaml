@@ -78,8 +78,8 @@ jobs:
   integration-test:
     name: Integration Tests (Safe)
     runs-on: ubuntu-latest
-    # Only run on PRs and when API key is available (skip on forks without secrets)
-    if: ${{ (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') && secrets.NOVITA_API_KEY != '' }}
+    # Only run on PRs
+    if: ${{ github.event_name == 'pull_request' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +97,7 @@ jobs:
       - name: Run safe integration tests
         env:
           NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY }}
+        if: env.NOVITA_API_KEY != ''
         run: pytest tests/integration -m "integration and not invasive" -v --tb=short
 
   all-checks:
