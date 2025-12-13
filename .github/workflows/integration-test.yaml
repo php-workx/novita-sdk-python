@@ -1,0 +1,31 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  integration-test:
+    name: Integration Tests (Safe)
+    runs-on: ubuntu-latest
+    # Only run on PRs
+    if: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run safe integration tests
+        env:
+          NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY }}
+        if: env.NOVITA_API_KEY != ''
+        run: pytest tests/integration -m "integration and not invasive" -v --tb=short
