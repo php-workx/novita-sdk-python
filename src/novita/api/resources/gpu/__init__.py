@@ -3,7 +3,7 @@
 from .base import AsyncBaseResource, BaseResource
 from .clusters import AsyncClusters, Clusters
 from .endpoints import AsyncEndpoints, Endpoints
-from .images import AsyncImages, Images
+from .image_prewarm import AsyncImagePrewarm, ImagePrewarm
 from .instances import AsyncInstances, Instances
 from .jobs import AsyncJobs, Jobs
 from .metrics import AsyncMetrics, Metrics
@@ -20,8 +20,8 @@ __all__ = [
     "AsyncClusters",
     "Endpoints",
     "AsyncEndpoints",
-    "Images",
-    "AsyncImages",
+    "ImagePrewarm",
+    "AsyncImagePrewarm",
     "Instances",
     "AsyncInstances",
     "Jobs",

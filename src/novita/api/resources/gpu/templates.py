@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from novita.generated.models import (
+    CreateTemplateRequest,
     CreateTemplateResponse,
     GetTemplateResponse,
     ListTemplatesResponse,
@@ -49,11 +48,11 @@ class Templates(BaseResource):
         parsed = GetTemplateResponse.model_validate(response.json())
         return parsed.template
 
-    def create(self, **kwargs: Any) -> CreateTemplateResponse:
+    def create(self, request: CreateTemplateRequest) -> CreateTemplateResponse:
         """Create a new template.
 
         Args:
-            **kwargs: Template creation parameters (e.g., name, instance_id)
+            request: Template creation parameters
 
         Returns:
             Created template information
@@ -63,7 +62,10 @@ class Templates(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/template/create", json=kwargs)
+        response = self._client.post(
+            f"{BASE_PATH}/template/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return CreateTemplateResponse.model_validate(response.json())
 
     def delete(self, template_id: str) -> None:
@@ -117,11 +119,11 @@ class AsyncTemplates(AsyncBaseResource):
         parsed = GetTemplateResponse.model_validate(response.json())
         return parsed.template
 
-    async def create(self, **kwargs: Any) -> CreateTemplateResponse:
+    async def create(self, request: CreateTemplateRequest) -> CreateTemplateResponse:
         """Create a new template.
 
         Args:
-            **kwargs: Template creation parameters (e.g., name, instance_id)
+            request: Template creation parameters
 
         Returns:
             Created template information
@@ -131,7 +133,10 @@ class AsyncTemplates(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/template/create", json=kwargs)
+        response = await self._client.post(
+            f"{BASE_PATH}/template/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return CreateTemplateResponse.model_validate(response.json())
 
     async def delete(self, template_id: str) -> None:

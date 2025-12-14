@@ -1,0 +1,51 @@
+name: Cleanup Test Resources
+
+on:
+  schedule:
+    # Run every hour at minute 0
+    - cron: '12 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      min_age:
+        description: 'Minimum age in hours (resources older than this will be deleted)'
+        required: false
+        default: '0.5'
+        type: string
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Clean up test resources
+        env:
+          NOVITA_API_KEY: ${{ secrets.NOVITA_API_KEY }}
+        run: |
+          # Use input if triggered manually, otherwise default to 0.5 hours
+          MIN_AGE="${{ github.event.inputs.min_age || '0.5' }}"
+          echo "Deleting test resources older than $MIN_AGE hours..."
+          uv run python scripts/cleanup_test_resources.py --min-age "$MIN_AGE"
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "Cleanup job completed"
+          echo "Trigger: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual trigger - min age: ${{ github.event.inputs.min_age || '0.5' }} hours"
+          else
+            echo "Scheduled trigger - min age: 0.5 hours"
+          fi

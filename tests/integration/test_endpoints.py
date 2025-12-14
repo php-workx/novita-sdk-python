@@ -2,12 +2,33 @@
 
 from __future__ import annotations
 
+import time
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import BadRequestError, NotFoundError
+from novita.generated.models import (
+    CreateEndpointRequest,
+    Endpoint,
+    Healthy1,
+    Image1,
+    ImageItem,
+    Policy1,
+    PolicyItem,
+    Port2,
+    Ports,
+    Product1,
+    Type4,
+    Type6,
+    UpdateEndpointRequest,
+    WorkerConfig1,
+    WorkerConfigItem,
+)
 
 
 @pytest.mark.integration
@@ -85,6 +106,7 @@ class TestEndpoints:
             pytest.skip("No endpoints available to test endpoint details")
 
         endpoint_id = endpoints[0].id
+        assert endpoint_id is not None
 
         # Get detailed information
         endpoint = client.gpu.endpoints.get(endpoint_id)
@@ -116,23 +138,137 @@ class TestEndpoints:
         # Verify state exists and is not None
 
 
-# Placeholder for full lifecycle tests (to be implemented later)
 @pytest.mark.integration
 @pytest.mark.invasive
-@pytest.mark.skip(reason="Lifecycle tests to be implemented later")
-class TestEndpointLifecycle:
-    """Test full endpoint lifecycle (create, update, delete)."""
+class TestEndpointFullLifecycle:
+    """Test full endpoint lifecycle (create, update, delete).
 
-    def test_create_update_delete_endpoint(self, client: NovitaClient, product_id: str) -> None:
+    Warning: Creates real serverless endpoints which cost money.
+    """
+
+    def test_create_update_delete_endpoint(self, client: NovitaClient, cluster_id: str) -> None:
         """
-        Test full endpoint lifecycle.
+        Test full endpoint lifecycle with nginx on RTX 4090.
 
         This test will:
-        1. Create a new endpoint
-        2. Wait for it to be running
-        3. Update the endpoint
-        4. Delete the endpoint
-
-        TODO: Implement this test sequence
+        1. Find available RTX 4090 product
+        2. Create a serverless endpoint with nginx
+        3. Verify endpoint details
+        4. Update endpoint configuration
+        5. Delete the endpoint
         """
-        pass
+        from .test_utils import generate_test_name
+
+        endpoint_id = None
+
+        try:
+            # Step 1: Find RTX 4090 product
+            products = client.gpu.products.list(product_name="4090")
+            if not products:
+                pytest.skip("No RTX 4090 products found")
+
+            available_products = [p for p in products if p.available_deploy]
+            if not available_products:
+                pytest.skip("No RTX 4090 products currently available to deploy")
+
+            product = available_products[0]
+            product_id = product.id
+
+            # Step 2: Create endpoint configuration using Pydantic models
+            test_name = generate_test_name("endpoint")
+            app_name = generate_test_name("app")
+
+            endpoint_config = Endpoint(
+                name=test_name,
+                app_name=app_name,
+                worker_config=WorkerConfig1(
+                    min_num=1,
+                    max_num=2,
+                    free_timeout=60,
+                    max_concurrent=1,
+                    gpu_num=1,
+                ),
+                ports=Ports(port="80"),
+                policy=Policy1(type=Type4.concurrency, value=25),
+                image=Image1(image="docker.io/library/nginx:latest"),
+                products=[Product1(id=product_id)],
+                rootfs_size=100,
+                volume_mounts=[],
+                cluster_id=cluster_id,
+                healthy=Healthy1(path="/"),  # Nginx default endpoint
+            )
+
+            # Step 3: Create the endpoint
+            created = client.gpu.endpoints.create(CreateEndpointRequest(endpoint=endpoint_config))
+            assert created.id is not None
+            endpoint_id = created.id
+            assert created.name == test_name
+
+            # Wait a couple seconds for endpoint to be created
+            time.sleep(2)
+
+            # Step 4: Get endpoint details
+            endpoint_detail = client.gpu.endpoints.get(endpoint_id)
+            assert endpoint_detail.id == endpoint_id
+            assert endpoint_detail.name == test_name
+            assert endpoint_detail.state is not None
+
+            # Step 5: Update endpoint (change name)
+            updated_name = generate_test_name("endpoint-updated")
+            update_request = UpdateEndpointRequest(
+                worker_config=[
+                    WorkerConfigItem(
+                        min_num=1,
+                        max_num=2,
+                        free_timeout=60,
+                        max_concurrent=1,
+                        gpu_num=1,
+                    )
+                ],
+                ports=[Port2(port="80")],
+                policy=[PolicyItem(type=Type6.concurrency, value=25)],
+                image=[ImageItem(image="docker.io/library/nginx:latest")],
+                name=updated_name,
+            )
+            updated = client.gpu.endpoints.update(endpoint_id, update_request)
+            assert updated.name == updated_name
+
+            # Verify update
+            endpoint_detail = client.gpu.endpoints.get(endpoint_id)
+            assert endpoint_detail.name == updated_name
+
+            # Wait before deletion
+            time.sleep(2)
+
+            # Step 6: Delete the endpoint
+            client.gpu.endpoints.delete(endpoint_id)
+
+            # Verify deletion was initiated
+            # Note: Endpoint may be removed quickly, so we handle both cases
+            try:
+                endpoint_detail = client.gpu.endpoints.get(endpoint_id)
+                # If we can still get it, it should be in a deletion state
+                # (Novita endpoints don't have standard deletion states like instances)
+                # Just verify we can still access it
+                assert endpoint_detail.id == endpoint_id
+            except NotFoundError:
+                # If we get a "not found" error, deletion completed successfully
+                pass
+
+        finally:
+            # Cleanup: ensure the endpoint is deleted even if test fails
+            if endpoint_id is not None:
+                try:
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.endpoints.delete(endpoint_id)
+                except (NotFoundError, BadRequestError):
+                    # If endpoint is already gone, that's fine
+                    # API may return BadRequestError for deleted resources
+                    pass
+                except Exception as e:
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup endpoint {endpoint_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

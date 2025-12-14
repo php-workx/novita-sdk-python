@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import BadRequestError, NotFoundError
 
 
 @pytest.mark.integration
@@ -63,10 +66,8 @@ class TestTemplates:
             assert len(ids) == len(set(ids))
 
 
-# Placeholder for full lifecycle tests (to be implemented later)
 @pytest.mark.integration
 @pytest.mark.invasive
-@pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestTemplateLifecycle:
     """Test full template lifecycle (create, delete)."""
 
@@ -75,13 +76,79 @@ class TestTemplateLifecycle:
         Test full template lifecycle.
 
         This test will:
-        1. Create an instance
-        2. Create a template from the instance
-        3. Verify the template appears in the list
-        4. Delete the template
-        5. Verify it's removed from the list
-        6. Clean up the instance
-
-        TODO: Implement this test sequence
+        1. Create a template
+        2. Verify the template appears in the list
+        3. Delete the template
+        4. Verify it's removed from the list
         """
-        pass
+        from novita.generated.models import (
+            Channel,
+            CreateTemplateRequest,
+            TemplateCreatePayload,
+        )
+
+        from .test_utils import generate_test_name
+
+        # Generate unique test template name
+        test_name = generate_test_name("template")
+        template_id = None
+
+        try:
+            # Step 1: Create a minimal template
+            response = client.gpu.templates.create(
+                CreateTemplateRequest(
+                    template=TemplateCreatePayload(
+                        name=test_name,
+                        readme="Test template created by integration tests",
+                        type="instance",
+                        channel=Channel.private,
+                        image="ubuntu:22.04",
+                        start_command="bash",
+                        rootfs_size=50,
+                        ports=[],
+                        volumes=[],
+                        envs=[],
+                    )
+                )
+            )
+            assert response.template_id is not None
+            template_id = response.template_id
+
+            # Step 2: Verify the template can be retrieved by ID
+            # Note: The list endpoint may be paginated and not show newly created templates immediately
+            created_template = client.gpu.templates.get(template_id=template_id)
+            assert created_template is not None
+            assert created_template.name == test_name
+
+            # Step 3: Delete the template
+            client.gpu.templates.delete(template_id)
+
+            # Step 4: Verify it's removed (get should raise an error)
+            try:
+                client.gpu.templates.get(template_id=template_id)
+                # If we get here, template still exists
+                raise AssertionError(f"Template {template_id} still exists after deletion")
+            except (NotFoundError, BadRequestError) as e:
+                # Expected - template should not exist anymore
+                # API returns BadRequestError with "template not found" message
+                if "not found" in str(e).lower():
+                    pass
+                else:
+                    raise
+
+        finally:
+            # Cleanup: ensure the template is deleted even if test fails
+            if template_id is not None:
+                try:
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.templates.delete(template_id)
+                except (NotFoundError, BadRequestError):
+                    # If template is already gone, that's fine
+                    pass
+                except Exception as e:
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup template {template_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

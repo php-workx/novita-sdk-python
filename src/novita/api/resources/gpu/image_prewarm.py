@@ -1,20 +1,22 @@
-"""GPU images management resource."""
+"""GPU image prewarm management resource."""
 
 from __future__ import annotations
 
 from typing import Any, cast
 
 from novita.generated.models import (
+    CreateImagePrewarmRequest,
     CreateImagePrewarmResponse,
     ImagePrewarmTask,
     ListImagePrewarmTasksResponse,
+    UpdateImagePrewarmRequest,
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
 
-class Images(BaseResource):
-    """Synchronous GPU images management resource."""
+class ImagePrewarm(BaseResource):
+    """Synchronous GPU image prewarm management resource."""
 
     def list(self) -> list[ImagePrewarmTask]:
         """List all image prewarm tasks.
@@ -30,11 +32,11 @@ class Images(BaseResource):
         parsed = ListImagePrewarmTasksResponse.model_validate(response.json())
         return parsed.data
 
-    def create(self, **kwargs: Any) -> CreateImagePrewarmResponse:
+    def create(self, request: CreateImagePrewarmRequest) -> CreateImagePrewarmResponse:
         """Create a new image prewarm task.
 
         Args:
-            **kwargs: Image prewarm task parameters (e.g., image_url)
+            request: Image prewarm task parameters
 
         Returns:
             Created image prewarm task information
@@ -44,15 +46,18 @@ class Images(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/image/prewarm", json=kwargs)
+        response = self._client.post(
+            f"{BASE_PATH}/image/prewarm",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return CreateImagePrewarmResponse.model_validate(response.json())
 
-    def update(self, task_id: str, **kwargs: Any) -> ImagePrewarmTask:
+    def update(self, task_id: str, request: UpdateImagePrewarmRequest) -> ImagePrewarmTask:
         """Update an image prewarm task.
 
         Args:
             task_id: The ID of the prewarm task
-            **kwargs: Fields to update (e.g., enabled)
+            request: Image prewarm task update parameters
 
         Returns:
             Updated image prewarm task information
@@ -63,7 +68,10 @@ class Images(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"task_id": task_id, **kwargs}
+        data = {
+            "task_id": task_id,
+            **request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        }
         response = self._client.post(f"{BASE_PATH}/image/prewarm/edit", json=data)
         return ImagePrewarmTask.model_validate(response.json())
 
@@ -94,8 +102,8 @@ class Images(BaseResource):
         return cast(dict[str, Any], response.json())
 
 
-class AsyncImages(AsyncBaseResource):
-    """Asynchronous GPU images management resource."""
+class AsyncImagePrewarm(AsyncBaseResource):
+    """Asynchronous GPU image prewarm management resource."""
 
     async def list(self) -> list[ImagePrewarmTask]:
         """List all image prewarm tasks.
@@ -111,11 +119,11 @@ class AsyncImages(AsyncBaseResource):
         parsed = ListImagePrewarmTasksResponse.model_validate(response.json())
         return parsed.data
 
-    async def create(self, **kwargs: Any) -> CreateImagePrewarmResponse:
+    async def create(self, request: CreateImagePrewarmRequest) -> CreateImagePrewarmResponse:
         """Create a new image prewarm task.
 
         Args:
-            **kwargs: Image prewarm task parameters (e.g., image_url)
+            request: Image prewarm task parameters
 
         Returns:
             Created image prewarm task information
@@ -125,15 +133,18 @@ class AsyncImages(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/image/prewarm", json=kwargs)
+        response = await self._client.post(
+            f"{BASE_PATH}/image/prewarm",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return CreateImagePrewarmResponse.model_validate(response.json())
 
-    async def update(self, task_id: str, **kwargs: Any) -> ImagePrewarmTask:
+    async def update(self, task_id: str, request: UpdateImagePrewarmRequest) -> ImagePrewarmTask:
         """Update an image prewarm task.
 
         Args:
             task_id: The ID of the prewarm task
-            **kwargs: Fields to update (e.g., enabled)
+            request: Image prewarm task update parameters
 
         Returns:
             Updated image prewarm task information
@@ -144,7 +155,10 @@ class AsyncImages(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"task_id": task_id, **kwargs}
+        data = {
+            "task_id": task_id,
+            **request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        }
         response = await self._client.post(f"{BASE_PATH}/image/prewarm/edit", json=data)
         return ImagePrewarmTask.model_validate(response.json())
 

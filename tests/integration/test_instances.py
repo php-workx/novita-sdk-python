@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import time
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita import CreateInstanceRequest, Kind
+from novita.exceptions import NotFoundError
 
 
 @pytest.mark.integration
@@ -112,36 +117,97 @@ class TestInstances:
             assert str(instance.status) in valid_statuses
 
 
-# Placeholder for full lifecycle tests (to be implemented later)
 @pytest.mark.integration
 @pytest.mark.invasive
-@pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestInstanceLifecycle:
     """Test full instance lifecycle (create, update, delete)."""
 
-    def test_create_update_delete_instance(
-        self, client: NovitaClient, product_id: str, cluster_id: str
-    ) -> None:
+    def test_create_stop_delete_instance(self, client: NovitaClient) -> None:
         """
-        Test full instance lifecycle.
+        Test instance lifecycle with RTX 4090.
 
         This test will:
-        1. Create a new instance
-        2. Wait for it to be running
-        3. Update the instance
-        4. Stop the instance
-        5. Delete the instance
+        1. Find an available RTX 4090 product
+        2. Create a new instance
+        3. Get instance details
+        4. Delete the instance (instances are deleted regardless of status)
 
-        TODO: Implement this test sequence
+        Note: We skip waiting for the instance to start since GPU instances can take
+        several minutes to provision. Deletion works in any state.
         """
-        pass
+        from .test_utils import generate_test_name
 
-    def test_create_start_stop_delete_instance(
-        self, client: NovitaClient, product_id: str, cluster_id: str
-    ) -> None:
-        """
-        Test instance start/stop lifecycle.
+        instance_id = None
 
-        TODO: Implement this test sequence
-        """
-        pass
+        try:
+            # Step 1: Find RTX 4090 product
+            products = client.gpu.products.list(product_name="4090")
+            if not products:
+                pytest.skip("No RTX 4090 products found")
+
+            available_products = [p for p in products if p.available_deploy]
+            if not available_products:
+                pytest.skip("No RTX 4090 products currently available to deploy")
+
+            # Use first available product
+            product = available_products[0]
+            product_id = product.id
+            min_rootfs = max(product.min_root_fs or 50, 50)  # Use at least 50GB
+
+            # Step 2: Create a new instance
+            # Note: We don't specify billing_mode to use the default for the product
+            test_name = generate_test_name("instance")
+            request = CreateInstanceRequest(
+                name=test_name,
+                product_id=product_id,
+                gpu_num=1,
+                rootfs_size=min_rootfs,
+                image_url="docker.io/library/ubuntu:22.04",
+                kind=Kind.gpu,
+            )
+
+            response = client.gpu.instances.create(request)
+            assert response.id is not None
+            instance_id = response.id
+
+            # Step 3: Get instance details
+            instance = client.gpu.instances.get(instance_id)
+            assert instance.name == test_name
+            assert instance.id == instance_id
+            assert instance.status is not None
+
+            # Wait a couple seconds before deletion
+            time.sleep(2)
+
+            # Step 4: Delete the instance (works in any state)
+            client.gpu.instances.delete(instance_id)
+
+            # Verify deletion was initiated or completed
+            # Note: Instance may be removed so quickly that get() returns 404
+            try:
+                instance = client.gpu.instances.get(instance_id)
+                assert str(instance.status) in [
+                    "toRemove",
+                    "removing",
+                    "removed",
+                ], f"Unexpected status after delete: {instance.status}"
+            except NotFoundError:
+                # If we get a NotFoundError, deletion completed successfully
+                pass
+
+        finally:
+            # Cleanup: ensure the instance is deleted even if test fails
+            if instance_id is not None:
+                try:
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.instances.delete(instance_id)
+                except NotFoundError:
+                    # If instance is already gone, that's fine
+                    pass
+                except Exception as e:
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup instance {instance_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

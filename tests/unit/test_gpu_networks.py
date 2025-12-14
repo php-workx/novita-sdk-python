@@ -4,7 +4,12 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
-from novita.generated.models import Network, NetworkModel
+from novita.generated.models import (
+    CreateNetworkRequest,
+    Network,
+    NetworkModel,
+    UpdateNetworkRequest,
+)
 
 
 def _network_payload(**overrides: object) -> dict[str, object]:
@@ -61,7 +66,7 @@ def test_get_network(httpx_mock: HTTPXMock) -> None:
     """Test getting a specific network."""
     httpx_mock.add_response(
         method="GET",
-        url="https://api.novita.ai/gpu-instance/openapi/v1/network?network_id=net-123",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/network?networkId=net-123",
         json={"network": [_network_detail_payload()]},
     )
 
@@ -83,7 +88,12 @@ def test_create_network(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    network = client.gpu.networks.create(name="test-network")
+    network = client.gpu.networks.create(
+        CreateNetworkRequest(
+            cluster_id="cluster-1",
+            name="test-network",
+        )
+    )
 
     assert isinstance(network, Network)
     assert network.id == "net-new"
@@ -99,7 +109,12 @@ def test_update_network(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    network = client.gpu.networks.update("net-123", name="updated-network")
+    network = client.gpu.networks.update(
+        UpdateNetworkRequest(
+            network_id="net-123",
+            name="updated-network",
+        )
+    )
 
     assert isinstance(network, Network)
     assert network.id == "net-123"
