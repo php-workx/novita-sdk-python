@@ -101,10 +101,17 @@ class TestNetworkStorageLifecycle:
 
         try:
             # Step 1: Create a new network storage volume
+from novita.generated.models import (
+    CreateNetworkStorageRequest,
+    UpdateNetworkStorageRequest,
+)
+
             created_storage = client.gpu.storages.create(
-                clusterId=cluster_id,
-                storageName=test_name,
-                storageSize=test_size,
+                CreateNetworkStorageRequest(
+                    cluster_id=cluster_id,
+                    storage_name=test_name,
+                    storage_size=test_size,
+                )
             )
             assert created_storage.storage_id is not None
             assert created_storage.storage_name == test_name
@@ -121,9 +128,11 @@ class TestNetworkStorageLifecycle:
 
             # Step 3: Update the storage (rename and resize)
             client.gpu.storages.update(
-                storage_id=storage_id,
-                storageName=updated_name,
-                storageSize=test_size + 2,
+                UpdateNetworkStorageRequest(
+                    storage_id=storage_id,
+                    storage_name=updated_name,
+                    storage_size=test_size + 2,
+                )
             )
 
             # Verify the update in the list
