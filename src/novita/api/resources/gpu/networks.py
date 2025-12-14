@@ -68,7 +68,7 @@ class Networks(BaseResource):
             NotFoundError: If network doesn't exist
             APIError: If the API returns an error
         """
-        response = self._client.get(f"{BASE_PATH}/network", params={"network_id": network_id})
+        response = self._client.get(f"{BASE_PATH}/network", params={"networkId": network_id})
         return _parse_single_network(response.json())
 
     def create(self, request: CreateNetworkRequest) -> Network:
