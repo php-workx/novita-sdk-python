@@ -13,7 +13,7 @@ import argparse
 import os
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -38,18 +38,18 @@ def parse_timestamp_from_name(name: str) -> datetime | None:
         date_str = match.group(1)
         time_str = match.group(2)
         try:
-            return datetime.strptime(f"{date_str}{time_str}", "%Y%m%d%H%M%S")
+            return datetime.strptime(f"{date_str}{time_str}", "%Y%m%d%H%M%S").replace(tzinfo=UTC)
         except ValueError:
             return None
     return None
 
 
-def is_old_enough(name: str, min_age_hours: int) -> bool:
+def is_old_enough(name: str, min_age_hours: float) -> bool:
     """Check if resource is old enough to delete.
 
     Args:
         name: Resource name
-        min_age_hours: Minimum age in hours (0 means delete all)
+        min_age_hours: Minimum age in hours (0.0 means delete all)
 
     Returns:
         True if resource should be deleted
@@ -62,16 +62,16 @@ def is_old_enough(name: str, min_age_hours: int) -> bool:
         # If we can't parse timestamp, delete it (legacy format or corrupted)
         return True
 
-    age = datetime.utcnow() - timestamp
+    age = datetime.now(UTC) - timestamp
     return age >= timedelta(hours=min_age_hours)
 
 
-def cleanup_instances(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_instances(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test instances.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -102,12 +102,12 @@ def cleanup_instances(client: NovitaClient, min_age_hours: int = 0) -> tuple[int
     return deleted, errors
 
 
-def cleanup_endpoints(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_endpoints(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test endpoints.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -138,12 +138,12 @@ def cleanup_endpoints(client: NovitaClient, min_age_hours: int = 0) -> tuple[int
     return deleted, errors
 
 
-def cleanup_templates(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_templates(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test templates.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -174,12 +174,12 @@ def cleanup_templates(client: NovitaClient, min_age_hours: int = 0) -> tuple[int
     return deleted, errors
 
 
-def cleanup_networks(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_networks(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test networks.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -210,12 +210,12 @@ def cleanup_networks(client: NovitaClient, min_age_hours: int = 0) -> tuple[int,
     return deleted, errors
 
 
-def cleanup_storages(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_storages(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test network storages.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -248,12 +248,12 @@ def cleanup_storages(client: NovitaClient, min_age_hours: int = 0) -> tuple[int,
     return deleted, errors
 
 
-def cleanup_registries(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_registries(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test image registry authentications.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -286,12 +286,12 @@ def cleanup_registries(client: NovitaClient, min_age_hours: int = 0) -> tuple[in
     return deleted, errors
 
 
-def cleanup_image_prewarm(client: NovitaClient, min_age_hours: int = 0) -> tuple[int, int]:
+def cleanup_image_prewarm(client: NovitaClient, min_age_hours: float = 0) -> tuple[int, int]:
     """Clean up test image prewarm tasks.
 
     Args:
         client: NovitaClient instance
-        min_age_hours: Only delete resources older than this many hours (0 = all)
+        min_age_hours: Only delete resources older than this many hours (0.0 = all)
 
     Returns:
         Tuple of (deleted_count, error_count)
@@ -348,7 +348,7 @@ Examples:
         "--min-age",
         type=float,
         default=0,
-        help="Only delete resources older than this many hours (default: 0 = delete all)",
+        help="Only delete resources older than this many hours (default: 0.0 = delete all)",
     )
     args = parser.parse_args()
 
@@ -389,7 +389,7 @@ Examples:
 
     for resource_name, cleanup_func in resource_types:
         print(f"\nCleaning up {resource_name}...")
-        deleted, errors = cleanup_func(client, min_age_hours=int(args.min_age))
+        deleted, errors = cleanup_func(client, min_age_hours=args.min_age)
         total_deleted += deleted
         total_errors += errors
 

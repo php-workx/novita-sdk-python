@@ -9,6 +9,8 @@ import pytest
 if TYPE_CHECKING:
     from novita import NovitaClient
 
+from novita.exceptions import NotFoundError
+
 
 @pytest.mark.integration
 @pytest.mark.safe
@@ -190,11 +192,9 @@ class TestInstanceLifecycle:
                     "removing",
                     "removed",
                 ], f"Unexpected status after delete: {instance.status.value}"
-            except Exception as e:
-                # If we get a "not found" error, that means deletion completed successfully
-                assert (
-                    "not found" in str(e).lower() or "not fount" in str(e).lower()
-                ), f"Expected 'not found' error after deletion, got: {e}"
+            except NotFoundError:
+                # If we get a NotFoundError, deletion completed successfully
+                pass
 
         finally:
             # Cleanup: ensure the instance is deleted even if test fails
@@ -202,15 +202,15 @@ class TestInstanceLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.instances.delete(instance_id)
+                except NotFoundError:
+                    # If instance is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If instance is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
+                    # Log unexpected cleanup errors but don't fail the test
+                    import warnings
 
-                        warnings.warn(
-                            f"Failed to cleanup instance {instance_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    warnings.warn(
+                        f"Failed to cleanup instance {instance_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

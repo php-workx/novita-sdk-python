@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 def generate_test_name(prefix: str = "test") -> str:
@@ -22,5 +22,5 @@ def generate_test_name(prefix: str = "test") -> str:
         >>> generate_test_name("endpoint")
         'test-endpoint-20241214-153022'
     """
-    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     return f"test-{prefix}-{timestamp}"
