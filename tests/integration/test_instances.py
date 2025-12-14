@@ -185,11 +185,11 @@ class TestInstanceLifecycle:
             # Note: Instance may be removed so quickly that get() returns 404
             try:
                 instance = client.gpu.instances.get(instance_id)
-                assert instance.status.value in [
+                assert str(instance.status) in [
                     "toRemove",
                     "removing",
                     "removed",
-                ], f"Unexpected status after delete: {instance.status.value}"
+                ], f"Unexpected status after delete: {instance.status}"
             except Exception as e:
                 # If we get a "not found" error, that means deletion completed successfully
                 assert (
