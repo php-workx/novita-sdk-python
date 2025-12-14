@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import NotFoundError
 
 
 @pytest.mark.integration
@@ -87,7 +90,7 @@ class TestNetworkStorageLifecycle:
         This test will:
         1. Create a new network storage volume
         2. Verify it appears in the list
-        3. Update the storage (rename)
+        3. Update the storage (rename and resize)
         4. Delete the storage
         5. Verify it's removed from the list
         """
@@ -160,15 +163,13 @@ class TestNetworkStorageLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.storages.delete(storage_id)
+                except NotFoundError:
+                    # If storage is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If storage is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup storage {storage_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup storage {storage_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

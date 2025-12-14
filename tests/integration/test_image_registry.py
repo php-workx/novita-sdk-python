@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import NotFoundError
 
 
 @pytest.mark.integration
@@ -50,7 +53,7 @@ class TestImageRegistry:
 
 
 @pytest.mark.integration
-@pytest.mark.safe
+@pytest.mark.invasive
 class TestImageRegistryLifecycle:
     """Test full image registry auth lifecycle (create, delete)."""
 
@@ -103,15 +106,13 @@ class TestImageRegistryLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.registries.delete(auth_id)
+                except NotFoundError:
+                    # If auth is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If auth is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup registry auth {auth_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup registry auth {auth_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

@@ -2,12 +2,33 @@
 
 from __future__ import annotations
 
+import time
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import NotFoundError
+from novita.generated.models import (
+    CreateEndpointRequest,
+    Endpoint,
+    Healthy1,
+    Image1,
+    ImageItem,
+    Policy1,
+    PolicyItem,
+    Port2,
+    Ports,
+    Product1,
+    Type4,
+    Type6,
+    UpdateEndpointRequest,
+    WorkerConfig1,
+    WorkerConfigItem,
+)
 
 
 @pytest.mark.integration
@@ -136,25 +157,7 @@ class TestEndpointFullLifecycle:
         4. Update endpoint configuration
         5. Delete the endpoint
         """
-        import time
-
-        from novita.generated.models import (
-            CreateEndpointRequest,
-            Endpoint,
-            Healthy1,
-            Image1,
-            ImageItem,
-            Policy1,
-            PolicyItem,
-            Port2,
-            Ports,
-            Product1,
-            Type4,
-            Type6,
-            UpdateEndpointRequest,
-            WorkerConfig1,
-            WorkerConfigItem,
-        )
+        from .test_utils import generate_test_name
 
         endpoint_id = None
 
@@ -172,8 +175,6 @@ class TestEndpointFullLifecycle:
             product_id = product.id
 
             # Step 2: Create endpoint configuration using Pydantic models
-            from .test_utils import generate_test_name
-
             test_name = generate_test_name("endpoint")
             app_name = generate_test_name("app")
 
@@ -250,12 +251,9 @@ class TestEndpointFullLifecycle:
                 # (Novita endpoints don't have standard deletion states like instances)
                 # Just verify we can still access it
                 assert endpoint_detail.id == endpoint_id
-            except Exception as e:
+            except NotFoundError:
                 # If we get a "not found" error, deletion completed successfully
-                error_msg = str(e).lower()
-                assert (
-                    "not found" in error_msg or "not fount" in error_msg
-                ), f"Expected 'not found' error after deletion, got: {e}"
+                pass
 
         finally:
             # Cleanup: ensure the endpoint is deleted even if test fails
@@ -263,15 +261,13 @@ class TestEndpointFullLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.endpoints.delete(endpoint_id)
+                except NotFoundError:
+                    # If endpoint is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If endpoint is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup endpoint {endpoint_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup endpoint {endpoint_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

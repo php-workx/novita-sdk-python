@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
@@ -9,6 +11,7 @@ import pytest
 if TYPE_CHECKING:
     from novita import NovitaClient
 
+from novita import CreateInstanceRequest, Kind
 from novita.exceptions import NotFoundError
 
 
@@ -132,7 +135,7 @@ class TestInstanceLifecycle:
         Note: We skip waiting for the instance to start since GPU instances can take
         several minutes to provision. Deletion works in any state.
         """
-        from novita import CreateInstanceRequest, Kind
+        from .test_utils import generate_test_name
 
         instance_id = None
 
@@ -153,8 +156,6 @@ class TestInstanceLifecycle:
 
             # Step 2: Create a new instance
             # Note: We don't specify billing_mode to use the default for the product
-            from .test_utils import generate_test_name
-
             test_name = generate_test_name("instance")
             request = CreateInstanceRequest(
                 name=test_name,
@@ -176,8 +177,6 @@ class TestInstanceLifecycle:
             assert instance.status is not None
 
             # Wait a couple seconds before deletion
-            import time
-
             time.sleep(2)
 
             # Step 4: Delete the instance (works in any state)
@@ -207,8 +206,6 @@ class TestInstanceLifecycle:
                     pass
                 except Exception as e:
                     # Log unexpected cleanup errors but don't fail the test
-                    import warnings
-
                     warnings.warn(
                         f"Failed to cleanup instance {instance_id}: {e}",
                         ResourceWarning,

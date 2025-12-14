@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
@@ -9,6 +11,7 @@ import pytest
 if TYPE_CHECKING:
     from novita import NovitaClient
 
+from novita.exceptions import BadRequestError, NotFoundError
 from novita.generated.models import CreateNetworkRequest, UpdateNetworkRequest
 
 
@@ -67,7 +70,7 @@ class TestNetworks:
 
 
 @pytest.mark.integration
-@pytest.mark.safe
+@pytest.mark.invasive
 class TestNetworkLifecycle:
     """Test full network lifecycle (create, update, delete)."""
 
@@ -83,10 +86,6 @@ class TestNetworkLifecycle:
         5. Delete the network
         6. Verify the network was deleted
         """
-        import time
-
-        from novita.exceptions import BadRequestError, NotFoundError
-
         from .test_utils import generate_test_name
 
         # Generate unique test names (max 30 chars for networks)
@@ -104,12 +103,22 @@ class TestNetworkLifecycle:
             )
 
             # Step 2: Find the network in the list by name (API doesn't return ID on create)
-            time.sleep(1)  # Give API a moment to process
-            networks = client.gpu.networks.list()
-            found_network = next((n for n in networks if n.name == initial_name), None)
+            # Poll for up to 10 seconds to handle slow API responses
+            max_wait = 10
+            poll_interval = 0.5
+            start_time = time.time()
+            found_network = None
+
+            while time.time() - start_time < max_wait:
+                networks = client.gpu.networks.list()
+                found_network = next((n for n in networks if n.name == initial_name), None)
+                if found_network is not None:
+                    break
+                time.sleep(poll_interval)
+
             assert (
                 found_network is not None
-            ), f"Network '{initial_name}' not found in list after creation"
+            ), f"Network '{initial_name}' not found in list after {max_wait}s"
             network_id = found_network.id
             assert network_id is not None
 
@@ -151,15 +160,13 @@ class TestNetworkLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.networks.delete(network_id)
+                except (NotFoundError, BadRequestError):
+                    # If network is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If network is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup network {network_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup network {network_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

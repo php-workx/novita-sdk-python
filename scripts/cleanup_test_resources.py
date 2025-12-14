@@ -20,6 +20,20 @@ if TYPE_CHECKING:
     from novita import NovitaClient
 
 
+def is_expected_error(error: Exception) -> bool:
+    """Check if an error is expected (e.g., resource already deleted).
+
+    Args:
+        error: The exception to check
+
+    Returns:
+        True if the error is expected and should be ignored, False otherwise
+    """
+    # Handle both "not found" and API typo "not fount"
+    error_msg = str(error).lower()
+    return "not found" in error_msg or "not fount" in error_msg
+
+
 def parse_timestamp_from_name(name: str) -> datetime | None:
     """Extract timestamp from resource name.
 
@@ -93,8 +107,9 @@ def cleanup_instances(client: NovitaClient, min_age_hours: float = 0) -> tuple[i
                 client.gpu.instances.delete(instance.id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete instance {instance.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete instance {instance.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list instances: {e}")
         errors += 1
@@ -129,8 +144,9 @@ def cleanup_endpoints(client: NovitaClient, min_age_hours: float = 0) -> tuple[i
                 client.gpu.endpoints.delete(endpoint.id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete endpoint {endpoint.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete endpoint {endpoint.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list endpoints: {e}")
         errors += 1
@@ -165,8 +181,9 @@ def cleanup_templates(client: NovitaClient, min_age_hours: float = 0) -> tuple[i
                 client.gpu.templates.delete(template.id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete template {template.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete template {template.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list templates: {e}")
         errors += 1
@@ -201,8 +218,9 @@ def cleanup_networks(client: NovitaClient, min_age_hours: float = 0) -> tuple[in
                 client.gpu.networks.delete(network.id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete network {network.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete network {network.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list networks: {e}")
         errors += 1
@@ -239,8 +257,9 @@ def cleanup_storages(client: NovitaClient, min_age_hours: float = 0) -> tuple[in
                 client.gpu.storages.delete(storage.storage_id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete storage {storage.storage_id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete storage {storage.storage_id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list storages: {e}")
         errors += 1
@@ -277,8 +296,9 @@ def cleanup_registries(client: NovitaClient, min_age_hours: float = 0) -> tuple[
                 client.gpu.registries.delete(auth.id)
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete registry auth {auth.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete registry auth {auth.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list registry auths: {e}")
         errors += 1
@@ -311,11 +331,12 @@ def cleanup_image_prewarm(client: NovitaClient, min_age_hours: float = 0) -> tup
         for task in test_tasks:
             try:
                 print(f"Deleting prewarm task: {task.id} ({task.image})")
-                client.gpu.image_prewarm.delete(task.id)
+                client.gpu.image_prewarm.delete([task.id])
                 deleted += 1
             except Exception as e:
-                print(f"  Failed to delete prewarm task {task.id}: {e}")
-                errors += 1
+                if not is_expected_error(e):
+                    print(f"  Failed to delete prewarm task {task.id}: {e}")
+                    errors += 1
     except Exception as e:
         print(f"Failed to list prewarm tasks: {e}")
         errors += 1

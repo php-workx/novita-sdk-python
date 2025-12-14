@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import BadRequestError, NotFoundError
 
 
 @pytest.mark.integration
@@ -64,7 +67,7 @@ class TestTemplates:
 
 
 @pytest.mark.integration
-@pytest.mark.safe
+@pytest.mark.invasive
 class TestTemplateLifecycle:
     """Test full template lifecycle (create, delete)."""
 
@@ -84,9 +87,9 @@ class TestTemplateLifecycle:
             TemplateCreatePayload,
         )
 
-        # Generate unique test template name
         from .test_utils import generate_test_name
 
+        # Generate unique test template name
         test_name = generate_test_name("template")
         template_id = None
 
@@ -121,8 +124,6 @@ class TestTemplateLifecycle:
             client.gpu.templates.delete(template_id)
 
             # Step 4: Verify it's removed (get should raise an error)
-            from novita.exceptions import BadRequestError, NotFoundError
-
             try:
                 client.gpu.templates.get(template_id=template_id)
                 # If we get here, template still exists
@@ -141,15 +142,13 @@ class TestTemplateLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.templates.delete(template_id)
+                except (NotFoundError, BadRequestError):
+                    # If template is already gone, that's fine
+                    pass
                 except Exception as e:
-                    # If template is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup template {template_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup template {template_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

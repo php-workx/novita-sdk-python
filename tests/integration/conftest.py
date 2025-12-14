@@ -69,24 +69,6 @@ def cpu_product_id(client: NovitaClient) -> str:
     _skip("No deployable CPU products available")
 
 
-@pytest.fixture(scope="session")
-def resource_tracker() -> dict[str, list[str]]:
-    """Track resources created during the test session.
-
-    Returns:
-        Dictionary mapping resource type to list of resource IDs
-    """
-    return {
-        "instances": [],
-        "endpoints": [],
-        "templates": [],
-        "networks": [],
-        "storages": [],
-        "registries": [],
-        "prewarm_tasks": [],
-    }
-
-
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Run cleanup before test session starts.
 

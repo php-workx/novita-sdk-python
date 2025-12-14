@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from novita import NovitaClient
+
+from novita.exceptions import NotFoundError
 
 
 @pytest.mark.integration
@@ -84,6 +87,8 @@ class TestImagePrewarmLifecycle:
 
         Note: Currently skipped due to API endpoint returning 500 errors.
         """
+        from novita.generated.models import CreateImagePrewarmRequest
+
         # Find RTX 4090 products
         products = client.gpu.products.list(product_name="4090")
         if not products:
@@ -98,8 +103,6 @@ class TestImagePrewarmLifecycle:
 
         try:
             # Step 1: Create a new image prewarm task
-            from novita.generated.models import CreateImagePrewarmRequest
-
             response = client.gpu.image_prewarm.create(
                 CreateImagePrewarmRequest(
                     image_url=test_image,
@@ -134,18 +137,13 @@ class TestImagePrewarmLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.image_prewarm.delete([task_id])
+                except NotFoundError:
+                    # Task already deleted, that's fine
+                    pass
                 except Exception as e:
-                    # If task is already gone, that's fine
-                    from novita.exceptions import NotFoundError
-
-                    if isinstance(e, NotFoundError):
-                        pass
-                    else:
-                        # Log unexpected cleanup errors but don't fail the test
-                        import warnings
-
-                        warnings.warn(
-                            f"Failed to cleanup prewarm task {task_id}: {e}",
-                            ResourceWarning,
-                            stacklevel=2,
-                        )
+                    # Log unexpected cleanup errors but don't fail the test
+                    warnings.warn(
+                        f"Failed to cleanup prewarm task {task_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )
