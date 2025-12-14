@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
-
-from novita.generated.models import ListNetworkStoragesResponse, NetworkStorageModel
+from novita.generated.models import (
+    CreateNetworkStorageRequest,
+    ListNetworkStoragesResponse,
+    NetworkStorageModel,
+    UpdateNetworkStorageRequest,
+)
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -26,11 +29,11 @@ class Storages(BaseResource):
         parsed = ListNetworkStoragesResponse.model_validate(response.json())
         return parsed.data or []
 
-    def create(self, **kwargs: Any) -> NetworkStorageModel:
+    def create(self, request: CreateNetworkStorageRequest) -> NetworkStorageModel:
         """Create a new network storage.
 
         Args:
-            **kwargs: Network storage parameters (e.g., name, size)
+            request: Network storage creation parameters
 
         Returns:
             Created network storage information
@@ -40,15 +43,17 @@ class Storages(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/networkstorage/create", json=kwargs)
+        response = self._client.post(
+            f"{BASE_PATH}/networkstorage/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return NetworkStorageModel.model_validate(response.json())
 
-    def update(self, storage_id: str, **kwargs: Any) -> NetworkStorageModel:
+    def update(self, request: UpdateNetworkStorageRequest) -> NetworkStorageModel:
         """Update a network storage.
 
         Args:
-            storage_id: The ID of the storage
-            **kwargs: Fields to update (e.g., name)
+            request: Network storage update parameters (includes storage_id)
 
         Returns:
             Updated network storage information
@@ -59,8 +64,10 @@ class Storages(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"storage_id": storage_id, **kwargs}
-        response = self._client.post(f"{BASE_PATH}/networkstorage/update", json=data)
+        response = self._client.post(
+            f"{BASE_PATH}/networkstorage/update",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return NetworkStorageModel.model_validate(response.json())
 
     def delete(self, storage_id: str) -> None:
@@ -74,7 +81,7 @@ class Storages(BaseResource):
             NotFoundError: If storage doesn't exist
             APIError: If the API returns an error
         """
-        self._client.post(f"{BASE_PATH}/networkstorage/delete", json={"storage_id": storage_id})
+        self._client.post(f"{BASE_PATH}/networkstorage/delete", json={"storageId": storage_id})
 
 
 class AsyncStorages(AsyncBaseResource):
@@ -94,11 +101,11 @@ class AsyncStorages(AsyncBaseResource):
         parsed = ListNetworkStoragesResponse.model_validate(response.json())
         return parsed.data or []
 
-    async def create(self, **kwargs: Any) -> NetworkStorageModel:
+    async def create(self, request: CreateNetworkStorageRequest) -> NetworkStorageModel:
         """Create a new network storage.
 
         Args:
-            **kwargs: Network storage parameters (e.g., name, size)
+            request: Network storage creation parameters
 
         Returns:
             Created network storage information
@@ -108,15 +115,17 @@ class AsyncStorages(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/networkstorage/create", json=kwargs)
+        response = await self._client.post(
+            f"{BASE_PATH}/networkstorage/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return NetworkStorageModel.model_validate(response.json())
 
-    async def update(self, storage_id: str, **kwargs: Any) -> NetworkStorageModel:
+    async def update(self, request: UpdateNetworkStorageRequest) -> NetworkStorageModel:
         """Update a network storage.
 
         Args:
-            storage_id: The ID of the storage
-            **kwargs: Fields to update (e.g., name)
+            request: Network storage update parameters (includes storage_id)
 
         Returns:
             Updated network storage information
@@ -127,8 +136,10 @@ class AsyncStorages(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"storage_id": storage_id, **kwargs}
-        response = await self._client.post(f"{BASE_PATH}/networkstorage/update", json=data)
+        response = await self._client.post(
+            f"{BASE_PATH}/networkstorage/update",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return NetworkStorageModel.model_validate(response.json())
 
     async def delete(self, storage_id: str) -> None:
@@ -143,5 +154,5 @@ class AsyncStorages(AsyncBaseResource):
             APIError: If the API returns an error
         """
         await self._client.post(
-            f"{BASE_PATH}/networkstorage/delete", json={"storage_id": storage_id}
+            f"{BASE_PATH}/networkstorage/delete", json={"storageId": storage_id}
         )

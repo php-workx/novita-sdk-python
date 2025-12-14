@@ -3,7 +3,15 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Any, Literal, Optional
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, SecretStr, computed_field
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    computed_field,
+    field_validator,
+)
 
 
 class Cluster(BaseModel):
@@ -213,6 +221,7 @@ class Status(StrEnum):
     Instance status.
     """
 
+    pending = "pending"
     to_create = "toCreate"
     creating = "creating"
     pulling = "pulling"
@@ -406,8 +415,9 @@ class InstanceInfo(BaseModel):
     ] = None
     kind: Annotated[str | None, Field(description="Instance type.")] = None
     billing_mode: Annotated[
-        BillingMode1, Field(alias="billingMode", description="Billing mode for the instance.")
-    ]
+        BillingMode1 | None,
+        Field(alias="billingMode", description="Billing mode for the instance."),
+    ] = None
     end_time: Annotated[
         str | None,
         Field(
@@ -456,6 +466,14 @@ class InstanceInfo(BaseModel):
     jobs: Annotated[
         list[Job] | None, Field(description="Tasks currently running on the instance.")
     ] = None
+
+    @field_validator("spot_status", "billing_mode", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Any) -> Any:
+        """Convert empty string to None for spot_status and billing_mode fields."""
+        if v == "":
+            return None
+        return v
 
 
 class ListInstancesResponse(BaseModel):
@@ -789,7 +807,11 @@ class EndpointDetail(BaseModel):
     log: Annotated[str | None, Field(description="Endpoint logging path")] = None
 
 
-class WorkerConfigItem(BaseModel):
+class WorkerConfig1(BaseModel):
+    """
+    Worker scaling specification
+    """
+
     model_config = ConfigDict(populate_by_name=True)
     min_num: Annotated[int, Field(alias="minNum", description="Minimum worker count")]
     max_num: Annotated[int, Field(alias="maxNum", description="Maximum worker count")]
@@ -800,7 +822,11 @@ class WorkerConfigItem(BaseModel):
     gpu_num: Annotated[int, Field(alias="gpuNum", description="GPUs per worker")]
 
 
-class Port2(BaseModel):
+class Ports(BaseModel):
+    """
+    HTTP port configuration (1-65535, excluding 2222-2224)
+    """
+
     model_config = ConfigDict(populate_by_name=True)
     port: Annotated[str, Field(description="Port number")]
 
@@ -814,7 +840,11 @@ class Type4(StrEnum):
     concurrency = "concurrency"
 
 
-class PolicyItem(BaseModel):
+class Policy1(BaseModel):
+    """
+    Auto-scaling rules
+    """
+
     model_config = ConfigDict(populate_by_name=True)
     type: Annotated[Type4, Field(description="Scaling strategy")]
     value: Annotated[
@@ -822,7 +852,11 @@ class PolicyItem(BaseModel):
     ]
 
 
-class ImageItem(BaseModel):
+class Image1(BaseModel):
+    """
+    Container image details
+    """
+
     model_config = ConfigDict(populate_by_name=True)
     image: Annotated[str, Field(description="Container image URL", max_length=511)]
     auth_id: Annotated[
@@ -879,14 +913,13 @@ class Endpoint(BaseModel):
         Field(alias="appName", description="URL component (defaults to Endpoint ID if omitted)"),
     ] = None
     worker_config: Annotated[
-        list[WorkerConfigItem],
-        Field(alias="workerConfig", description="Worker scaling specifications"),
+        WorkerConfig1, Field(alias="workerConfig", description="Worker scaling specification")
     ]
     ports: Annotated[
-        list[Port2], Field(description="HTTP port configuration (1-65535, excluding 2222-2224)")
+        Ports, Field(description="HTTP port configuration (1-65535, excluding 2222-2224)")
     ]
-    policy: Annotated[list[PolicyItem], Field(description="Auto-scaling rules")]
-    image: Annotated[list[ImageItem], Field(description="Container image details")]
+    policy: Annotated[Policy1, Field(description="Auto-scaling rules")]
+    image: Annotated[Image1, Field(description="Container image details")]
     products: Annotated[list[Product1], Field(description="Product identifiers")]
     rootfs_size: Annotated[
         int, Field(alias="rootfsSize", description="System disk size in GB (fixed at 100)")
@@ -906,7 +939,7 @@ class CreateEndpointRequest(BaseModel):
     endpoint: Endpoint
 
 
-class WorkerConfigItem1(BaseModel):
+class WorkerConfigItem(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     min_num: Annotated[int, Field(alias="minNum", description="Minimum worker count")]
     max_num: Annotated[int, Field(alias="maxNum", description="Maximum worker count")]
@@ -915,6 +948,11 @@ class WorkerConfigItem1(BaseModel):
         int, Field(alias="maxConcurrent", description="Request concurrency limit")
     ]
     gpu_num: Annotated[int, Field(alias="gpuNum", description="GPUs allocated per worker")]
+
+
+class Port2(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    port: Annotated[str, Field(description="Port number")]
 
 
 class Type6(StrEnum):
@@ -926,12 +964,24 @@ class Type6(StrEnum):
     concurrency = "concurrency"
 
 
-class PolicyItem1(BaseModel):
+class PolicyItem(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     type: Annotated[Type6, Field(description="Scaling strategy")]
     value: Annotated[
         int, Field(description="Threshold value (seconds for queue, request count for concurrency)")
     ]
+
+
+class ImageItem(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    image: Annotated[str, Field(description="Container image URL", max_length=511)]
+    auth_id: Annotated[
+        str | None,
+        Field(alias="authId", description="Private registry credentials ID", max_length=255),
+    ] = None
+    command: Annotated[
+        str | None, Field(description="Container startup command", max_length=2047)
+    ] = None
 
 
 class Type7(StrEnum):
@@ -968,13 +1018,13 @@ class UpdateEndpointRequest(BaseModel):
         ),
     ] = None
     worker_config: Annotated[
-        list[WorkerConfigItem1],
+        list[WorkerConfigItem],
         Field(alias="workerConfig", description="Worker scaling configuration"),
     ]
     ports: Annotated[
         list[Port2], Field(description="HTTP port (range 1-65535, excluding 2222-2224)")
     ]
-    policy: Annotated[list[PolicyItem1], Field(description="Auto-scaling policy")]
+    policy: Annotated[list[PolicyItem], Field(description="Auto-scaling policy")]
     image: Annotated[list[ImageItem], Field(description="Container image configuration")]
     volume_mounts: Annotated[
         list[VolumeMount4] | None, Field(alias="volumeMounts", description="Storage mounts")

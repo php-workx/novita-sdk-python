@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "novita-sdk"
-version = "0.2.1"
+version = "0.3.0"
 description = "(Unofficial) Modern Python SDK for the Novita AI API"
 authors = [
     { name = "Ronny Unger", email = "phpworkx@gmail.com" }

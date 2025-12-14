@@ -4,7 +4,12 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
-from novita.generated.models import CreateImagePrewarmResponse, ImagePrewarmTask
+from novita.generated.models import (
+    CreateImagePrewarmRequest,
+    CreateImagePrewarmResponse,
+    ImagePrewarmTask,
+    UpdateImagePrewarmRequest,
+)
 
 
 def _task_payload(**overrides: object) -> dict[str, object]:
@@ -36,7 +41,7 @@ def test_list_image_prewarm_tasks(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    tasks = client.gpu.images.list()
+    tasks = client.gpu.image_prewarm.list()
 
     assert isinstance(tasks, list)
     assert len(tasks) == 2
@@ -56,7 +61,12 @@ def test_create_image_prewarm(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.images.create(image_url="docker.io/myimage:latest")
+    response = client.gpu.image_prewarm.create(
+        CreateImagePrewarmRequest(
+            image_url="docker.io/myimage:latest",
+            cluster_id="cluster-1",
+        )
+    )
 
     assert isinstance(response, CreateImagePrewarmResponse)
     assert response.id == "task-123"
@@ -72,7 +82,13 @@ def test_update_image_prewarm(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    task = client.gpu.images.update("task-123", enabled=True)
+    task = client.gpu.image_prewarm.update(
+        "task-123",
+        UpdateImagePrewarmRequest(
+            id="task-123",
+            note="Updated note",
+        ),
+    )
 
     assert isinstance(task, ImagePrewarmTask)
     assert task.id == "task-123"
@@ -89,7 +105,7 @@ def test_delete_image_prewarm(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    client.gpu.images.delete("task-123")
+    client.gpu.image_prewarm.delete("task-123")
 
     request_made = httpx_mock.get_request()
     assert request_made.method == "POST"
@@ -105,7 +121,7 @@ def test_get_image_prewarm_quota(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.images.get_quota()
+    response = client.gpu.image_prewarm.get_quota()
 
     assert response["limit"] == 10
     assert response["total"] == 3
@@ -124,7 +140,7 @@ async def test_async_list_image_prewarm_tasks(httpx_mock: HTTPXMock) -> None:
     )
 
     async with AsyncNovitaClient(api_key="test-key") as client:
-        tasks = await client.gpu.images.list()
+        tasks = await client.gpu.image_prewarm.list()
 
         assert isinstance(tasks, list)
         assert len(tasks) == 1

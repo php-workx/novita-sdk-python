@@ -5,7 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 from novita.exceptions import NotFoundError
-from novita.generated.models import ListNetworksResponse, Network, NetworkModel
+from novita.generated.models import (
+    CreateNetworkRequest,
+    ListNetworksResponse,
+    Network,
+    NetworkModel,
+    UpdateNetworkRequest,
+)
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -65,11 +71,11 @@ class Networks(BaseResource):
         response = self._client.get(f"{BASE_PATH}/network", params={"network_id": network_id})
         return _parse_single_network(response.json())
 
-    def create(self, **kwargs: Any) -> Network:
+    def create(self, request: CreateNetworkRequest) -> Network:
         """Create a new VPC network.
 
         Args:
-            **kwargs: Network creation parameters (e.g., name)
+            request: Network creation parameters
 
         Returns:
             Network information
@@ -79,15 +85,17 @@ class Networks(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/network/create", json=kwargs)
+        response = self._client.post(
+            f"{BASE_PATH}/network/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return _parse_single_network(response.json())
 
-    def update(self, network_id: str, **kwargs: Any) -> Network:
+    def update(self, request: UpdateNetworkRequest) -> Network:
         """Update a VPC network.
 
         Args:
-            network_id: The ID of the network
-            **kwargs: Fields to update (e.g., name)
+            request: Network update parameters (includes network_id)
 
         Returns:
             Network information
@@ -98,8 +106,10 @@ class Networks(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {**kwargs, "network_id": network_id}
-        response = self._client.post(f"{BASE_PATH}/network/update", json=data)
+        response = self._client.post(
+            f"{BASE_PATH}/network/update",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return _parse_single_network(response.json())
 
     def delete(self, network_id: str) -> None:
@@ -113,7 +123,7 @@ class Networks(BaseResource):
             NotFoundError: If network doesn't exist
             APIError: If the API returns an error
         """
-        self._client.post(f"{BASE_PATH}/network/delete", json={"network_id": network_id})
+        self._client.post(f"{BASE_PATH}/network/delete", json={"networkId": network_id})
 
 
 class AsyncNetworks(AsyncBaseResource):
@@ -150,11 +160,11 @@ class AsyncNetworks(AsyncBaseResource):
         response = await self._client.get(f"{BASE_PATH}/network", params={"network_id": network_id})
         return _parse_single_network(response.json())
 
-    async def create(self, **kwargs: Any) -> Network:
+    async def create(self, request: CreateNetworkRequest) -> Network:
         """Create a new VPC network.
 
         Args:
-            **kwargs: Network creation parameters (e.g., name)
+            request: Network creation parameters
 
         Returns:
             Network information
@@ -164,15 +174,17 @@ class AsyncNetworks(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/network/create", json=kwargs)
+        response = await self._client.post(
+            f"{BASE_PATH}/network/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return _parse_single_network(response.json())
 
-    async def update(self, network_id: str, **kwargs: Any) -> Network:
+    async def update(self, request: UpdateNetworkRequest) -> Network:
         """Update a VPC network.
 
         Args:
-            network_id: The ID of the network
-            **kwargs: Fields to update (e.g., name)
+            request: Network update parameters (includes network_id)
 
         Returns:
             Network information
@@ -183,8 +195,10 @@ class AsyncNetworks(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {**kwargs, "network_id": network_id}
-        response = await self._client.post(f"{BASE_PATH}/network/update", json=data)
+        response = await self._client.post(
+            f"{BASE_PATH}/network/update",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return _parse_single_network(response.json())
 
     async def delete(self, network_id: str) -> None:
@@ -198,4 +212,4 @@ class AsyncNetworks(AsyncBaseResource):
             NotFoundError: If network doesn't exist
             APIError: If the API returns an error
         """
-        await self._client.post(f"{BASE_PATH}/network/delete", json={"network_id": network_id})
+        await self._client.post(f"{BASE_PATH}/network/delete", json={"networkId": network_id})

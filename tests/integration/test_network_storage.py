@@ -73,10 +73,8 @@ class TestNetworkStorage:
         assert len(ids) == len(set(ids))
 
 
-# Placeholder for full lifecycle tests (to be implemented later)
 @pytest.mark.integration
 @pytest.mark.invasive
-@pytest.mark.skip(reason="Lifecycle tests to be implemented later")
 class TestNetworkStorageLifecycle:
     """Test full network storage lifecycle (create, update, delete)."""
 
@@ -89,10 +87,77 @@ class TestNetworkStorageLifecycle:
         This test will:
         1. Create a new network storage volume
         2. Verify it appears in the list
-        3. Update the storage (resize)
+        3. Update the storage (rename)
         4. Delete the storage
         5. Verify it's removed from the list
-
-        TODO: Implement this test sequence
         """
-        pass
+        import uuid
+
+        # Generate unique test storage name
+        test_name = f"test-storage-{uuid.uuid4().hex[:8]}"
+        updated_name = f"{test_name}-updated"
+        test_size = 10  # Small volume size in GB
+        storage_id = None
+
+        try:
+            # Step 1: Create a new network storage volume
+            created_storage = client.gpu.storages.create(
+                clusterId=cluster_id,
+                storageName=test_name,
+                storageSize=test_size,
+            )
+            assert created_storage.storage_id is not None
+            assert created_storage.storage_name == test_name
+            assert created_storage.storage_size == test_size
+            storage_id = created_storage.storage_id
+
+            # Step 2: Verify it appears in the list
+            storages = client.gpu.storages.list()
+            found_storage = next((s for s in storages if s.storage_id == storage_id), None)
+            assert (
+                found_storage is not None
+            ), f"Storage {storage_id} not found in list after creation"
+            assert found_storage.storage_name == test_name
+
+            # Step 3: Update the storage (rename and resize)
+            client.gpu.storages.update(
+                storage_id=storage_id,
+                storageName=updated_name,
+                storageSize=test_size + 2,
+            )
+
+            # Verify the update in the list
+            storages_after_update = client.gpu.storages.list()
+            updated_in_list = next(
+                (s for s in storages_after_update if s.storage_id == storage_id), None
+            )
+            assert updated_in_list is not None
+            assert updated_in_list.storage_name == updated_name
+            assert updated_in_list.storage_size == test_size + 2
+
+            # Step 4: Delete the storage
+            client.gpu.storages.delete(storage_id)
+
+            # Step 5: Verify it's removed from the list
+            storages_after_delete = client.gpu.storages.list()
+            deleted_storage = next(
+                (s for s in storages_after_delete if s.storage_id == storage_id), None
+            )
+            assert deleted_storage is None, f"Storage {storage_id} still exists after deletion"
+
+        finally:
+            # Cleanup: ensure the storage is deleted even if test fails
+            if storage_id is not None:
+                try:
+                    storages = client.gpu.storages.list()
+                    if any(s.storage_id == storage_id for s in storages):
+                        client.gpu.storages.delete(storage_id)
+                except Exception as e:
+                    # Log cleanup errors but don't fail the test
+                    import warnings
+
+                    warnings.warn(
+                        f"Failed to cleanup storage {storage_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from .resources.gpu import (
     AsyncClusters,
     AsyncEndpoints,
-    AsyncImages,
+    AsyncImagePrewarm,
     AsyncInstances,
     AsyncJobs,
     AsyncMetrics,
@@ -16,7 +16,7 @@ from .resources.gpu import (
     AsyncTemplates,
     Clusters,
     Endpoints,
-    Images,
+    ImagePrewarm,
     Instances,
     Jobs,
     Metrics,
@@ -43,7 +43,7 @@ class GpuClient:
         # Initialize all GPU API resources
         self.clusters = Clusters(client)
         self.endpoints = Endpoints(client)
-        self.images = Images(client)
+        self.image_prewarm = ImagePrewarm(client)
         self.instances = Instances(client)
         self.jobs = Jobs(client)
         self.metrics = Metrics(client)
@@ -66,7 +66,7 @@ class AsyncGpuClient:
         # Initialize all async GPU API resources
         self.clusters = AsyncClusters(client)
         self.endpoints = AsyncEndpoints(client)
-        self.images = AsyncImages(client)
+        self.image_prewarm = AsyncImagePrewarm(client)
         self.instances = AsyncInstances(client)
         self.jobs = AsyncJobs(client)
         self.metrics = AsyncMetrics(client)

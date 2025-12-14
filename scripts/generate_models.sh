@@ -57,7 +57,15 @@ else
     exit 1
 fi
 
-echo -e "${BLUE}Step 3: Adding __init__.py to generated package...${NC}"
+echo -e "${BLUE}Step 3: Applying model fixes...${NC}"
+if $PYTHON scripts/apply_model_fixes.py "$OUTPUT_FILE"; then
+    echo -e "${GREEN}✓ Model fixes applied${NC}\n"
+else
+    echo -e "${YELLOW}⚠ Model fixes failed${NC}\n"
+    exit 1
+fi
+
+echo -e "${BLUE}Step 4: Adding __init__.py to generated package...${NC}"
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
 """Auto-generated models from OpenAPI specification.
 
@@ -71,7 +79,7 @@ EOF
 
 echo -e "${GREEN}✓ __init__.py created${NC}\n"
 
-echo -e "${BLUE}Step 4: Formatting generated code with ruff...${NC}"
+echo -e "${BLUE}Step 5: Formatting generated code with ruff...${NC}"
 ruff format "$OUTPUT_FILE" "$OUTPUT_DIR/__init__.py" 2>/dev/null || echo "Ruff format skipped"
 ruff check --fix "$OUTPUT_FILE" "$OUTPUT_DIR/__init__.py" 2>/dev/null || echo "Ruff check skipped"
 
@@ -79,6 +87,9 @@ echo -e "${GREEN}✓ Code formatted${NC}\n"
 
 echo -e "${GREEN}=== Generation Complete! ===${NC}"
 echo -e "Generated models: ${BLUE}$OUTPUT_FILE${NC}"
+echo -e "\nApplied transformations:"
+echo -e "  1. Price conversions (raw values → USD)"
+echo -e "  2. Model fixes (Status enum, field validators)"
 echo -e "\nNext steps:"
 echo -e "  1. Review the generated models in src/novita/generated/models.py"
 echo -e "  2. Update your resource classes to import from novita.generated.models"

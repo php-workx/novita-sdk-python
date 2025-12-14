@@ -4,7 +4,12 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
-from novita.generated.models import CreateTemplateResponse, Template
+from novita.generated.models import (
+    CreateTemplateRequest,
+    CreateTemplateResponse,
+    Template,
+    TemplateCreatePayload,
+)
 
 
 def _template_payload(**overrides: object) -> dict[str, object]:
@@ -77,7 +82,22 @@ def test_create_template(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    response = client.gpu.templates.create(name="New Template", instance_id="inst-123")
+    # Create a minimal TemplateCreatePayload for testing
+    template_payload = TemplateCreatePayload.model_validate(
+        {
+            "name": "New Template",
+            "readme": "Test template",
+            "type": "instance",
+            "channel": "private",
+            "image": "docker.io/test:latest",
+            "startCommand": "bash run.sh",
+            "rootfsSize": 50,
+            "ports": [],
+            "volumes": [],
+            "envs": [],
+        }
+    )
+    response = client.gpu.templates.create(CreateTemplateRequest(template=template_payload))
 
     assert isinstance(response, CreateTemplateResponse)
     assert response.template_id == "tpl-new"

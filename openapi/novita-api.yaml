@@ -2505,83 +2505,75 @@ components:
               description: URL component (defaults to Endpoint ID if omitted)
               nullable: true
             workerConfig:
-              type: array
-              description: Worker scaling specifications
-              items:
-                type: object
-                required:
-                - minNum
-                - maxNum
-                - freeTimeout
-                - maxConcurrent
-                - gpuNum
-                properties:
-                  minNum:
-                    type: integer
-                    description: Minimum worker count
-                  maxNum:
-                    type: integer
-                    description: Maximum worker count
-                  freeTimeout:
-                    type: integer
-                    description: Idle timeout in seconds
-                  maxConcurrent:
-                    type: integer
-                    description: Request concurrency limit
-                  gpuNum:
-                    type: integer
-                    description: GPUs per worker
+              type: object
+              description: Worker scaling specification
+              required:
+              - minNum
+              - maxNum
+              - freeTimeout
+              - maxConcurrent
+              - gpuNum
+              properties:
+                minNum:
+                  type: integer
+                  description: Minimum worker count
+                maxNum:
+                  type: integer
+                  description: Maximum worker count
+                freeTimeout:
+                  type: integer
+                  description: Idle timeout in seconds
+                maxConcurrent:
+                  type: integer
+                  description: Request concurrency limit
+                gpuNum:
+                  type: integer
+                  description: GPUs per worker
             ports:
-              type: array
+              type: object
               description: HTTP port configuration (1-65535, excluding 2222-2224)
-              items:
-                type: object
-                required:
-                - port
-                properties:
-                  port:
-                    type: string
-                    description: Port number
+              required:
+              - port
+              properties:
+                port:
+                  type: string
+                  description: Port number
             policy:
-              type: array
+              type: object
               description: Auto-scaling rules
-              items:
-                type: object
-                required:
-                - type
-                - value
-                properties:
-                  type:
-                    type: string
-                    description: Scaling strategy
-                    enum:
-                    - queue
-                    - concurrency
-                  value:
-                    type: integer
-                    description: Threshold value (seconds for queue, request count for concurrency)
+              required:
+              - type
+              - value
+              properties:
+                type:
+                  type: string
+                  description: Scaling strategy
+                  enum:
+                  - queue
+                  - concurrency
+                value:
+                  type: integer
+                  description: Threshold value (seconds for queue, request count for concurrency)
             image:
-              type: array
+              type: object
               description: Container image details
-              items:
-                type: object
-                required:
-                - image
-                properties:
-                  image:
-                    type: string
-                    description: Container image URL
-                    maxLength: 511
-                  authId:
-                    type: string
-                    description: Private registry credentials ID
-                    maxLength: 255
-                    nullable: true
-                  command:
-                    type: string
-                    description: Container startup command
-                    maxLength: 2047
-                    nullable: true
+              required:
+              - image
+              properties:
+                image:
+                  type: string
+                  description: Container image URL
+                  maxLength: 511
+                authId:
+                  type: string
+                  description: Private registry credentials ID
+                  maxLength: 255
+                  nullable: true
+                command:
+                  type: string
+                  description: Container startup command
+                  maxLength: 2047
+                  nullable: true
             products:
               type: array
               description: Product identifiers

@@ -4,7 +4,11 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
-from novita.generated.models import NetworkStorageModel
+from novita.generated.models import (
+    CreateNetworkStorageRequest,
+    NetworkStorageModel,
+    UpdateNetworkStorageRequest,
+)
 
 
 def _storage_payload(**overrides: object) -> dict[str, object]:
@@ -53,7 +57,13 @@ def test_create_storage(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    storage = client.gpu.storages.create(name="test-storage", size=100)
+    storage = client.gpu.storages.create(
+        CreateNetworkStorageRequest(
+            cluster_id="cluster-1",
+            storage_name="test-storage",
+            storage_size=100,
+        )
+    )
 
     assert isinstance(storage, NetworkStorageModel)
     assert storage.storage_id == "stor-123"
@@ -70,7 +80,13 @@ def test_update_storage(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    storage = client.gpu.storages.update("stor-123", name="updated-storage")
+    storage = client.gpu.storages.update(
+        UpdateNetworkStorageRequest(
+            storage_id="stor-123",
+            storage_name="updated-storage",
+            storage_size=100,
+        )
+    )
 
     assert storage.storage_id == "stor-123"
     assert storage.storage_name == "Updated storage"

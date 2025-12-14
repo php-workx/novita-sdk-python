@@ -4,7 +4,24 @@ import pytest
 from pytest_httpx import HTTPXMock
 
 from novita import NovitaClient
-from novita.generated.models import EndpointDetail
+from novita.generated.models import (
+    CreateEndpointRequest,
+    Endpoint,
+    EndpointDetail,
+    Healthy1,
+    Image1,
+    ImageItem,
+    Policy1,
+    PolicyItem,
+    Port2,
+    Ports,
+    Product1,
+    Type4,
+    Type6,
+    UpdateEndpointRequest,
+    WorkerConfig1,
+    WorkerConfigItem,
+)
 
 
 def _endpoint_payload(**overrides: object) -> dict[str, object]:
@@ -82,7 +99,27 @@ def test_create_endpoint(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    endpoint = client.gpu.endpoints.create(name="test-endpoint", instance_id="inst-123")
+    # Create a minimal Endpoint object for testing
+    endpoint_config = Endpoint(
+        name="test-endpoint",
+        app_name="test-app",
+        worker_config=WorkerConfig1(
+            min_num=1,
+            max_num=2,
+            free_timeout=60,
+            max_concurrent=1,
+            gpu_num=1,
+        ),
+        ports=Ports(port="80"),
+        policy=Policy1(type=Type4.concurrency, value=25),
+        image=Image1(image="docker.io/library/nginx:latest"),
+        products=[Product1(id="prod-1")],
+        rootfs_size=100,
+        volume_mounts=[],
+        cluster_id="cluster-1",
+        healthy=Healthy1(path="/health"),
+    )
+    endpoint = client.gpu.endpoints.create(CreateEndpointRequest(endpoint=endpoint_config))
 
     assert isinstance(endpoint, EndpointDetail)
     assert endpoint.id == "ep-new"
@@ -103,7 +140,22 @@ def test_update_endpoint(httpx_mock: HTTPXMock) -> None:
     )
 
     client = NovitaClient(api_key="test-key")
-    endpoint = client.gpu.endpoints.update("ep-123", name="updated-endpoint")
+    update_request = UpdateEndpointRequest(
+        worker_config=[
+            WorkerConfigItem(
+                min_num=1,
+                max_num=2,
+                free_timeout=60,
+                max_concurrent=1,
+                gpu_num=1,
+            )
+        ],
+        ports=[Port2(port="80")],
+        policy=[PolicyItem(type=Type6.concurrency, value=25)],
+        image=[ImageItem(image="docker.io/library/nginx:latest")],
+        name="updated-endpoint",
+    )
+    endpoint = client.gpu.endpoints.update("ep-123", update_request)
 
     assert isinstance(endpoint, EndpointDetail)
     assert endpoint.id == "ep-123"

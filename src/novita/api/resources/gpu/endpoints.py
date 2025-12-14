@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from novita.generated.models import EndpointDetail, ListEndpointsResponse
+from novita.generated.models import (
+    CreateEndpointRequest,
+    EndpointDetail,
+    ListEndpointsResponse,
+    UpdateEndpointRequest,
+)
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
 
@@ -25,11 +30,11 @@ class Endpoints(BaseResource):
         response = self._client.get(f"{BASE_PATH}/endpoint/limit")
         return cast(dict[str, Any], response.json())
 
-    def create(self, **kwargs: Any) -> EndpointDetail:
+    def create(self, request: CreateEndpointRequest) -> EndpointDetail:
         """Create a new endpoint.
 
         Args:
-            **kwargs: Endpoint creation parameters
+            request: Endpoint creation parameters
 
         Returns:
             Created endpoint information
@@ -39,7 +44,10 @@ class Endpoints(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = self._client.post(f"{BASE_PATH}/endpoint/create", json=kwargs)
+        response = self._client.post(
+            f"{BASE_PATH}/endpoint/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return EndpointDetail.model_validate(response.json())
 
     def list(self) -> list[EndpointDetail]:
@@ -73,12 +81,12 @@ class Endpoints(BaseResource):
         response = self._client.get(f"{BASE_PATH}/endpoint", params={"endpoint_id": endpoint_id})
         return EndpointDetail.model_validate(response.json())
 
-    def update(self, endpoint_id: str, **kwargs: Any) -> EndpointDetail:
+    def update(self, endpoint_id: str, request: UpdateEndpointRequest) -> EndpointDetail:
         """Update an endpoint.
 
         Args:
             endpoint_id: The ID of the endpoint
-            **kwargs: Fields to update
+            request: Endpoint update parameters
 
         Returns:
             Updated endpoint information
@@ -89,7 +97,10 @@ class Endpoints(BaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"endpoint_id": endpoint_id, **kwargs}
+        data = {
+            "endpoint_id": endpoint_id,
+            **request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        }
         response = self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
         return EndpointDetail.model_validate(response.json())
 
@@ -123,11 +134,11 @@ class AsyncEndpoints(AsyncBaseResource):
         response = await self._client.get(f"{BASE_PATH}/endpoint/limit")
         return cast(dict[str, Any], response.json())
 
-    async def create(self, **kwargs: Any) -> EndpointDetail:
+    async def create(self, request: CreateEndpointRequest) -> EndpointDetail:
         """Create a new endpoint.
 
         Args:
-            **kwargs: Endpoint creation parameters
+            request: Endpoint creation parameters
 
         Returns:
             Created endpoint information
@@ -137,7 +148,10 @@ class AsyncEndpoints(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        response = await self._client.post(f"{BASE_PATH}/endpoint/create", json=kwargs)
+        response = await self._client.post(
+            f"{BASE_PATH}/endpoint/create",
+            json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        )
         return EndpointDetail.model_validate(response.json())
 
     async def list(self) -> list[EndpointDetail]:
@@ -173,12 +187,12 @@ class AsyncEndpoints(AsyncBaseResource):
         )
         return EndpointDetail.model_validate(response.json())
 
-    async def update(self, endpoint_id: str, **kwargs: Any) -> EndpointDetail:
+    async def update(self, endpoint_id: str, request: UpdateEndpointRequest) -> EndpointDetail:
         """Update an endpoint.
 
         Args:
             endpoint_id: The ID of the endpoint
-            **kwargs: Fields to update
+            request: Endpoint update parameters
 
         Returns:
             Updated endpoint information
@@ -189,7 +203,10 @@ class AsyncEndpoints(AsyncBaseResource):
             BadRequestError: If request parameters are invalid
             APIError: If the API returns an error
         """
-        data = {"endpoint_id": endpoint_id, **kwargs}
+        data = {
+            "endpoint_id": endpoint_id,
+            **request.model_dump(by_alias=True, exclude_none=True, mode="json"),
+        }
         response = await self._client.post(f"{BASE_PATH}/endpoint/update", json=data)
         return EndpointDetail.model_validate(response.json())
 

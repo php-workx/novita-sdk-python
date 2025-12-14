@@ -49,10 +49,8 @@ class TestImageRegistry:
             assert len(ids) == len(set(ids))
 
 
-# Placeholder for full lifecycle tests (to be implemented later)
 @pytest.mark.integration
-@pytest.mark.invasive
-@pytest.mark.skip(reason="Lifecycle tests to be implemented later")
+@pytest.mark.safe
 class TestImageRegistryLifecycle:
     """Test full image registry auth lifecycle (create, delete)."""
 
@@ -65,7 +63,53 @@ class TestImageRegistryLifecycle:
         2. Verify it appears in the list
         3. Delete the repository auth
         4. Verify it's removed from the list
-
-        TODO: Implement this test sequence
         """
-        pass
+        import uuid
+
+        # Generate unique test registry name
+        test_registry = f"test-registry-{uuid.uuid4().hex[:8]}.example.com"
+        test_username = "test-user"
+        test_password = "test-password"
+        auth_id = None
+
+        try:
+            # Step 1: Create a new repository auth
+            client.gpu.registries.create(
+                name=test_registry,
+                username=test_username,
+                password=test_password,
+            )
+
+            # Step 2: Verify it appears in the list
+            auths = client.gpu.registries.list()
+            created_auth = next((auth for auth in auths if auth.name == test_registry), None)
+            assert (
+                created_auth is not None
+            ), f"Registry {test_registry} not found in list after creation"
+            assert created_auth.username == test_username
+            auth_id = created_auth.id
+
+            # Step 3: Delete the repository auth
+            client.gpu.registries.delete(auth_id)
+
+            # Step 4: Verify it's removed from the list
+            auths_after_delete = client.gpu.registries.list()
+            deleted_auth = next((auth for auth in auths_after_delete if auth.id == auth_id), None)
+            assert deleted_auth is None, f"Registry {test_registry} still exists after deletion"
+
+        finally:
+            # Cleanup: ensure the auth is deleted even if test fails
+            if auth_id is not None:
+                try:
+                    auths = client.gpu.registries.list()
+                    if any(auth.id == auth_id for auth in auths):
+                        client.gpu.registries.delete(auth_id)
+                except Exception as e:
+                    # Log cleanup errors but don't fail the test
+                    import warnings
+
+                    warnings.warn(
+                        f"Failed to cleanup registry auth {auth_id}: {e}",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )
