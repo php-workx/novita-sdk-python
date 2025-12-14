@@ -130,8 +130,6 @@ class TestInstanceLifecycle:
         Note: We skip waiting for the instance to start since GPU instances can take
         several minutes to provision. Deletion works in any state.
         """
-        import uuid
-
         from novita import CreateInstanceRequest, Kind
 
         instance_id = None
@@ -153,7 +151,9 @@ class TestInstanceLifecycle:
 
             # Step 2: Create a new instance
             # Note: We don't specify billing_mode to use the default for the product
-            test_name = f"test-instance-{uuid.uuid4().hex[:8]}"
+            from tests.integration.test_utils import generate_test_name
+
+            test_name = generate_test_name("instance")
             request = CreateInstanceRequest(
                 name=test_name,
                 product_id=product_id,
@@ -200,10 +200,8 @@ class TestInstanceLifecycle:
             # Cleanup: ensure the instance is deleted even if test fails
             if instance_id is not None:
                 try:
-                    instance = client.gpu.instances.get(instance_id)
-                    # Only delete if not already removed
-                    if instance.status.value not in ["toRemove", "removing", "removed"]:
-                        client.gpu.instances.delete(instance_id)
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.instances.delete(instance_id)
                 except Exception as e:
                     # If instance is already gone ("not found"), that's fine
                     error_msg = str(e).lower()

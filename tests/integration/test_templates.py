@@ -78,27 +78,35 @@ class TestTemplateLifecycle:
         3. Delete the template
         4. Verify it's removed from the list
         """
-        import uuid
+        from novita.generated.models import (
+            Channel,
+            CreateTemplateRequest,
+            TemplateCreatePayload,
+        )
 
         # Generate unique test template name
-        test_name = f"test-template-{uuid.uuid4().hex[:8]}"
+        from tests.integration.test_utils import generate_test_name
+
+        test_name = generate_test_name("template")
         template_id = None
 
         try:
             # Step 1: Create a minimal template
             response = client.gpu.templates.create(
-                template={
-                    "name": test_name,
-                    "readme": "Test template created by integration tests",
-                    "type": "instance",
-                    "channel": "private",
-                    "image": "ubuntu:22.04",
-                    "startCommand": "bash",
-                    "rootfsSize": 50,
-                    "ports": [],
-                    "volumes": [],
-                    "envs": [],
-                }
+                CreateTemplateRequest(
+                    template=TemplateCreatePayload(
+                        name=test_name,
+                        readme="Test template created by integration tests",
+                        type="instance",
+                        channel=Channel.private,
+                        image="ubuntu:22.04",
+                        start_command="bash",
+                        rootfs_size=50,
+                        ports=[],
+                        volumes=[],
+                        envs=[],
+                    )
+                )
             )
             assert response.template_id is not None
             template_id = response.template_id
@@ -131,15 +139,17 @@ class TestTemplateLifecycle:
             # Cleanup: ensure the template is deleted even if test fails
             if template_id is not None:
                 try:
-                    templates = client.gpu.templates.list()
-                    if any(t.id == template_id for t in templates):
-                        client.gpu.templates.delete(template_id)
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.templates.delete(template_id)
                 except Exception as e:
-                    # Log cleanup errors but don't fail the test
-                    import warnings
+                    # If template is already gone ("not found"), that's fine
+                    error_msg = str(e).lower()
+                    if "not found" not in error_msg and "not fount" not in error_msg:
+                        # Log cleanup errors but don't fail the test
+                        import warnings
 
-                    warnings.warn(
-                        f"Failed to cleanup template {template_id}: {e}",
-                        ResourceWarning,
-                        stacklevel=2,
-                    )
+                        warnings.warn(
+                            f"Failed to cleanup template {template_id}: {e}",
+                            ResourceWarning,
+                            stacklevel=2,
+                        )

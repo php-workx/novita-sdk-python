@@ -137,7 +137,6 @@ class TestEndpointFullLifecycle:
         5. Delete the endpoint
         """
         import time
-        import uuid
 
         from novita.generated.models import (
             CreateEndpointRequest,
@@ -173,11 +172,14 @@ class TestEndpointFullLifecycle:
             product_id = product.id
 
             # Step 2: Create endpoint configuration using Pydantic models
-            test_name = f"test-endpoint-{uuid.uuid4().hex[:8]}"
+            from tests.integration.test_utils import generate_test_name
+
+            test_name = generate_test_name("endpoint")
+            app_name = generate_test_name("app")
 
             endpoint_config = Endpoint(
                 name=test_name,
-                app_name=f"app-{uuid.uuid4().hex[:8]}",
+                app_name=app_name,
                 worker_config=WorkerConfig1(
                     min_num=1,
                     max_num=2,
@@ -211,7 +213,7 @@ class TestEndpointFullLifecycle:
             assert endpoint_detail.state is not None
 
             # Step 5: Update endpoint (change name)
-            updated_name = f"test-endpoint-updated-{uuid.uuid4().hex[:8]}"
+            updated_name = generate_test_name("endpoint-updated")
             update_request = UpdateEndpointRequest(
                 worker_config=[
                     WorkerConfigItem(
@@ -259,8 +261,7 @@ class TestEndpointFullLifecycle:
             # Cleanup: ensure the endpoint is deleted even if test fails
             if endpoint_id is not None:
                 try:
-                    # Try to get and delete the endpoint
-                    client.gpu.endpoints.get(endpoint_id)
+                    # Always try to delete - API will handle if already deleted
                     client.gpu.endpoints.delete(endpoint_id)
                 except Exception as e:
                     # If endpoint is already gone ("not found"), that's fine

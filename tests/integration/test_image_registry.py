@@ -64,10 +64,10 @@ class TestImageRegistryLifecycle:
         3. Delete the repository auth
         4. Verify it's removed from the list
         """
-        import uuid
+        from tests.integration.test_utils import generate_test_name
 
         # Generate unique test registry name
-        test_registry = f"test-registry-{uuid.uuid4().hex[:8]}.example.com"
+        test_registry = f"{generate_test_name('registry')}.example.com"
         test_username = "test-user"
         test_password = "test-password"
         auth_id = None
@@ -101,15 +101,17 @@ class TestImageRegistryLifecycle:
             # Cleanup: ensure the auth is deleted even if test fails
             if auth_id is not None:
                 try:
-                    auths = client.gpu.registries.list()
-                    if any(auth.id == auth_id for auth in auths):
-                        client.gpu.registries.delete(auth_id)
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.registries.delete(auth_id)
                 except Exception as e:
-                    # Log cleanup errors but don't fail the test
-                    import warnings
+                    # If auth is already gone ("not found"), that's fine
+                    error_msg = str(e).lower()
+                    if "not found" not in error_msg and "not fount" not in error_msg:
+                        # Log cleanup errors but don't fail the test
+                        import warnings
 
-                    warnings.warn(
-                        f"Failed to cleanup registry auth {auth_id}: {e}",
-                        ResourceWarning,
-                        stacklevel=2,
-                    )
+                        warnings.warn(
+                            f"Failed to cleanup registry auth {auth_id}: {e}",
+                            ResourceWarning,
+                            stacklevel=2,
+                        )

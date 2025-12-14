@@ -128,15 +128,17 @@ class TestImagePrewarmLifecycle:
             # Cleanup: ensure the prewarm task is deleted even if test fails
             if task_id is not None:
                 try:
-                    tasks = client.gpu.image_prewarm.list()
-                    if any(t.id == task_id for t in tasks):
-                        client.gpu.image_prewarm.delete(task_id)
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.image_prewarm.delete(task_id)
                 except Exception as e:
-                    # Log cleanup errors but don't fail the test
-                    import warnings
+                    # If task is already gone ("not found"), that's fine
+                    error_msg = str(e).lower()
+                    if "not found" not in error_msg and "not fount" not in error_msg:
+                        # Log cleanup errors but don't fail the test
+                        import warnings
 
-                    warnings.warn(
-                        f"Failed to cleanup prewarm task {task_id}: {e}",
-                        ResourceWarning,
-                        stacklevel=2,
-                    )
+                        warnings.warn(
+                            f"Failed to cleanup prewarm task {task_id}: {e}",
+                            ResourceWarning,
+                            stacklevel=2,
+                        )

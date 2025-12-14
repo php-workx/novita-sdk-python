@@ -91,11 +91,11 @@ class TestNetworkStorageLifecycle:
         4. Delete the storage
         5. Verify it's removed from the list
         """
-        import uuid
+        from tests.integration.test_utils import generate_test_name
 
         # Generate unique test storage name
-        test_name = f"test-storage-{uuid.uuid4().hex[:8]}"
-        updated_name = f"{test_name}-updated"
+        test_name = generate_test_name("storage")
+        updated_name = generate_test_name("storage-updated")
         test_size = 10  # Small volume size in GB
         storage_id = None
 
@@ -149,15 +149,17 @@ class TestNetworkStorageLifecycle:
             # Cleanup: ensure the storage is deleted even if test fails
             if storage_id is not None:
                 try:
-                    storages = client.gpu.storages.list()
-                    if any(s.storage_id == storage_id for s in storages):
-                        client.gpu.storages.delete(storage_id)
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.storages.delete(storage_id)
                 except Exception as e:
-                    # Log cleanup errors but don't fail the test
-                    import warnings
+                    # If storage is already gone ("not found"), that's fine
+                    error_msg = str(e).lower()
+                    if "not found" not in error_msg and "not fount" not in error_msg:
+                        # Log cleanup errors but don't fail the test
+                        import warnings
 
-                    warnings.warn(
-                        f"Failed to cleanup storage {storage_id}: {e}",
-                        ResourceWarning,
-                        stacklevel=2,
-                    )
+                        warnings.warn(
+                            f"Failed to cleanup storage {storage_id}: {e}",
+                            ResourceWarning,
+                            stacklevel=2,
+                        )

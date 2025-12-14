@@ -9,7 +9,7 @@ import pytest
 if TYPE_CHECKING:
     from novita import NovitaClient
 
-from novita.generated.models import UpdateNetworkRequest
+from novita.generated.models import CreateNetworkRequest, UpdateNetworkRequest
 
 
 @pytest.mark.integration
@@ -71,67 +71,90 @@ class TestNetworks:
 class TestNetworkLifecycle:
     """Test full network lifecycle (create, update, delete)."""
 
-    def test_create_update_delete_network(self, client: NovitaClient) -> None:
+    def test_create_update_delete_network(self, client: NovitaClient, cluster_id: str) -> None:
         """
         Test full network lifecycle.
 
         This test will:
-        1. Use an existing network or skip if network limit reached
-        2. Update the network (rename)
-        3. Verify the update
-        4. Restore the original name
-
-        Note: This test doesn't create/delete networks due to account limits.
-        It tests update functionality using an existing network.
+        1. Create a new VPC network
+        2. Verify the network was created
+        3. Update the network (rename)
+        4. Verify the update
+        5. Delete the network
+        6. Verify the network was deleted
         """
-        # Get existing networks
-        networks = client.gpu.networks.list()
+        from novita.exceptions import BadRequestError, NotFoundError
+        from tests.integration.test_utils import generate_test_name
 
-        if not networks:
-            pytest.skip("No networks available for testing")
-
-        # Use the first network for testing
-        test_network = networks[0]
-        network_id = test_network.id
-        original_name = test_network.name
-
-        # Generate a test name
-        import uuid
-
-        test_name = f"test-update-{uuid.uuid4().hex[:6]}"
+        # Generate unique test names
+        initial_name = generate_test_name("network")
+        updated_name = generate_test_name("network-updated")
+        network_id = None
 
         try:
-            # Step 1: Update the network (rename)
-            client.gpu.networks.update(
-                UpdateNetworkRequest(
-                    network_id=network_id,
-                    name=test_name,
+            # Step 1: Create a new VPC network
+            created_network = client.gpu.networks.create(
+                CreateNetworkRequest(
+                    cluster_id=cluster_id,
+                    name=initial_name,
                 )
             )
+            assert created_network.id is not None
+            network_id = created_network.id
+            assert created_network.name == initial_name
 
-            # Step 2: Verify the update in the list
+            # Step 2: Verify the network appears in the list
+            networks = client.gpu.networks.list()
+            found_in_list = any(n.id == network_id for n in networks)
+            assert found_in_list, f"Network {network_id} not found in list"
+
+            # Step 3: Update the network (rename)
+            updated_network = client.gpu.networks.update(
+                UpdateNetworkRequest(
+                    network_id=network_id,
+                    name=updated_name,
+                )
+            )
+            assert updated_network.name == updated_name
+
+            # Step 4: Verify the update
             networks_after_update = client.gpu.networks.list()
             updated_in_list = next((n for n in networks_after_update if n.id == network_id), None)
             assert updated_in_list is not None
             assert (
-                updated_in_list.name == test_name
-            ), f"Expected {test_name}, got {updated_in_list.name}"
+                updated_in_list.name == updated_name
+            ), f"Expected {updated_name}, got {updated_in_list.name}"
+
+            # Step 5: Delete the network
+            client.gpu.networks.delete(network_id)
+
+            # Step 6: Verify deletion - network should no longer exist
+            try:
+                client.gpu.networks.get(network_id=network_id)
+                # If we get here, network still exists
+                raise AssertionError(f"Network {network_id} still exists after deletion")
+            except (NotFoundError, BadRequestError) as e:
+                # Expected - network should not exist anymore
+                if "not found" in str(e).lower():
+                    pass
+                else:
+                    raise
 
         finally:
-            # Restore original name
-            try:
-                client.gpu.networks.update(
-                    UpdateNetworkRequest(
-                        network_id=network_id,
-                        name=original_name,
-                    )
-                )
-            except Exception as e:
-                # Log restore errors but don't fail the test
-                import warnings
+            # Cleanup: ensure the network is deleted even if test fails
+            if network_id is not None:
+                try:
+                    # Always try to delete - API will handle if already deleted
+                    client.gpu.networks.delete(network_id)
+                except Exception as e:
+                    # If network is already gone ("not found"), that's fine
+                    error_msg = str(e).lower()
+                    if "not found" not in error_msg and "not fount" not in error_msg:
+                        # Log cleanup errors but don't fail the test
+                        import warnings
 
-                warnings.warn(
-                    f"Failed to restore network name for {network_id}: {e}",
-                    ResourceWarning,
-                    stacklevel=2,
-                )
+                        warnings.warn(
+                            f"Failed to cleanup network {network_id}: {e}",
+                            ResourceWarning,
+                            stacklevel=2,
+                        )
