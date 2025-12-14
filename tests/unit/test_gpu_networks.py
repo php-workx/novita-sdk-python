@@ -66,7 +66,7 @@ def test_get_network(httpx_mock: HTTPXMock) -> None:
     """Test getting a specific network."""
     httpx_mock.add_response(
         method="GET",
-        url="https://api.novita.ai/gpu-instance/openapi/v1/network?network_id=net-123",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/network?networkId=net-123",
         json={"network": [_network_detail_payload()]},
     )
 
