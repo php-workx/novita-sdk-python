@@ -153,7 +153,7 @@ class TestInstanceLifecycle:
 
             # Step 2: Create a new instance
             # Note: We don't specify billing_mode to use the default for the product
-            from tests.integration.test_utils import generate_test_name
+            from .test_utils import generate_test_name
 
             test_name = generate_test_name("instance")
             request = CreateInstanceRequest(

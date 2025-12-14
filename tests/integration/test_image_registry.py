@@ -64,7 +64,7 @@ class TestImageRegistryLifecycle:
         3. Delete the repository auth
         4. Verify it's removed from the list
         """
-        from tests.integration.test_utils import generate_test_name
+        from .test_utils import generate_test_name
 
         # Generate unique test registry name
         test_registry = f"{generate_test_name('registry')}.example.com"

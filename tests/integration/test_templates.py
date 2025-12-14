@@ -85,7 +85,7 @@ class TestTemplateLifecycle:
         )
 
         # Generate unique test template name
-        from tests.integration.test_utils import generate_test_name
+        from .test_utils import generate_test_name
 
         test_name = generate_test_name("template")
         template_id = None

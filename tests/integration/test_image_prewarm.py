@@ -98,11 +98,15 @@ class TestImagePrewarmLifecycle:
 
         try:
             # Step 1: Create a new image prewarm task
+            from novita.generated.models import CreateImagePrewarmRequest
+
             response = client.gpu.image_prewarm.create(
-                imageUrl=test_image,
-                clusterId=cluster_id,
-                productIds=product_ids,
-                note="Integration test prewarm task",
+                CreateImagePrewarmRequest(
+                    image_url=test_image,
+                    cluster_id=cluster_id,
+                    product_ids=product_ids,
+                    note="Integration test prewarm task",
+                )
             )
             assert response.id is not None
             task_id = response.id
@@ -117,7 +121,7 @@ class TestImagePrewarmLifecycle:
             assert found_task.cluster_id == cluster_id
 
             # Step 3: Delete the prewarm task
-            client.gpu.image_prewarm.delete(task_id)
+            client.gpu.image_prewarm.delete([task_id])
 
             # Step 4: Verify it's removed from the list
             tasks_after_delete = client.gpu.image_prewarm.list()
@@ -129,12 +133,15 @@ class TestImagePrewarmLifecycle:
             if task_id is not None:
                 try:
                     # Always try to delete - API will handle if already deleted
-                    client.gpu.image_prewarm.delete(task_id)
+                    client.gpu.image_prewarm.delete([task_id])
                 except Exception as e:
-                    # If task is already gone ("not found"), that's fine
-                    error_msg = str(e).lower()
-                    if "not found" not in error_msg and "not fount" not in error_msg:
-                        # Log cleanup errors but don't fail the test
+                    # If task is already gone, that's fine
+                    from novita.exceptions import NotFoundError
+
+                    if isinstance(e, NotFoundError):
+                        pass
+                    else:
+                        # Log unexpected cleanup errors but don't fail the test
                         import warnings
 
                         warnings.warn(

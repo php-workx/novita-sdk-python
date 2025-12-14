@@ -77,45 +77,50 @@ class TestNetworkLifecycle:
 
         This test will:
         1. Create a new VPC network
-        2. Verify the network was created
+        2. Find the network by name (API doesn't return ID on create)
         3. Update the network (rename)
         4. Verify the update
         5. Delete the network
         6. Verify the network was deleted
         """
-        from novita.exceptions import BadRequestError, NotFoundError
-        from tests.integration.test_utils import generate_test_name
+        import time
 
-        # Generate unique test names
-        initial_name = generate_test_name("network")
-        updated_name = generate_test_name("network-updated")
+        from novita.exceptions import BadRequestError, NotFoundError
+
+        from .test_utils import generate_test_name
+
+        # Generate unique test names (max 30 chars for networks)
+        # Format: test-net-YYYYMMDD-HHMMSS (27 chars)
+        initial_name = generate_test_name("net")
         network_id = None
 
         try:
             # Step 1: Create a new VPC network
-            created_network = client.gpu.networks.create(
+            client.gpu.networks.create(
                 CreateNetworkRequest(
                     cluster_id=cluster_id,
                     name=initial_name,
                 )
             )
-            assert created_network.id is not None
-            network_id = created_network.id
-            assert created_network.name == initial_name
 
-            # Step 2: Verify the network appears in the list
+            # Step 2: Find the network in the list by name (API doesn't return ID on create)
+            time.sleep(1)  # Give API a moment to process
             networks = client.gpu.networks.list()
-            found_in_list = any(n.id == network_id for n in networks)
-            assert found_in_list, f"Network {network_id} not found in list"
+            found_network = next((n for n in networks if n.name == initial_name), None)
+            assert (
+                found_network is not None
+            ), f"Network '{initial_name}' not found in list after creation"
+            network_id = found_network.id
+            assert network_id is not None
 
-            # Step 3: Update the network (rename)
-            updated_network = client.gpu.networks.update(
+            # Step 3: Update the network (rename with new timestamp)
+            updated_name = generate_test_name("net")
+            client.gpu.networks.update(
                 UpdateNetworkRequest(
                     network_id=network_id,
                     name=updated_name,
                 )
             )
-            assert updated_network.name == updated_name
 
             # Step 4: Verify the update
             networks_after_update = client.gpu.networks.list()

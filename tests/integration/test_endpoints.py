@@ -172,7 +172,7 @@ class TestEndpointFullLifecycle:
             product_id = product.id
 
             # Step 2: Create endpoint configuration using Pydantic models
-            from tests.integration.test_utils import generate_test_name
+            from .test_utils import generate_test_name
 
             test_name = generate_test_name("endpoint")
             app_name = generate_test_name("app")
