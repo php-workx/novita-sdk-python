@@ -91,7 +91,7 @@ class TestNetworkStorageLifecycle:
         4. Delete the storage
         5. Verify it's removed from the list
         """
-        from tests.integration.test_utils import generate_test_name
+        from .test_utils import generate_test_name
 
         # Generate unique test storage name
         test_name = generate_test_name("storage")
