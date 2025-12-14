@@ -385,47 +385,45 @@ Examples:
         print("Error: novita package not installed")
         return 1
 
-    client = NovitaClient(api_key=api_key)
+    # Use context manager to ensure client is properly closed even if an exception occurs
+    with NovitaClient(api_key=api_key) as client:
+        print("=" * 60)
+        if args.min_age > 0:
+            print(f"Cleaning up test resources older than {args.min_age} hours...")
+        else:
+            print("Cleaning up all test resources...")
+        print("=" * 60)
 
-    print("=" * 60)
-    if args.min_age > 0:
-        print(f"Cleaning up test resources older than {args.min_age} hours...")
-    else:
-        print("Cleaning up all test resources...")
-    print("=" * 60)
+        total_deleted = 0
+        total_errors = 0
 
-    total_deleted = 0
-    total_errors = 0
+        # Cleanup each resource type
+        resource_types = [
+            ("instances", cleanup_instances),
+            ("endpoints", cleanup_endpoints),
+            ("templates", cleanup_templates),
+            ("networks", cleanup_networks),
+            ("storages", cleanup_storages),
+            ("registry auths", cleanup_registries),
+            ("prewarm tasks", cleanup_image_prewarm),
+        ]
 
-    # Cleanup each resource type
-    resource_types = [
-        ("instances", cleanup_instances),
-        ("endpoints", cleanup_endpoints),
-        ("templates", cleanup_templates),
-        ("networks", cleanup_networks),
-        ("storages", cleanup_storages),
-        ("registry auths", cleanup_registries),
-        ("prewarm tasks", cleanup_image_prewarm),
-    ]
+        for resource_name, cleanup_func in resource_types:
+            print(f"\nCleaning up {resource_name}...")
+            deleted, errors = cleanup_func(client, min_age_hours=args.min_age)
+            total_deleted += deleted
+            total_errors += errors
 
-    for resource_name, cleanup_func in resource_types:
-        print(f"\nCleaning up {resource_name}...")
-        deleted, errors = cleanup_func(client, min_age_hours=args.min_age)
-        total_deleted += deleted
-        total_errors += errors
+            if deleted > 0:
+                print(f"  Deleted {deleted} {resource_name}")
+            if errors > 0:
+                print(f"  Encountered {errors} errors")
 
-        if deleted > 0:
-            print(f"  Deleted {deleted} {resource_name}")
-        if errors > 0:
-            print(f"  Encountered {errors} errors")
+        print("\n" + "=" * 60)
+        print(f"Cleanup complete: {total_deleted} resources deleted, {total_errors} errors")
+        print("=" * 60)
 
-    print("\n" + "=" * 60)
-    print(f"Cleanup complete: {total_deleted} resources deleted, {total_errors} errors")
-    print("=" * 60)
-
-    client.close()
-
-    return 1 if total_errors > 0 else 0
+        return 1 if total_errors > 0 else 0
 
 
 if __name__ == "__main__":

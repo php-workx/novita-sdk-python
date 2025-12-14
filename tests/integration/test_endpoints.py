@@ -11,7 +11,7 @@ import pytest
 if TYPE_CHECKING:
     from novita import NovitaClient
 
-from novita.exceptions import NotFoundError
+from novita.exceptions import BadRequestError, NotFoundError
 from novita.generated.models import (
     CreateEndpointRequest,
     Endpoint,
@@ -195,7 +195,7 @@ class TestEndpointFullLifecycle:
                 rootfs_size=100,
                 volume_mounts=[],
                 cluster_id=cluster_id,
-                healthy=Healthy1(path="/health"),
+                healthy=Healthy1(path="/"),  # Nginx default endpoint
             )
 
             # Step 3: Create the endpoint
@@ -261,8 +261,9 @@ class TestEndpointFullLifecycle:
                 try:
                     # Always try to delete - API will handle if already deleted
                     client.gpu.endpoints.delete(endpoint_id)
-                except NotFoundError:
+                except (NotFoundError, BadRequestError):
                     # If endpoint is already gone, that's fine
+                    # API may return BadRequestError for deleted resources
                     pass
                 except Exception as e:
                     # Log unexpected cleanup errors but don't fail the test

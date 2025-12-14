@@ -69,21 +69,33 @@ def cpu_product_id(client: NovitaClient) -> str:
     _skip("No deployable CPU products available")
 
 
-def pytest_sessionstart(session: pytest.Session) -> None:
-    """Run cleanup before test session starts.
+def _is_integration_test_run(session: pytest.Session) -> bool:
+    """Check if this is an integration test run.
 
-    This removes any leaked resources from previous test runs.
+    Args:
+        session: pytest session object
+
+    Returns:
+        True if running integration tests, False otherwise
     """
-    # Only run cleanup for integration tests
-    if "integration" not in str(session.config.args):
-        return
+    # Check if we're running from the integration tests directory
+    if hasattr(session, "items") and session.items:
+        # Check if any test item has the 'integration' marker
+        return any("integration" in item.nodeid for item in session.items)
 
-    # Only run if NOVITA_API_KEY is set
-    if not os.getenv("NOVITA_API_KEY"):
-        return
+    # Fallback: check if running from integration directory
+    args_str = " ".join(str(arg) for arg in session.config.args)
+    return "integration" in args_str.lower() or "tests/integration" in args_str
 
+
+def _run_cleanup(phase: str) -> None:
+    """Run cleanup script for the given phase.
+
+    Args:
+        phase: Description of cleanup phase (e.g., "pre-test", "post-test")
+    """
     print("\n" + "=" * 60)
-    print("Running pre-test cleanup...")
+    print(f"Running {phase} cleanup...")
     print("=" * 60)
 
     # Get path to cleanup script
@@ -110,12 +122,28 @@ def pytest_sessionstart(session: pytest.Session) -> None:
             print(result.stderr, file=sys.stderr)
 
         if result.returncode != 0:
-            print("Warning: Pre-test cleanup encountered errors")
+            print(f"Warning: {phase.capitalize()} cleanup encountered errors")
 
     except subprocess.TimeoutExpired:
-        print("Warning: Pre-test cleanup timed out")
+        print(f"Warning: {phase.capitalize()} cleanup timed out")
     except Exception as e:
-        print(f"Warning: Failed to run pre-test cleanup: {e}")
+        print(f"Warning: Failed to run {phase} cleanup: {e}")
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Run cleanup before test session starts.
+
+    This removes any leaked resources from previous test runs.
+    """
+    # Only run cleanup for integration tests
+    if not _is_integration_test_run(session):
+        return
+
+    # Only run if NOVITA_API_KEY is set
+    if not os.getenv("NOVITA_API_KEY"):
+        return
+
+    _run_cleanup("pre-test")
 
 
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:  # noqa: ARG001
@@ -125,44 +153,11 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:  # n
     properly cleaned up (e.g., due to test failures or interruptions).
     """
     # Only run cleanup for integration tests
-    if "integration" not in str(session.config.args):
+    if not _is_integration_test_run(session):
         return
 
     # Only run if NOVITA_API_KEY is set
     if not os.getenv("NOVITA_API_KEY"):
         return
 
-    print("\n" + "=" * 60)
-    print("Running post-test cleanup...")
-    print("=" * 60)
-
-    # Get path to cleanup script
-    repo_root = Path(__file__).parent.parent.parent
-    cleanup_script = repo_root / "scripts" / "cleanup_test_resources.py"
-
-    if not cleanup_script.exists():
-        print(f"Warning: Cleanup script not found at {cleanup_script}")
-        return
-
-    try:
-        # Run cleanup script
-        result = subprocess.run(
-            [sys.executable, str(cleanup_script)],
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        # Print output
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
-
-        if result.returncode != 0:
-            print("Warning: Post-test cleanup encountered errors")
-
-    except subprocess.TimeoutExpired:
-        print("Warning: Post-test cleanup timed out")
-    except Exception as e:
-        print(f"Warning: Failed to run post-test cleanup: {e}")
+    _run_cleanup("post-test")
