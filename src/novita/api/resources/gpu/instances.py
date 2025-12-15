@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, cast
+from urllib.parse import urlparse
 
+from novita.exceptions import NotFoundError
 from novita.generated.models import (
     CreateInstanceRequest,
     CreateInstanceResponse,
@@ -11,10 +14,73 @@ from novita.generated.models import (
     InstanceInfo,
     ListInstancesResponse,
     SaveImageRequest,
+    SSHEndpoint,
     UpgradeInstanceRequest,
 )
 
 from .base import BASE_PATH, AsyncBaseResource, BaseResource
+
+
+def _parse_ssh_command(command: str) -> dict[str, Any]:
+    """Parse SSH command to extract user, host, and port.
+
+    Args:
+        command: SSH command string (e.g., "ssh user@host -p 2222")
+
+    Returns:
+        Dict with user, host, and port keys
+
+    Examples:
+        >>> _parse_ssh_command("ssh root@example.com -p 2222")
+        {'user': 'root', 'host': 'example.com', 'port': 2222}
+        >>> _parse_ssh_command("ssh -p 22000 ubuntu@10.0.0.1")
+        {'user': 'ubuntu', 'host': '10.0.0.1', 'port': 22000}
+    """
+    result: dict[str, Any] = {}
+
+    # Extract user@host pattern
+    user_host_match = re.search(r"(\w+)@([\w\.\-]+)", command)
+    if user_host_match:
+        result["user"] = user_host_match.group(1)
+        result["host"] = user_host_match.group(2)
+
+    # Extract port (both -p PORT and -p=PORT formats)
+    port_match = re.search(r"-p[=\s]+(\d+)", command)
+    if port_match:
+        result["port"] = int(port_match.group(1))
+
+    return result
+
+
+def _normalize_endpoint(endpoint: str) -> tuple[str, int | None]:
+    """Normalize endpoint URL to extract host and port.
+
+    Args:
+        endpoint: Endpoint URL (e.g., "tcp://host:port", "host:port", "http://host:port")
+
+    Returns:
+        Tuple of (host, port)
+
+    Examples:
+        >>> _normalize_endpoint("tcp://example.com:2222")
+        ('example.com', 2222)
+        >>> _normalize_endpoint("example.com:2222")
+        ('example.com', 2222)
+    """
+    # Handle URLs with schemes
+    if "://" in endpoint:
+        parsed = urlparse(endpoint)
+        return parsed.hostname or "", parsed.port
+
+    # Handle host:port format
+    if ":" in endpoint:
+        parts = endpoint.rsplit(":", 1)
+        try:
+            return parts[0], int(parts[1])
+        except (ValueError, IndexError):
+            return endpoint, None
+
+    return endpoint, None
 
 
 def _build_list_filters(
@@ -160,6 +226,71 @@ class Instances(BaseResource):
         payload = cast(dict[str, Any], response.json())
         return str(payload.get("jobId", ""))
 
+    def get_ssh_endpoint(self, instance_id: str) -> SSHEndpoint:
+        """Get SSH connection details for an instance.
+
+        This method extracts SSH connection information from the instance details.
+        It first tries to use connect_component_ssh fields, then falls back to
+        parsing port_mappings for port 22.
+
+        Args:
+            instance_id: Instance ID to get SSH endpoint for
+
+        Returns:
+            SSHEndpoint with user, host, port, and optional command
+
+        Raises:
+            NotFoundError: If instance doesn't exist or has no SSH access
+            ValueError: If SSH connection details cannot be determined
+        """
+        instance = self.get(instance_id)
+
+        # Try connect_component_ssh first (preferred)
+        if instance.connect_component_ssh:
+            ssh = instance.connect_component_ssh
+            result: dict[str, Any] = {}
+
+            # Extract from command if available
+            if ssh.command:
+                parsed = _parse_ssh_command(ssh.command)
+                result.update(parsed)
+                result["command"] = ssh.command
+
+            # Override with direct fields if available
+            if ssh.user:
+                result["user"] = ssh.user
+
+            # If we have user and either host or command, we're good
+            if result.get("user") and (result.get("host") or result.get("command")):
+                # Default port if not found
+                if "port" not in result:
+                    result["port"] = 22
+
+                return SSHEndpoint(
+                    user=result["user"],
+                    host=result.get("host", ""),
+                    port=result["port"],
+                    command=result.get("command"),
+                )
+
+        # Fallback: check port_mappings for port 22
+        if instance.port_mappings:
+            for mapping in instance.port_mappings:
+                if mapping.port == 22 and mapping.type in ("tcp", "ssh") and mapping.endpoint:
+                    host, port = _normalize_endpoint(mapping.endpoint)
+                    if host and port:
+                        # Assume root user if not specified
+                        return SSHEndpoint(
+                            user="root",
+                            host=host,
+                            port=port,
+                            command=f"ssh root@{host} -p {port}",
+                        )
+
+        # No SSH endpoint found
+        msg = f"No SSH endpoint found for instance {instance_id}"
+        raise NotFoundError(msg)
+
 
 class AsyncInstances(AsyncBaseResource):
     """Asynchronous GPU instances management resource."""
@@ -282,3 +413,68 @@ class AsyncInstances(AsyncBaseResource):
         )
         payload = cast(dict[str, Any], response.json())
         return str(payload.get("jobId", ""))
+
+    async def get_ssh_endpoint(self, instance_id: str) -> SSHEndpoint:
+        """Get SSH connection details for an instance.
+
+        This method extracts SSH connection information from the instance details.
+        It first tries to use connect_component_ssh fields, then falls back to
+        parsing port_mappings for port 22.
+
+        Args:
+            instance_id: Instance ID to get SSH endpoint for
+
+        Returns:
+            SSHEndpoint with user, host, port, and optional command
+
+        Raises:
+            NotFoundError: If instance doesn't exist or has no SSH access
+            ValueError: If SSH connection details cannot be determined
+        """
+        instance = await self.get(instance_id)
+
+        # Try connect_component_ssh first (preferred)
+        if instance.connect_component_ssh:
+            ssh = instance.connect_component_ssh
+            result: dict[str, Any] = {}
+
+            # Extract from command if available
+            if ssh.command:
+                parsed = _parse_ssh_command(ssh.command)
+                result.update(parsed)
+                result["command"] = ssh.command
+
+            # Override with direct fields if available
+            if ssh.user:
+                result["user"] = ssh.user
+
+            # If we have user and either host or command, we're good
+            if result.get("user") and (result.get("host") or result.get("command")):
+                # Default port if not found
+                if "port" not in result:
+                    result["port"] = 22
+
+                return SSHEndpoint(
+                    user=result["user"],
+                    host=result.get("host", ""),
+                    port=result["port"],
+                    command=result.get("command"),
+                )
+
+        # Fallback: check port_mappings for port 22
+        if instance.port_mappings:
+            for mapping in instance.port_mappings:
+                if mapping.port == 22 and mapping.type in ("tcp", "ssh") and mapping.endpoint:
+                    host, port = _normalize_endpoint(mapping.endpoint)
+                    if host and port:
+                        # Assume root user if not specified
+                        return SSHEndpoint(
+                            user="root",
+                            host=host,
+                            port=port,
+                            command=f"ssh root@{host} -p {port}",
+                        )
+
+        # No SSH endpoint found
+        msg = f"No SSH endpoint found for instance {instance_id}"
+        raise NotFoundError(msg)
