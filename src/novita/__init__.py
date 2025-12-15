@@ -14,14 +14,18 @@ from novita.generated.models import (
     BillingMode,
     CreateInstanceRequest,
     CreateInstanceResponse,
+    CreateSSHKeyRequest,
     EditInstanceRequest,
     GPUProduct,
     InstanceInfo,
     Kind,
     ListGPUProductsResponse,
     ListInstancesResponse,
+    ListSSHKeysResponse,
     Port,
     SaveImageRequest,
+    SSHEndpoint,
+    SSHKey,
     Type,
     UpgradeInstanceRequest,
 )
@@ -54,4 +58,9 @@ __all__ = [
     "BillingMode",
     "Port",
     "Type",
+    # SSH Keys
+    "SSHKey",
+    "SSHEndpoint",
+    "CreateSSHKeyRequest",
+    "ListSSHKeysResponse",
 ]

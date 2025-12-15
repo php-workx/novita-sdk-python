@@ -1434,6 +1434,37 @@ class DeleteTemplateResponse(BaseModel):
     ]
 
 
+class SSHKey(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    id: Annotated[str, Field(description="SSH key ID")]
+    name: Annotated[str, Field(description="SSH key name")]
+    public_key: Annotated[str, Field(alias="publicKey", description="SSH public key content")]
+    created_at: Annotated[
+        str | None, Field(alias="createdAt", description="Creation timestamp")
+    ] = None
+
+
+class ListSSHKeysResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    data: Annotated[list[SSHKey], Field(description="List of SSH keys")]
+
+
+class CreateSSHKeyRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    name: Annotated[str, Field(description="SSH key name", max_length=255, min_length=1)]
+    public_key: Annotated[
+        str, Field(alias="publicKey", description="SSH public key content", min_length=1)
+    ]
+
+
+class SSHEndpoint(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    user: Annotated[str, Field(description="SSH username")]
+    host: Annotated[str, Field(description="SSH host address")]
+    port: Annotated[int, Field(description="SSH port number")]
+    command: Annotated[str | None, Field(description="Full SSH command")] = None
+
+
 class ListEndpointsResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     endpoints: Annotated[

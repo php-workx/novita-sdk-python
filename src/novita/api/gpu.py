@@ -12,6 +12,7 @@ from .resources.gpu import (
     AsyncNetworks,
     AsyncProducts,
     AsyncRegistries,
+    AsyncSSHKeys,
     AsyncStorages,
     AsyncTemplates,
     Clusters,
@@ -23,6 +24,7 @@ from .resources.gpu import (
     Networks,
     Products,
     Registries,
+    SSHKeys,
     Storages,
     Templates,
 )
@@ -50,6 +52,7 @@ class GpuClient:
         self.networks = Networks(client)
         self.products = Products(client)
         self.registries = Registries(client)
+        self.ssh_keys = SSHKeys(client)
         self.storages = Storages(client)
         self.templates = Templates(client)
 
@@ -73,5 +76,6 @@ class AsyncGpuClient:
         self.networks = AsyncNetworks(client)
         self.products = AsyncProducts(client)
         self.registries = AsyncRegistries(client)
+        self.ssh_keys = AsyncSSHKeys(client)
         self.storages = AsyncStorages(client)
         self.templates = AsyncTemplates(client)

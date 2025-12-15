@@ -1552,6 +1552,76 @@ paths:
                 $ref: '#/components/schemas/ListCPUProductsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+  /ssh-keys:
+    get:
+      summary: List SSH keys
+      operationId: list_ssh_keys
+      tags:
+        - SSH Keys
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSSHKeysResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /ssh-key/create:
+    post:
+      summary: Create SSH key
+      operationId: create_ssh_key
+      tags:
+        - SSH Keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSSHKeyRequest'
+      responses:
+        '200':
+          description: SSH key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSHKey'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /ssh-key/delete:
+    post:
+      summary: Delete SSH key
+      operationId: delete_ssh_key
+      tags:
+        - SSH Keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: string
+                  description: SSH key ID to delete
+      responses:
+        '200':
+          description: SSH key deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
 components:
   securitySchemes:
     BearerAuth:
@@ -3595,6 +3665,73 @@ components:
         templateId:
           type: string
           description: ID of the deleted template.
+
+    SSHKey:
+      type: object
+      required:
+        - id
+        - name
+        - publicKey
+      properties:
+        id:
+          type: string
+          description: SSH key ID
+        name:
+          type: string
+          description: SSH key name
+        publicKey:
+          type: string
+          description: SSH public key content
+        createdAt:
+          type: string
+          description: Creation timestamp
+
+    ListSSHKeysResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SSHKey'
+          description: List of SSH keys
+
+    CreateSSHKeyRequest:
+      type: object
+      required:
+        - name
+        - publicKey
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: SSH key name
+        publicKey:
+          type: string
+          minLength: 1
+          description: SSH public key content
+
+    SSHEndpoint:
+      type: object
+      required:
+        - user
+        - host
+        - port
+      properties:
+        user:
+          type: string
+          description: SSH username
+        host:
+          type: string
+          description: SSH host address
+        port:
+          type: integer
+          description: SSH port number
+        command:
+          type: string
+          description: Full SSH command
 
   responses:
     UnauthorizedError:
