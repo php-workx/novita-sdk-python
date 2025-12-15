@@ -39,7 +39,7 @@ def _parse_ssh_command(command: str) -> dict[str, Any]:
     result: dict[str, Any] = {}
 
     # Extract user@host pattern
-    user_host_match = re.search(r"(\w+)@([\w\.\-]+)", command)
+    user_host_match = re.search(r"([\w\-]+)@([\w\.\-]+)", command)
     if user_host_match:
         result["user"] = user_host_match.group(1)
         result["host"] = user_host_match.group(2)
