@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from novita.generated.models import (
     CreateSSHKeyRequest,
-    CreateSSHKeyResponse,
     ListSSHKeysResponse,
     SSHKey,
 )
@@ -49,9 +48,7 @@ class SSHKeys(BaseResource):
             f"{BASE_PATH}/ssh-key/create",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        parsed = CreateSSHKeyResponse.model_validate(response.json())
-        # Return as SSHKey model (same structure)
-        return SSHKey.model_validate(parsed.model_dump())
+        return SSHKey.model_validate(response.json())
 
     def delete(self, key_id: str) -> None:
         """Delete an SSH key.
@@ -107,9 +104,7 @@ class AsyncSSHKeys(AsyncBaseResource):
             f"{BASE_PATH}/ssh-key/create",
             json=request.model_dump(by_alias=True, exclude_none=True, mode="json"),
         )
-        parsed = CreateSSHKeyResponse.model_validate(response.json())
-        # Return as SSHKey model (same structure)
-        return SSHKey.model_validate(parsed.model_dump())
+        return SSHKey.model_validate(response.json())
 
     async def delete(self, key_id: str) -> None:
         """Delete an SSH key.

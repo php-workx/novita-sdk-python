@@ -3,8 +3,7 @@
 import pytest
 from pytest_httpx import HTTPXMock
 
-from novita import AsyncNovitaClient, NovitaClient
-from novita.generated.models import SSHKey
+from novita import AsyncNovitaClient, NovitaClient, SSHKey
 
 
 def test_list_ssh_keys(httpx_mock: HTTPXMock) -> None:

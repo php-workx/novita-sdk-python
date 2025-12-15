@@ -15,7 +15,6 @@ from novita.generated.models import (
     CreateInstanceRequest,
     CreateInstanceResponse,
     CreateSSHKeyRequest,
-    CreateSSHKeyResponse,
     EditInstanceRequest,
     GPUProduct,
     InstanceInfo,
@@ -63,6 +62,5 @@ __all__ = [
     "SSHKey",
     "SSHEndpoint",
     "CreateSSHKeyRequest",
-    "CreateSSHKeyResponse",
     "ListSSHKeysResponse",
 ]

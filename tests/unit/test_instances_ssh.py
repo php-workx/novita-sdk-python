@@ -3,8 +3,7 @@
 import pytest
 from pytest_httpx import HTTPXMock
 
-from novita import AsyncNovitaClient, NotFoundError, NovitaClient
-from novita.generated.models import SSHEndpoint
+from novita import AsyncNovitaClient, NotFoundError, NovitaClient, SSHEndpoint
 
 
 def test_get_ssh_endpoint_from_connect_component(httpx_mock: HTTPXMock) -> None:
