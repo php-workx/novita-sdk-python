@@ -39,7 +39,8 @@ def _parse_ssh_command(command: str) -> dict[str, Any]:
     result: dict[str, Any] = {}
 
     # Extract user@host pattern
-    user_host_match = re.search(r"(\w+)@([\w\.\-]+)", command)
+    # Username can contain alphanumeric, hyphens, underscores, and dots
+    user_host_match = re.search(r"([\w\.\-]+)@([\w\.\-]+)", command)
     if user_host_match:
         result["user"] = user_host_match.group(1)
         result["host"] = user_host_match.group(2)
@@ -113,15 +114,15 @@ def _extract_ssh_endpoint(instance: InstanceInfo) -> SSHEndpoint:
         if ssh.user:
             result["user"] = ssh.user
 
-        # If we have user and either host or command, we're good
-        if result.get("user") and (result.get("host") or result.get("command")):
+        # Only proceed when we have a user and a real host
+        if result.get("user") and result.get("host"):
             # Default port if not found
             if "port" not in result:
                 result["port"] = 22
 
             return SSHEndpoint(
                 user=result["user"],
-                host=result.get("host", ""),
+                host=result["host"],
                 port=result["port"],
                 command=result.get("command"),
             )

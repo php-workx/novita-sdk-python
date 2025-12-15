@@ -207,6 +207,40 @@ def test_get_ssh_endpoint_command_with_port_flag(httpx_mock: HTTPXMock) -> None:
     client.close()
 
 
+def test_get_ssh_endpoint_hyphenated_username(httpx_mock: HTTPXMock) -> None:
+    """Test SSH endpoint extraction with hyphenated username."""
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.novita.ai/gpu-instance/openapi/v1/gpu/instance?instanceId=inst-hyphen",
+        json={
+            "id": "inst-hyphen",
+            "name": "test-hyphen-user",
+            "clusterId": "cluster-1",
+            "status": "running",
+            "imageUrl": "ubuntu:22.04",
+            "cpuNum": "4",
+            "memory": "16",
+            "gpuNum": "1",
+            "productId": "gpu-a10",
+            "productName": "A10",
+            "rootfsSize": 100,
+            "connectComponentSSH": {
+                "user": "deploy-user",
+                "command": "ssh deploy-user@api-server.example.com -p 22022",
+            },
+        },
+    )
+
+    client = NovitaClient(api_key="test-key")
+    endpoint = client.gpu.instances.get_ssh_endpoint("inst-hyphen")
+
+    assert endpoint.user == "deploy-user"
+    assert endpoint.host == "api-server.example.com"
+    assert endpoint.port == 22022
+    assert endpoint.command == "ssh deploy-user@api-server.example.com -p 22022"
+    client.close()
+
+
 @pytest.mark.asyncio
 async def test_async_get_ssh_endpoint(httpx_mock: HTTPXMock) -> None:
     """Test getting SSH endpoint using async client."""
@@ -267,6 +301,24 @@ def test_parse_ssh_command_variants() -> None:
     assert result["user"] == "user"
     assert result["host"] == "host.com"
     assert result["port"] == 3000
+
+    # Hyphenated username (edge case)
+    result = _parse_ssh_command("ssh my-user@example.com -p 2222")
+    assert result["user"] == "my-user"
+    assert result["host"] == "example.com"
+    assert result["port"] == 2222
+
+    # Username with dots
+    result = _parse_ssh_command("ssh user.name@server.example.org")
+    assert result["user"] == "user.name"
+    assert result["host"] == "server.example.org"
+    assert "port" not in result
+
+    # Complex username with multiple special chars
+    result = _parse_ssh_command("ssh deploy-user_01@api-server.cloud.io -p 22345")
+    assert result["user"] == "deploy-user_01"
+    assert result["host"] == "api-server.cloud.io"
+    assert result["port"] == 22345
 
 
 def test_normalize_endpoint_variants() -> None:
