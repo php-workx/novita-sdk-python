@@ -28,7 +28,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv sync
+        run: uv pip install -e ".[dev]"
 
       - name: Clean up test resources
         env:
@@ -37,7 +37,7 @@ jobs:
           # Use input if triggered manually, otherwise default to 0.5 hours
           MIN_AGE="${{ github.event.inputs.min_age || '0.5' }}"
           echo "Deleting test resources older than $MIN_AGE hours..."
-          uv run python scripts/cleanup_test_resources.py --min-age "$MIN_AGE"
+          python scripts/cleanup_test_resources.py --min-age "$MIN_AGE"
 
       - name: Report results
         if: always()
