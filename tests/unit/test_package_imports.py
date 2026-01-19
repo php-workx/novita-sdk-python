@@ -76,8 +76,18 @@ def test_client_has_resource_tree():
     try:
         # Verify resource tree
         assert hasattr(client, "gpu")
-        assert hasattr(client.gpu, "products")
+        assert hasattr(client.gpu, "clusters")
+        assert hasattr(client.gpu, "endpoints")
+        assert hasattr(client.gpu, "image_prewarm")
         assert hasattr(client.gpu, "instances")
+        assert hasattr(client.gpu, "jobs")
+        assert hasattr(client.gpu, "metrics")
+        assert hasattr(client.gpu, "networks")
+        assert hasattr(client.gpu, "products")
+        assert hasattr(client.gpu, "registries")
+        assert hasattr(client.gpu, "storages")
+        assert hasattr(client.gpu, "templates")
+        # Spot-check a few methods to ensure resources are initialized
         assert hasattr(client.gpu.products, "list")
         assert hasattr(client.gpu.instances, "list")
         assert hasattr(client.gpu.instances, "create")
@@ -91,7 +101,18 @@ async def test_async_client_context_manager():
 
     async with AsyncNovitaClient(api_key="test-key") as client:
         assert hasattr(client, "gpu")
+        assert hasattr(client.gpu, "clusters")
+        assert hasattr(client.gpu, "endpoints")
+        assert hasattr(client.gpu, "image_prewarm")
+        assert hasattr(client.gpu, "instances")
+        assert hasattr(client.gpu, "jobs")
+        assert hasattr(client.gpu, "metrics")
+        assert hasattr(client.gpu, "networks")
         assert hasattr(client.gpu, "products")
+        assert hasattr(client.gpu, "registries")
+        assert hasattr(client.gpu, "storages")
+        assert hasattr(client.gpu, "templates")
+        # Spot-check a method to ensure resources are initialized
         assert hasattr(client.gpu.products, "list")
 
 
