@@ -44,12 +44,18 @@ jobs:
 
       - name: Run unit tests with coverage
         if: matrix.python-version == '3.11'
-        run: pytest tests/unit -v --cov=novita --cov-branch --cov-report=xml
+        run: pytest tests/unit -v --cov=novita --cov-branch --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
 
-      - name: Upload coverage reports to Codecov
-        if: matrix.python-version == '3.11'
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && matrix.python-version == '3.11' }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.python-version == '3.11' }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
