@@ -1,0 +1,40 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - "dependencies"
+    groups:
+      # Group all dev dependencies together
+      dev-dependencies:
+        patterns:
+          - "ruff"
+          - "pytest*"
+          - "mypy"
+          - "datamodel-code-generator"
+          - "openapi-spec-validator"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      # Group all actions together
+      actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5

@@ -1,8 +1,17 @@
 name: Unit Tests
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -15,21 +24,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv venv --python ${{ matrix.python-version }}
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+        run: uv pip install -e ".[dev]"
 
       - name: Run unit tests
-        run: pytest tests/unit -v --tb=short
+        if: matrix.python-version != '3.11'
+        run: make test
 
-      - name: Test coverage
+      - name: Run unit tests with coverage
         if: matrix.python-version == '3.11'
-        run: |
-          pip install pytest-cov
-          pytest tests/unit --cov=novita --cov-report=term-missing
+        run: pytest tests/unit -v --cov=novita --cov-branch --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && matrix.python-version == '3.11' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && matrix.python-version == '3.11' }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
