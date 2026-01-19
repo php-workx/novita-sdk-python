@@ -26,7 +26,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run Ruff linter
         run: make lint-check
@@ -46,7 +46,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run Ruff formatter check
         run: make format-check
@@ -66,7 +66,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run MyPy
         run: make type-check
