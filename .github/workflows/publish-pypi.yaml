@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/novita-sdk-python/
+      url: https://pypi.org/project/novita-sdk/
     permissions:
       id-token: write  # Required for trusted publishing
 
@@ -119,15 +119,16 @@ jobs:
         with:
           tag_name: v${{ github.event.inputs.version }}
           name: Release v${{ github.event.inputs.version }}
+          generate_release_notes: true
+          append_body: true
           body: |
-            ## What's Changed
-
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
 
             ## Installation
 
             ```bash
-            pip install novita-sdk-python==${{ github.event.inputs.version }}
+            pip install novita-sdk==${{ github.event.inputs.version }}
             ```
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed release notes.
           draft: false
           prerelease: false

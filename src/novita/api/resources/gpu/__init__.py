@@ -10,7 +10,6 @@ from .metrics import AsyncMetrics, Metrics
 from .networks import AsyncNetworks, Networks
 from .products import AsyncProducts, Products
 from .registries import AsyncRegistries, Registries
-from .ssh_keys import AsyncSSHKeys, SSHKeys
 from .storages import AsyncStorages, Storages
 from .templates import AsyncTemplates, Templates
 
@@ -35,8 +34,6 @@ __all__ = [
     "AsyncProducts",
     "Registries",
     "AsyncRegistries",
-    "SSHKeys",
-    "AsyncSSHKeys",
     "Storages",
     "AsyncStorages",
     "Templates",

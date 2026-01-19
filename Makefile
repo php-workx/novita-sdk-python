@@ -1,4 +1,4 @@
-.PHONY: help install generate test test-integration test-all test-cov lint lint-fix format typecheck pre-commit-test pre-commit-install pre-commit-run ci clean clean-generated spec-validate build publish-pypi publish-test
+.PHONY: help install generate test test-integration test-all test-cov lint lint-check format format-check type-check pre-commit-test pre-commit-install pre-commit-run dev ci clean clean-generated spec-validate build publish-pypi publish-test
 
 help:  ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -27,16 +27,19 @@ test-all:  ## Run all tests (unit + safe integration)
 test-cov:  ## Run tests with coverage
 	pytest tests/unit --cov=novita --cov-report=html --cov-report=term-missing
 
-lint:  ## Run linting
-	ruff check src/ tests/ examples/
-
-lint-fix:  ## Run linting with auto-fix
+lint:  ## Run linting with auto-fix
 	ruff check --fix src/ tests/ examples/
+
+lint-check:  ## Run linting
+	ruff check src/ tests/ examples/
 
 format:  ## Format code
 	ruff format src/ tests/ examples/
 
-typecheck:  ## Run type checking
+format-check:  ## Check code formatting
+	ruff format --check src/ tests/ examples/
+
+type-check:  ## Run type checking
 	mypy src/
 
 pre-commit-test:  ## Run unit tests (fast, for pre-commit hook)
@@ -56,20 +59,9 @@ pre-commit-install:  ## Install pre-commit hooks
 pre-commit-run:  ## Run pre-commit hooks on all files
 	@pre-commit run --all-files
 
-ci:  ## Run all CI checks (lint, format check, typecheck, test)
-	@echo "Running linter..."
-	@ruff check src/ tests/ examples/
-	@echo ""
-	@echo "Checking formatting..."
-	@ruff format --check src/ tests/ examples/
-	@echo ""
-	@echo "Running type checker..."
-	@mypy src/
-	@echo ""
-	@echo "Running tests..."
-	@pytest tests/unit/ -v
-	@echo ""
-	@echo "✅ All checks passed!"
+dev: format lint type-check test  ## Run format, lint (auto-fix), typecheck, and tests
+
+ci: lint-check format-check type-check test  ## Run all CI checks (lint, format check, typecheck, test)
 
 clean:  ## Clean build artifacts and caches
 	rm -rf dist/ build/ *.egg-info

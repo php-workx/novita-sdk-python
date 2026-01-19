@@ -1,5 +1,7 @@
 """Novita AI SDK for Python."""
 
+from importlib.metadata import version
+
 from novita.client import AsyncNovitaClient, NovitaClient
 from novita.exceptions import (
     APIError,
@@ -14,23 +16,19 @@ from novita.generated.models import (
     BillingMode,
     CreateInstanceRequest,
     CreateInstanceResponse,
-    CreateSSHKeyRequest,
     EditInstanceRequest,
     GPUProduct,
     InstanceInfo,
     Kind,
     ListGPUProductsResponse,
     ListInstancesResponse,
-    ListSSHKeysResponse,
     Port,
     SaveImageRequest,
-    SSHEndpoint,
-    SSHKey,
     Type,
     UpgradeInstanceRequest,
 )
 
-__version__ = "0.1.0"
+__version__ = version("novita-sdk")
 
 __all__ = [
     # Clients
@@ -58,9 +56,4 @@ __all__ = [
     "BillingMode",
     "Port",
     "Type",
-    # SSH Keys
-    "SSHKey",
-    "SSHEndpoint",
-    "CreateSSHKeyRequest",
-    "ListSSHKeysResponse",
 ]
