@@ -1,9 +1,9 @@
 name: Cleanup Test Resources
 
 on:
-  schedule:
+  #schedule:
     # Run every hour at minute 0
-    - cron: '12 * * * *'
+    #- cron: '12 * * * *'
   workflow_dispatch:  # Allow manual trigger
     inputs:
       min_age:
